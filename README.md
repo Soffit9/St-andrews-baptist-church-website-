@@ -12,6 +12,64 @@ python3 -m http.server 8080
 
 Then open `http://localhost:8080`.
 
+## Real backend — Phase 1: authentication (this round)
+
+The login is now genuinely real, not a client-side illusion. The password
+lives only on the Pi, hashed, never in any file a visitor's browser can
+read. Here's what changed and exactly how to bring it up on the Pi.
+
+### What's real now
+- Password checking happens on a small Flask server, not in the browser
+- The 2FA code is generated and checked server-side (email sending optional — falls back to showing the code on-screen if not configured, same as before)
+- Login sessions are real server-side sessions (a signed cookie), not a flag the browser set on itself
+- The Admin Users list is real — it's stored on the server and actually determines who gets what access, not just a plan for later
+- **danteeugenemclaughlin@gmail.com is permanently Full Admin** — hardcoded as a safety net, can't be removed or downgraded even by editing the Admin Users list
+
+### What's still on localStorage (Phase 2, next round)
+Who's Who, Gallery, Events, the Church Calendar, the Sermon Archive, and the Change Log are all still browser-local for now — same as before, still per-device. Phase 2 moves these into the same backend, which is also what finally fixes photos/content not syncing across devices.
+
+### Setting this up on the Pi — do this once
+
+```bash
+cd ~/st-andrews-baptist-church-website-
+python3 -m venv backend/venv
+source backend/venv/bin/activate
+pip install -r backend/requirements.txt
+```
+
+**Set the real password** (typed directly here, never in chat, never in git):
+```bash
+python3 backend/setup_admin.py
+```
+Follow the prompts. Answer "blank" for the Gmail question for now unless you're ready to set up real email — you can always re-run this script later to add it.
+
+**Install the backend as a permanent service:**
+```bash
+sudo cp backend/sabc-backend.service.example /etc/systemd/system/sabc-backend.service
+sudo systemctl daemon-reload
+sudo systemctl enable --now sabc-backend
+sudo systemctl status sabc-backend
+```
+Look for `active (running)`.
+
+**Update Caddy to route `/api/` requests to the backend:**
+```bash
+sudo cp backend/Caddyfile.example /etc/caddy/Caddyfile
+sudo systemctl restart caddy
+```
+
+**Test it:**
+```bash
+curl -X POST http://localhost/api/auth/session
+```
+Should return `{"loggedIn":false}` — that confirms Caddy is correctly forwarding to Flask.
+
+Then just load the site in a browser and try logging in for real.
+
+## What's new this round
+
+- **Gallery is no longer public.** Pulled it from the visitor navigation menu entirely, and the page itself now checks you're logged in before showing anything — a direct link no longer gets you in. If you're not logged in and hit it, you're bounced to the login screen, and land back on the Gallery automatically once you're in.
+
 ## What's new this round
 
 - **Sticky footer fixed** — the blue bar now always pins to the bottom of the screen on short pages (like an empty Events list) instead of floating up mid-page.

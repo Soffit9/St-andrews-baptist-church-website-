@@ -22,7 +22,7 @@ function isoDate(d) {
 }
 function uid() { return Math.random().toString(36).slice(2, 9); }
 
-document.addEventListener("DOMContentLoaded", () => {
+document.addEventListener("sabc:session-ready", () => {
   if (document.querySelector("#cal-grid")) initCalendar();
   if (document.querySelector("#events-cal-grid")) initEventsAdmin();
   if (document.querySelector("#home-events")) renderUpcomingEvents("#home-events", 3);
@@ -489,61 +489,79 @@ function initWhoswhoPublic() {
 function initAdmins() {
   requireLogin();
   const root = document.querySelector("#admins-root");
+  const PERMANENT_EMAIL = "danteeugenemclaughlin@gmail.com";
 
-  function render() {
-    const users = loadJSON("sabc_admin_users", [
-      { id: uid(), name: "Pastor Ladd Dunfield", email: "ladd@thebeggardanced.com", access: "Full Admin" }
-    ]);
-    saveJSON("sabc_admin_users", users);
+  async function render() {
+    let users = await cmsGetAdminUsers();
     let html = `<div class="manage-list">`;
     users.forEach(u => {
+      const isPermanent = (u.email || "").toLowerCase() === PERMANENT_EMAIL;
       html += `
         <div class="manage-row" data-id="${u.id}" style="grid-template-columns:1fr 1fr 1fr auto">
-          <input type="text" data-field="name" placeholder="Name" value="${u.name}">
-          <input type="text" data-field="email" placeholder="Email" value="${u.email}">
-          <select data-field="access">
+          <input type="text" data-field="name" placeholder="Name" value="${u.name}" ${isPermanent ? "readonly" : ""}>
+          <input type="text" data-field="email" placeholder="Email" value="${u.email}" ${isPermanent ? "readonly" : ""}>
+          <select data-field="access" ${isPermanent ? "disabled" : ""}>
             <option ${u.access === "Full Admin" ? "selected" : ""}>Full Admin</option>
             <option ${u.access === "Can Edit" ? "selected" : ""}>Can Edit</option>
             <option ${u.access === "View Only" ? "selected" : ""}>View Only</option>
           </select>
-          <button type="button" data-remove="${u.id}">Remove</button>
+          <button type="button" data-remove="${u.id}" ${isPermanent ? "disabled title=\"This account always stays Full Admin\"" : ""}>Remove</button>
         </div>`;
     });
     html += `</div>
       <button class="button button-light" id="add-admin" type="button">+ Add Admin</button>
       <div class="edit-actions"><span></span><button class="button" id="save-admins" type="button">Apply Changes</button></div>
-      <p class="field-hint" style="margin-top:16px">Prototype note: this list doesn't control real login access yet — everyone still shares the one demo password/code until the real backend is built. This is here so the roster and permissions are already planned out.</p>
+      <p class="field-hint" style="margin-top:16px">This list is now real — it's stored on the server and actually controls login access and permissions, not just a plan for later. One account (danteeugenemclaughlin@gmail.com) always stays Full Admin no matter what, as a safety net.</p>
       <p id="admins-toast" class="toast"></p>`;
     root.innerHTML = html;
     cmsApplyViewOnlyLock(root);
 
-    root.querySelectorAll("[data-remove]").forEach(btn => btn.addEventListener("click", () => {
-      const users = loadJSON("sabc_admin_users", []).filter(u => u.id !== btn.dataset.remove);
-      saveJSON("sabc_admin_users", users);
+    root.querySelectorAll("[data-remove]:not([disabled])").forEach(btn => btn.addEventListener("click", async () => {
+      const current = await cmsGetAdminUsers();
+      const updated = current.filter(u => u.id !== btn.dataset.remove);
+      await saveAdmins(updated);
       render();
     }));
-    document.querySelector("#add-admin").addEventListener("click", () => {
-      const users = loadJSON("sabc_admin_users", []);
-      users.push({ id: uid(), name: "", email: "", access: "Can Edit" });
-      saveJSON("sabc_admin_users", users);
+    document.querySelector("#add-admin").addEventListener("click", async () => {
+      const current = await cmsGetAdminUsers();
+      current.push({ id: uid(), name: "", email: "", access: "Can Edit" });
+      await saveAdmins(current);
       render();
     });
-    document.querySelector("#save-admins").addEventListener("click", () => {
-      const before = loadJSON("sabc_admin_users", []);
+    document.querySelector("#save-admins").addEventListener("click", async () => {
       const rows = root.querySelectorAll(".manage-row");
-      const users = [...rows].map(row => ({
+      const updated = [...rows].map(row => ({
         id: row.dataset.id,
         name: row.querySelector('[data-field="name"]').value,
         email: row.querySelector('[data-field="email"]').value,
         access: row.querySelector('[data-field="access"]').value
       }));
-      saveJSON("sabc_admin_users", users);
-      cmsLogRawChange("Admin Users", "sabc_admin_users", null, before, users);
+      const result = await saveAdmins(updated);
       const toast = document.querySelector("#admins-toast");
-      toast.textContent = "✓ Admin list updated.";
-      toast.classList.add("show");
+      if (result.ok) {
+        toast.textContent = "✓ Admin list updated on the server.";
+        toast.classList.add("show");
+      } else {
+        toast.textContent = "✗ " + (result.error || "Couldn't save — check you're a Full Admin.");
+        toast.classList.add("show");
+      }
     });
   }
+
+  async function saveAdmins(users) {
+    try {
+      const res = await fetch("/api/admins", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "same-origin",
+        body: JSON.stringify(users)
+      });
+      return await res.json();
+    } catch {
+      return { ok: false, error: "Couldn't reach the server." };
+    }
+  }
+
   render();
 }
 
@@ -930,6 +948,15 @@ function initGalleryAdmin() {
 
 function renderGalleryPublic() {
   const root = document.querySelector("#gallery-public-root");
+  // This page needs to be logged in — it's not meant for random visitors,
+  // just admins pulling photos for slides/bulletins. Since this page lives
+  // outside /admin/, it can't reuse requireLogin() directly (that redirects
+  // to a relative "login.html", which only works from inside /admin/).
+  if (!window.__adminSession || !window.__adminSession.loggedIn) {
+    localStorage.setItem("sabc_return_to", "../gallery.html");
+    window.location.href = "admin/login.html";
+    return;
+  }
   const photos = loadJSON("sabc_gallery", []);
   if (!photos.length) {
     root.innerHTML = `<p class="placeholder-lines center">No photos here yet — add some from the admin Gallery page.</p>`;

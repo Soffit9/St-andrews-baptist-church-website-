@@ -196,7 +196,7 @@ a,button{transition:box-shadow .15s ease,transform .15s ease,filter .15s ease,ba
 
 </style></head>
 <body data-page="contact">
-<header class="site-header"><div class="container nav-wrap"><a class="brand" href="index.html"><div class="logo-placeholder" data-image="logo">LOGO</div><span>St. Andrews<br><strong>Baptist Church</strong></span></a><button class="theme-toggle" id="theme-toggle" type="button" aria-label="Toggle dark mode">🌙</button><button class="menu-toggle">☰</button><nav class="nav"><a href="index.html">Home</a><a href="about.html">About</a><a href="sermons.html">Sermons</a><a href="events.html">Events</a><a href="prayer.html">Prayer</a><a href="whoswho.html">Who's Who</a><a href="gallery.html">Gallery</a><a class="active" href="contact.html">Contact</a><a href="giving.html">Giving</a></nav></div></header>
+<header class="site-header"><div class="container nav-wrap"><a class="brand" href="index.html"><div class="logo-placeholder" data-image="logo">LOGO</div><span>St. Andrews<br><strong>Baptist Church</strong></span></a><button class="theme-toggle" id="theme-toggle" type="button" aria-label="Toggle dark mode">🌙</button><button class="menu-toggle">☰</button><nav class="nav"><a href="index.html">Home</a><a href="about.html">About</a><a href="sermons.html">Sermons</a><a href="events.html">Events</a><a href="prayer.html">Prayer</a><a href="whoswho.html">Who's Who</a><a class="active" href="contact.html">Contact</a><a href="giving.html">Giving</a></nav></div></header>
 <main><section class="page-hero"><div class="container"><p class="eyebrow">GET IN TOUCH</p><h1>Contact & Location</h1><p>We'd be glad to hear from you.</p></div></section>
 <section class="section"><div class="container split contact-page">
   <div class="card" style="display:block">
@@ -235,7 +235,7 @@ a,button{transition:box-shadow .15s ease,transform .15s ease,filter .15s ease,ba
 --------------------------------------------------------------------- */
 
 /* ---------- Dark mode (works on every page, admin included; defaults to light) ---------- */
-document.addEventListener("DOMContentLoaded", () => {
+document.addEventListener("DOMContentLoaded", async () => {
   const THEME_KEY = "sabc_theme";
   const themeBtn = document.querySelector("#theme-toggle");
   const SUN_ICON = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>';
@@ -250,17 +250,44 @@ document.addEventListener("DOMContentLoaded", () => {
     localStorage.setItem(THEME_KEY, next);
     applyTheme(next);
   });
+
+  // Load the REAL server-side login session before anything on the page
+  // tries to check "is someone logged in, and as who" — admin.js and
+  // features.js both wait for this event instead of their own
+  // DOMContentLoaded, so they never run against stale/empty session data.
+  await fetchSession();
+  document.dispatchEvent(new CustomEvent("sabc:session-ready"));
 });
 
-/* ---------------- Admin identity & access level (client-side only — a
-   stand-in for real per-person accounts until there's a backend) ---------------- */
-function cmsGetAdminUsers() {
-  try { return JSON.parse(localStorage.getItem("sabc_admin_users")) || []; } catch { return []; }
+/* ---------------- Admin identity & access level — REAL now, backed by
+   the Flask server's session cookie instead of a client-side guess. ---------------- */
+window.__adminSession = null; // populated once, at page load, by fetchSession() below
+
+async function fetchSession() {
+  try {
+    const res = await fetch("/api/auth/session", { credentials: "same-origin" });
+    window.__adminSession = await res.json();
+  } catch {
+    // Backend unreachable (e.g. testing a page straight off disk with no
+    // server behind it) — treat as logged out rather than crash the page.
+    window.__adminSession = { loggedIn: false };
+  }
+  return window.__adminSession;
+}
+
+async function cmsGetAdminUsers() {
+  try {
+    const res = await fetch("/api/admins", { credentials: "same-origin" });
+    return await res.json();
+  } catch {
+    return [];
+  }
 }
 function cmsGetCurrentAdmin() {
-  try { return JSON.parse(localStorage.getItem("sabc_current_admin")) || null; } catch { return null; }
+  const s = window.__adminSession;
+  if (!s || !s.loggedIn) return null;
+  return { name: s.name, email: s.email, access: s.access };
 }
-function cmsSetCurrentAdmin(admin) { localStorage.setItem("sabc_current_admin", JSON.stringify(admin)); }
 function cmsCanEdit() {
   const a = cmsGetCurrentAdmin();
   return !a || a.access !== "View Only"; // no identity picked yet -> don't lock anyone out

@@ -196,7 +196,7 @@ a,button{transition:box-shadow .15s ease,transform .15s ease,filter .15s ease,ba
 
 </style></head>
 <body data-page="sermons">
-<header class="site-header"><div class="container nav-wrap"><a class="brand" href="index.html"><div class="logo-placeholder" data-image="logo">LOGO</div><span>St. Andrews<br><strong>Baptist Church</strong></span></a><button class="theme-toggle" id="theme-toggle" type="button" aria-label="Toggle dark mode">🌙</button><button class="menu-toggle">☰</button><nav class="nav"><a href="index.html">Home</a><a href="about.html">About</a><a class="active" href="sermons.html">Sermons</a><a href="events.html">Events</a><a href="prayer.html">Prayer</a><a href="whoswho.html">Who's Who</a><a href="gallery.html">Gallery</a><a href="contact.html">Contact</a><a href="giving.html">Giving</a></nav></div></header>
+<header class="site-header"><div class="container nav-wrap"><a class="brand" href="index.html"><div class="logo-placeholder" data-image="logo">LOGO</div><span>St. Andrews<br><strong>Baptist Church</strong></span></a><button class="theme-toggle" id="theme-toggle" type="button" aria-label="Toggle dark mode">🌙</button><button class="menu-toggle">☰</button><nav class="nav"><a href="index.html">Home</a><a href="about.html">About</a><a class="active" href="sermons.html">Sermons</a><a href="events.html">Events</a><a href="prayer.html">Prayer</a><a href="whoswho.html">Who's Who</a><a href="contact.html">Contact</a><a href="giving.html">Giving</a></nav></div></header>
 <main><section class="page-hero"><div class="container"><p class="eyebrow">MEDIA</p><h1>Sermons</h1><p>Watch recent services and browse the sermon archive.</p></div></section>
 <section class="section"><div class="container">
   <div class="video-placeholder featured" id="sermon-video">▶</div>
@@ -218,7 +218,7 @@ a,button{transition:box-shadow .15s ease,transform .15s ease,filter .15s ease,ba
 --------------------------------------------------------------------- */
 
 /* ---------- Dark mode (works on every page, admin included; defaults to light) ---------- */
-document.addEventListener("DOMContentLoaded", () => {
+document.addEventListener("DOMContentLoaded", async () => {
   const THEME_KEY = "sabc_theme";
   const themeBtn = document.querySelector("#theme-toggle");
   const SUN_ICON = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>';
@@ -233,17 +233,44 @@ document.addEventListener("DOMContentLoaded", () => {
     localStorage.setItem(THEME_KEY, next);
     applyTheme(next);
   });
+
+  // Load the REAL server-side login session before anything on the page
+  // tries to check "is someone logged in, and as who" — admin.js and
+  // features.js both wait for this event instead of their own
+  // DOMContentLoaded, so they never run against stale/empty session data.
+  await fetchSession();
+  document.dispatchEvent(new CustomEvent("sabc:session-ready"));
 });
 
-/* ---------------- Admin identity & access level (client-side only — a
-   stand-in for real per-person accounts until there's a backend) ---------------- */
-function cmsGetAdminUsers() {
-  try { return JSON.parse(localStorage.getItem("sabc_admin_users")) || []; } catch { return []; }
+/* ---------------- Admin identity & access level — REAL now, backed by
+   the Flask server's session cookie instead of a client-side guess. ---------------- */
+window.__adminSession = null; // populated once, at page load, by fetchSession() below
+
+async function fetchSession() {
+  try {
+    const res = await fetch("/api/auth/session", { credentials: "same-origin" });
+    window.__adminSession = await res.json();
+  } catch {
+    // Backend unreachable (e.g. testing a page straight off disk with no
+    // server behind it) — treat as logged out rather than crash the page.
+    window.__adminSession = { loggedIn: false };
+  }
+  return window.__adminSession;
+}
+
+async function cmsGetAdminUsers() {
+  try {
+    const res = await fetch("/api/admins", { credentials: "same-origin" });
+    return await res.json();
+  } catch {
+    return [];
+  }
 }
 function cmsGetCurrentAdmin() {
-  try { return JSON.parse(localStorage.getItem("sabc_current_admin")) || null; } catch { return null; }
+  const s = window.__adminSession;
+  if (!s || !s.loggedIn) return null;
+  return { name: s.name, email: s.email, access: s.access };
 }
-function cmsSetCurrentAdmin(admin) { localStorage.setItem("sabc_current_admin", JSON.stringify(admin)); }
 function cmsCanEdit() {
   const a = cmsGetCurrentAdmin();
   return !a || a.access !== "View Only"; // no identity picked yet -> don't lock anyone out
@@ -764,7 +791,7 @@ function isoDate(d) {
 }
 function uid() { return Math.random().toString(36).slice(2, 9); }
 
-document.addEventListener("DOMContentLoaded", () => {
+document.addEventListener("sabc:session-ready", () => {
   if (document.querySelector("#cal-grid")) initCalendar();
   if (document.querySelector("#events-cal-grid")) initEventsAdmin();
   if (document.querySelector("#home-events")) renderUpcomingEvents("#home-events", 3);
@@ -1231,61 +1258,79 @@ function initWhoswhoPublic() {
 function initAdmins() {
   requireLogin();
   const root = document.querySelector("#admins-root");
+  const PERMANENT_EMAIL = "danteeugenemclaughlin@gmail.com";
 
-  function render() {
-    const users = loadJSON("sabc_admin_users", [
-      { id: uid(), name: "Pastor Ladd Dunfield", email: "ladd@thebeggardanced.com", access: "Full Admin" }
-    ]);
-    saveJSON("sabc_admin_users", users);
+  async function render() {
+    let users = await cmsGetAdminUsers();
     let html = `<div class="manage-list">`;
     users.forEach(u => {
+      const isPermanent = (u.email || "").toLowerCase() === PERMANENT_EMAIL;
       html += `
         <div class="manage-row" data-id="${u.id}" style="grid-template-columns:1fr 1fr 1fr auto">
-          <input type="text" data-field="name" placeholder="Name" value="${u.name}">
-          <input type="text" data-field="email" placeholder="Email" value="${u.email}">
-          <select data-field="access">
+          <input type="text" data-field="name" placeholder="Name" value="${u.name}" ${isPermanent ? "readonly" : ""}>
+          <input type="text" data-field="email" placeholder="Email" value="${u.email}" ${isPermanent ? "readonly" : ""}>
+          <select data-field="access" ${isPermanent ? "disabled" : ""}>
             <option ${u.access === "Full Admin" ? "selected" : ""}>Full Admin</option>
             <option ${u.access === "Can Edit" ? "selected" : ""}>Can Edit</option>
             <option ${u.access === "View Only" ? "selected" : ""}>View Only</option>
           </select>
-          <button type="button" data-remove="${u.id}">Remove</button>
+          <button type="button" data-remove="${u.id}" ${isPermanent ? "disabled title=\"This account always stays Full Admin\"" : ""}>Remove</button>
         </div>`;
     });
     html += `</div>
       <button class="button button-light" id="add-admin" type="button">+ Add Admin</button>
       <div class="edit-actions"><span></span><button class="button" id="save-admins" type="button">Apply Changes</button></div>
-      <p class="field-hint" style="margin-top:16px">Prototype note: this list doesn't control real login access yet — everyone still shares the one demo password/code until the real backend is built. This is here so the roster and permissions are already planned out.</p>
+      <p class="field-hint" style="margin-top:16px">This list is now real — it's stored on the server and actually controls login access and permissions, not just a plan for later. One account (danteeugenemclaughlin@gmail.com) always stays Full Admin no matter what, as a safety net.</p>
       <p id="admins-toast" class="toast"></p>`;
     root.innerHTML = html;
     cmsApplyViewOnlyLock(root);
 
-    root.querySelectorAll("[data-remove]").forEach(btn => btn.addEventListener("click", () => {
-      const users = loadJSON("sabc_admin_users", []).filter(u => u.id !== btn.dataset.remove);
-      saveJSON("sabc_admin_users", users);
+    root.querySelectorAll("[data-remove]:not([disabled])").forEach(btn => btn.addEventListener("click", async () => {
+      const current = await cmsGetAdminUsers();
+      const updated = current.filter(u => u.id !== btn.dataset.remove);
+      await saveAdmins(updated);
       render();
     }));
-    document.querySelector("#add-admin").addEventListener("click", () => {
-      const users = loadJSON("sabc_admin_users", []);
-      users.push({ id: uid(), name: "", email: "", access: "Can Edit" });
-      saveJSON("sabc_admin_users", users);
+    document.querySelector("#add-admin").addEventListener("click", async () => {
+      const current = await cmsGetAdminUsers();
+      current.push({ id: uid(), name: "", email: "", access: "Can Edit" });
+      await saveAdmins(current);
       render();
     });
-    document.querySelector("#save-admins").addEventListener("click", () => {
-      const before = loadJSON("sabc_admin_users", []);
+    document.querySelector("#save-admins").addEventListener("click", async () => {
       const rows = root.querySelectorAll(".manage-row");
-      const users = [...rows].map(row => ({
+      const updated = [...rows].map(row => ({
         id: row.dataset.id,
         name: row.querySelector('[data-field="name"]').value,
         email: row.querySelector('[data-field="email"]').value,
         access: row.querySelector('[data-field="access"]').value
       }));
-      saveJSON("sabc_admin_users", users);
-      cmsLogRawChange("Admin Users", "sabc_admin_users", null, before, users);
+      const result = await saveAdmins(updated);
       const toast = document.querySelector("#admins-toast");
-      toast.textContent = "✓ Admin list updated.";
-      toast.classList.add("show");
+      if (result.ok) {
+        toast.textContent = "✓ Admin list updated on the server.";
+        toast.classList.add("show");
+      } else {
+        toast.textContent = "✗ " + (result.error || "Couldn't save — check you're a Full Admin.");
+        toast.classList.add("show");
+      }
     });
   }
+
+  async function saveAdmins(users) {
+    try {
+      const res = await fetch("/api/admins", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "same-origin",
+        body: JSON.stringify(users)
+      });
+      return await res.json();
+    } catch {
+      return { ok: false, error: "Couldn't reach the server." };
+    }
+  }
+
   render();
 }
 
@@ -1672,6 +1717,15 @@ function initGalleryAdmin() {
 
 function renderGalleryPublic() {
   const root = document.querySelector("#gallery-public-root");
+  // This page needs to be logged in — it's not meant for random visitors,
+  // just admins pulling photos for slides/bulletins. Since this page lives
+  // outside /admin/, it can't reuse requireLogin() directly (that redirects
+  // to a relative "login.html", which only works from inside /admin/).
+  if (!window.__adminSession || !window.__adminSession.loggedIn) {
+    localStorage.setItem("sabc_return_to", "../gallery.html");
+    window.location.href = "admin/login.html";
+    return;
+  }
   const photos = loadJSON("sabc_gallery", []);
   if (!photos.length) {
     root.innerHTML = `<p class="placeholder-lines center">No photos here yet — add some from the admin Gallery page.</p>`;

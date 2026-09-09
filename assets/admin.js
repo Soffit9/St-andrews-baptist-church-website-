@@ -3,13 +3,13 @@
    do you want to edit" picker, and the edit form itself.
 --------------------------------------------------------------------- */
 
-// The one shared prototype password. Not real security — anyone with
-// this can get in — but it stops it from being "type literally anything."
-// Change this one line whenever you want a different word.
-const ADMIN_PASSWORD = "BAPTIST";
+// Password checking now happens server-side (backend/app.py) — nothing
+// resembling a password lives in this file anymore, on purpose. That was
+// the entire point of building the real backend: a visitor viewing this
+// page's source can no longer just read the password.
 
 function requireLogin() {
-  if (localStorage.getItem("sabc_admin_logged_in") !== "yes") {
+  if (!window.__adminSession || !window.__adminSession.loggedIn) {
     window.location.href = "login.html";
   }
 }
@@ -28,7 +28,7 @@ function showWhoAmI() {
   tag.textContent = `Logged in as ${me.name || me.email} (${me.access || "Full Admin"})`;
   topbar.appendChild(tag);
 }
-document.addEventListener("DOMContentLoaded", showWhoAmI);
+document.addEventListener("sabc:session-ready", showWhoAmI);
 
 /* Small mockups of each page's editable region, used as the live preview
    pane in edit.html. Kept intentionally simple (not the full page chrome)
@@ -90,7 +90,7 @@ function previewTemplate(pageKey, c) {
   }
 }
 
-document.addEventListener("DOMContentLoaded", () => {
+document.addEventListener("sabc:session-ready", () => {
 
   if (window.location.protocol === "file:") {
     const banner = document.createElement("div");
@@ -105,70 +105,70 @@ document.addEventListener("DOMContentLoaded", () => {
   const step1 = document.querySelector("#login-step-1");
   const step2 = document.querySelector("#login-step-2");
   if (step1 && step2) {
-    let demoCode = "";
+    let currentEmail = "";
 
-    function newCode() {
-      demoCode = String(Math.floor(100000 + Math.random() * 900000));
-      const codeDisplay = document.querySelector("#demo-code-display");
-      if (codeDisplay) codeDisplay.textContent = demoCode;
-    }
-
-    // Populate "who are you" so the dashboard can greet you by name and
-    // apply your access level — stand-in for real per-person logins.
-    // Type an email; if it matches someone on the Admin Users list, we use
-    // their name/access. If not, we still log you in (first name guessed
-    // from the email itself) — add yourself properly on Admin Users later
-    // for a cleaner name and the right access level.
-    const whoEmail = document.querySelector("#who-email");
-    const whoSuggestions = document.querySelector("#who-suggestions");
-    if (whoEmail && whoSuggestions) {
-      const users = cmsGetAdminUsers();
-      whoSuggestions.innerHTML = users.map(u => `<option value="${u.email}">`).join("");
-    }
-
-    step1.addEventListener("submit", e => {
+    step1.addEventListener("submit", async e => {
       e.preventDefault();
       const pw = document.querySelector("#password").value;
+      const email = document.querySelector("#who-email").value.trim();
       const pwMsg = document.querySelector("#password-message");
-      if (pw.trim().toUpperCase() !== ADMIN_PASSWORD) {
-        if (pwMsg) { pwMsg.className = "error"; pwMsg.textContent = "Incorrect password. Try again."; }
-        return;
-      }
       if (pwMsg) pwMsg.textContent = "";
-      newCode();
-      step1.classList.add("hidden-step");
-      step2.classList.remove("hidden-step");
-      document.querySelector("#code-input").focus();
+
+      try {
+        const res = await fetch("/api/auth/password", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          credentials: "same-origin",
+          body: JSON.stringify({ password: pw, email })
+        });
+        const data = await res.json();
+        if (!res.ok || !data.ok) {
+          if (pwMsg) { pwMsg.className = "error"; pwMsg.textContent = data.error || "Incorrect password. Try again."; }
+          return;
+        }
+        currentEmail = email;
+        const codeBox = document.querySelector("#code-box");
+        const codeDisplay = document.querySelector("#demo-code-display");
+        if (data.emailed) {
+          if (codeBox) codeBox.innerHTML = `A code was just emailed to <b>${email}</b>. Enter it below.`;
+        } else if (codeBox && codeDisplay) {
+          codeBox.innerHTML = `Email isn't set up yet, so here's the code directly (this box goes away once real email sending is turned on): <strong id="demo-code-display">${data.demo_code}</strong>`;
+        }
+        step1.classList.add("hidden-step");
+        step2.classList.remove("hidden-step");
+        document.querySelector("#code-input").focus();
+      } catch (err) {
+        if (pwMsg) { pwMsg.className = "error"; pwMsg.textContent = "Couldn't reach the server — is the backend running?"; }
+      }
     });
 
     const resend = document.querySelector("#resend-code");
-    if (resend) resend.addEventListener("click", () => newCode());
+    if (resend) resend.addEventListener("click", () => step1.requestSubmit());
 
-    step2.addEventListener("submit", e => {
+    step2.addEventListener("submit", async e => {
       e.preventDefault();
       const entered = document.querySelector("#code-input").value.trim();
       const msg = document.querySelector("#login-message");
-      if (entered === demoCode) {
-        localStorage.setItem("sabc_admin_logged_in", "yes");
-        if (whoEmail) {
-          const email = whoEmail.value.trim();
-          const users = cmsGetAdminUsers();
-          const match = users.find(u => u.email && u.email.toLowerCase() === email.toLowerCase());
-          if (match) {
-            cmsSetCurrentAdmin(match);
-          } else if (email) {
-            // Not on the Admin Users list yet — log in anyway, best-effort name from the email.
-            const guess = email.split("@")[0];
-            const name = guess.charAt(0).toUpperCase() + guess.slice(1);
-            cmsSetCurrentAdmin({ id: "guest-" + Date.now(), name, email, access: "Full Admin" });
-          } else {
-            cmsSetCurrentAdmin({ id: "default", name: "Pastor Ladd Dunfield", email: "ladd@thebeggardanced.com", access: "Full Admin" });
-          }
+      try {
+        const res = await fetch("/api/auth/verify", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          credentials: "same-origin",
+          body: JSON.stringify({ email: currentEmail, code: entered })
+        });
+        const data = await res.json();
+        if (!res.ok || !data.ok) {
+          msg.className = "error";
+          msg.textContent = data.error || "That code doesn't match. Double check and try again.";
+          return;
         }
-        window.location.href = "dashboard.html";
-      } else {
+        window.__adminSession = { loggedIn: true, name: data.name, email: data.email, access: data.access };
+        const returnTo = localStorage.getItem("sabc_return_to");
+        if (returnTo) { localStorage.removeItem("sabc_return_to"); window.location.href = returnTo; }
+        else window.location.href = "dashboard.html";
+      } catch (err) {
         msg.className = "error";
-        msg.textContent = "That code doesn't match. Double check the demo code above and try again.";
+        msg.textContent = "Couldn't reach the server — is the backend running?";
       }
     });
   }

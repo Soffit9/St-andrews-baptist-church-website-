@@ -10,7 +10,7 @@
 --------------------------------------------------------------------- */
 
 /* ---------- Dark mode (works on every page, admin included; defaults to light) ---------- */
-document.addEventListener("DOMContentLoaded", () => {
+document.addEventListener("DOMContentLoaded", async () => {
   const THEME_KEY = "sabc_theme";
   const themeBtn = document.querySelector("#theme-toggle");
   const SUN_ICON = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>';
@@ -25,17 +25,44 @@ document.addEventListener("DOMContentLoaded", () => {
     localStorage.setItem(THEME_KEY, next);
     applyTheme(next);
   });
+
+  // Load the REAL server-side login session before anything on the page
+  // tries to check "is someone logged in, and as who" — admin.js and
+  // features.js both wait for this event instead of their own
+  // DOMContentLoaded, so they never run against stale/empty session data.
+  await fetchSession();
+  document.dispatchEvent(new CustomEvent("sabc:session-ready"));
 });
 
-/* ---------------- Admin identity & access level (client-side only — a
-   stand-in for real per-person accounts until there's a backend) ---------------- */
-function cmsGetAdminUsers() {
-  try { return JSON.parse(localStorage.getItem("sabc_admin_users")) || []; } catch { return []; }
+/* ---------------- Admin identity & access level — REAL now, backed by
+   the Flask server's session cookie instead of a client-side guess. ---------------- */
+window.__adminSession = null; // populated once, at page load, by fetchSession() below
+
+async function fetchSession() {
+  try {
+    const res = await fetch("/api/auth/session", { credentials: "same-origin" });
+    window.__adminSession = await res.json();
+  } catch {
+    // Backend unreachable (e.g. testing a page straight off disk with no
+    // server behind it) — treat as logged out rather than crash the page.
+    window.__adminSession = { loggedIn: false };
+  }
+  return window.__adminSession;
+}
+
+async function cmsGetAdminUsers() {
+  try {
+    const res = await fetch("/api/admins", { credentials: "same-origin" });
+    return await res.json();
+  } catch {
+    return [];
+  }
 }
 function cmsGetCurrentAdmin() {
-  try { return JSON.parse(localStorage.getItem("sabc_current_admin")) || null; } catch { return null; }
+  const s = window.__adminSession;
+  if (!s || !s.loggedIn) return null;
+  return { name: s.name, email: s.email, access: s.access };
 }
-function cmsSetCurrentAdmin(admin) { localStorage.setItem("sabc_current_admin", JSON.stringify(admin)); }
 function cmsCanEdit() {
   const a = cmsGetCurrentAdmin();
   return !a || a.access !== "View Only"; // no identity picked yet -> don't lock anyone out
