@@ -176,6 +176,17 @@ a,button{transition:box-shadow .15s ease,transform .15s ease,filter .15s ease,ba
   background:#1b2531 !important;color:#e9edf2 !important;border-color:#2b3646 !important
 }
 
+/* Fix: .fields-col/.photo-col/.person-edit-top were referenced in the
+   Who's Who admin editor but never had CSS defined, so inputs fell back
+   to default inline-block flow and wrapped 2-per-row instead of stacking
+   cleanly. This defines them properly, one field per row. */
+.person-edit-top{display:contents}
+.photo-col{display:flex;flex-direction:column;gap:6px}
+.photo-col .image-upload-slot{height:120px}
+.fields-col{display:grid;grid-template-columns:1fr;gap:10px;align-content:start}
+.fields-col input{display:block;width:100%;padding:9px 12px;border:1px solid #b9c5d3;border-radius:7px;font:inherit;box-sizing:border-box}
+@media(max-width:600px){.person-edit-top{display:block}}
+
 </style></head>
 <body class="admin-page"><main class="login-wrap"><div class="login-card">
   <div class="logo-placeholder" data-image="logo">LOGO</div>
@@ -186,20 +197,17 @@ a,button{transition:box-shadow .15s ease,transform .15s ease,filter .15s ease,ba
   <form id="login-step-1">
     <label>Password<input id="password" type="password" required autocomplete="current-password" placeholder="Enter your password"></label>
     <button class="button" type="submit">Continue</button>
-    <p class="small">Prototype note: any password gets you to step 2 for now — real password checking comes with the backend.</p>
+    <p id="password-message" class="error"></p>
   </form>
 
   <form id="login-step-2" class="hidden-step">
-    <p>Enter the 6-digit code to finish logging in.</p>
     <div class="code-box">
-      Prototype demo code (this is what would normally be emailed or sent to an authenticator app on Pastor Ladd's phone):
+      Demo code (this is what would normally be emailed to you, until the real backend sends it):
       <strong id="demo-code-display">000000</strong>
     </div>
-    <label>Which admin are you? <span>(type your email — this is how you'll log in and how the dashboard greets you)</span>
-      <input type="email" id="who-email" list="who-suggestions" placeholder="you@example.com" style="width:100%;padding:10px;border:1px solid #b9c5d3;border-radius:7px;font:inherit">
-      <datalist id="who-suggestions"></datalist>
-    </label>
-    <label>6-Digit Code<input id="code-input" type="text" inputmode="numeric" maxlength="6" required placeholder="••••••"></label>
+    <label>Email<input type="email" id="who-email" list="who-suggestions" placeholder="you@example.com" required></label>
+    <datalist id="who-suggestions"></datalist>
+    <label>Code<input id="code-input" type="text" inputmode="numeric" maxlength="6" required placeholder="••••••"></label>
     <button class="button" type="submit">Login</button>
     <p class="small"><button type="button" id="resend-code" class="text-btn">Send a new code</button></p>
     <p id="login-message" class="error"></p>
@@ -599,6 +607,11 @@ function cmsApplyToPage(pageKey) {
    do you want to edit" picker, and the edit form itself.
 --------------------------------------------------------------------- */
 
+// The one shared prototype password. Not real security — anyone with
+// this can get in — but it stops it from being "type literally anything."
+// Change this one line whenever you want a different word.
+const ADMIN_PASSWORD = "BAPTIST";
+
 function requireLogin() {
   if (localStorage.getItem("sabc_admin_logged_in") !== "yes") {
     window.location.href = "login.html";
@@ -720,9 +733,12 @@ document.addEventListener("DOMContentLoaded", () => {
     step1.addEventListener("submit", e => {
       e.preventDefault();
       const pw = document.querySelector("#password").value;
-      if (!pw) return;
-      // Prototype only: any non-empty password passes step 1. Real password
-      // checking happens on the server once the admin backend is built.
+      const pwMsg = document.querySelector("#password-message");
+      if (pw.trim().toUpperCase() !== ADMIN_PASSWORD) {
+        if (pwMsg) { pwMsg.className = "error"; pwMsg.textContent = "That's not the password — check with Pastor Ladd if you don't have it."; }
+        return;
+      }
+      if (pwMsg) pwMsg.textContent = "";
       newCode();
       step1.classList.add("hidden-step");
       step2.classList.remove("hidden-step");

@@ -176,6 +176,17 @@ a,button{transition:box-shadow .15s ease,transform .15s ease,filter .15s ease,ba
   background:#1b2531 !important;color:#e9edf2 !important;border-color:#2b3646 !important
 }
 
+/* Fix: .fields-col/.photo-col/.person-edit-top were referenced in the
+   Who's Who admin editor but never had CSS defined, so inputs fell back
+   to default inline-block flow and wrapped 2-per-row instead of stacking
+   cleanly. This defines them properly, one field per row. */
+.person-edit-top{display:contents}
+.photo-col{display:flex;flex-direction:column;gap:6px}
+.photo-col .image-upload-slot{height:120px}
+.fields-col{display:grid;grid-template-columns:1fr;gap:10px;align-content:start}
+.fields-col input{display:block;width:100%;padding:9px 12px;border:1px solid #b9c5d3;border-radius:7px;font:inherit;box-sizing:border-box}
+@media(max-width:600px){.person-edit-top{display:block}}
+
 </style></head>
 <body data-page="about">
 <header class="site-header"><div class="container nav-wrap"><a class="brand" href="index.html"><div class="logo-placeholder" data-image="logo">LOGO</div><span>St. Andrews<br><strong>Baptist Church</strong></span></a><button class="theme-toggle" id="theme-toggle" type="button" aria-label="Toggle dark mode">🌙</button><button class="menu-toggle">☰</button><nav class="nav"><a href="index.html">Home</a><a class="active" href="about.html">About</a><a href="sermons.html">Sermons</a><a href="events.html">Events</a><a href="prayer.html">Prayer</a><a href="whoswho.html">Who's Who</a><a href="contact.html">Contact</a><a href="giving.html">Giving</a></nav></div></header>

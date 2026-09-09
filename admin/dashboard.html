@@ -176,6 +176,17 @@ a,button{transition:box-shadow .15s ease,transform .15s ease,filter .15s ease,ba
   background:#1b2531 !important;color:#e9edf2 !important;border-color:#2b3646 !important
 }
 
+/* Fix: .fields-col/.photo-col/.person-edit-top were referenced in the
+   Who's Who admin editor but never had CSS defined, so inputs fell back
+   to default inline-block flow and wrapped 2-per-row instead of stacking
+   cleanly. This defines them properly, one field per row. */
+.person-edit-top{display:contents}
+.photo-col{display:flex;flex-direction:column;gap:6px}
+.photo-col .image-upload-slot{height:120px}
+.fields-col{display:grid;grid-template-columns:1fr;gap:10px;align-content:start}
+.fields-col input{display:block;width:100%;padding:9px 12px;border:1px solid #b9c5d3;border-radius:7px;font:inherit;box-sizing:border-box}
+@media(max-width:600px){.person-edit-top{display:block}}
+
 </style></head>
 <body class="admin-page"><div class="admin-layout">
 <aside class="sidebar">
@@ -195,6 +206,7 @@ a,button{transition:box-shadow .15s ease,transform .15s ease,filter .15s ease,ba
     <button data-goto-page="home"><b>⌂</b><strong>Homepage</strong><span>Edit welcome text and service time</span></button>
     <button data-goto-page="about"><b>👤</b><strong>About / Pastor</strong><span>Update the pastor note, history, and photo</span></button>
     <button data-goto-page="sermons"><b>▶</b><strong>Sermons</strong><span>Update the latest sermon's title, speaker, and passage</span></button>
+    <button onclick="window.location.href='sermon-archive.html'"><b>🗄</b><strong>Sermon Archive</strong><span>Add past sermons, grouped by year</span></button>
     <button onclick="window.location.href='events.html'"><b>▣</b><strong>Events</strong><span>Click a day on the calendar to add or edit events</span></button>
     <button data-goto-page="prayer"><b>🙏</b><strong>Prayer Page</strong><span>Update the intro text</span></button>
     <button data-goto-page="contact"><b>☎</b><strong>Contact Info</strong><span>Update address, phone, email</span></button>
@@ -600,6 +612,11 @@ function cmsApplyToPage(pageKey) {
    do you want to edit" picker, and the edit form itself.
 --------------------------------------------------------------------- */
 
+// The one shared prototype password. Not real security — anyone with
+// this can get in — but it stops it from being "type literally anything."
+// Change this one line whenever you want a different word.
+const ADMIN_PASSWORD = "BAPTIST";
+
 function requireLogin() {
   if (localStorage.getItem("sabc_admin_logged_in") !== "yes") {
     window.location.href = "login.html";
@@ -721,9 +738,12 @@ document.addEventListener("DOMContentLoaded", () => {
     step1.addEventListener("submit", e => {
       e.preventDefault();
       const pw = document.querySelector("#password").value;
-      if (!pw) return;
-      // Prototype only: any non-empty password passes step 1. Real password
-      // checking happens on the server once the admin backend is built.
+      const pwMsg = document.querySelector("#password-message");
+      if (pw.trim().toUpperCase() !== ADMIN_PASSWORD) {
+        if (pwMsg) { pwMsg.className = "error"; pwMsg.textContent = "That's not the password — check with Pastor Ladd if you don't have it."; }
+        return;
+      }
+      if (pwMsg) pwMsg.textContent = "";
       newCode();
       step1.classList.add("hidden-step");
       step2.classList.remove("hidden-step");

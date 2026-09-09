@@ -14,6 +14,17 @@ Then open `http://localhost:8080`.
 
 ## What's new this round
 
+- **Real login password: "BAPTIST"** — case-insensitive, easy to change (it's one clearly-labeled line at the top of `assets/admin.js`, `const ADMIN_PASSWORD = "..."`). Wrong password now shows an actual error instead of letting anything through.
+- **Login screen simplified** — step 2 is just email + code now, less clutter.
+- **Found and fixed a real bug in the Who's Who editor** — the layout classes (`fields-col`, `photo-col`) were used in the code but never had any CSS defined for them, so the browser fell back to default behavior and crammed fields two-per-row. Now properly one field per row, full width.
+- **Sermon Archive is now a real, working feature** — new Admin → Sermon Archive page to add past sermons (title, speaker, passage, YouTube link) grouped by year. The year buttons on the public Sermons page are now actually clickable and show that year's list.
+- **About page photo focus point** — checked this again thoroughly and still can't find an actual bug in the code (unlike Who's Who and the logo, which were real, fixable bugs). Made the slider's feedback clearer either way. Strong suspicion now: the specific photo used there may not have much vertical room to reposition within the box — see the note below for how to actually test this.
+
+### How to actually test the About photo focus point
+Upload a **tall, portrait-oriented** photo (like the headshot you used for Who's Who) as the About page photo, then drag the focus slider all the way to one end and back. If it visibly shifts, the feature works fine and the earlier photo just didn't have room to move. If it truly does nothing even with a tall photo, that's a real bug — screenshot it and I'll dig further.
+
+## What's new this round
+
 - **Dark mode icons fixed** — swapped the ugly emoji sun/moon for clean icons.
 - **Admin dark mode actually works now** — was leaving the main content area white with light text on it (unreadable). Fixed with a decisive, guaranteed-to-work override.
 - **Login is now email-based** — type your email instead of picking from a dropdown. If it matches someone on the Admin Users list, you get their name/access level; if not, you still get logged in with a best-effort name guessed from the email (add yourself properly on Admin Users for a cleaner result).

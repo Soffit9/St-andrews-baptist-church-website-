@@ -3,6 +3,11 @@
    do you want to edit" picker, and the edit form itself.
 --------------------------------------------------------------------- */
 
+// The one shared prototype password. Not real security — anyone with
+// this can get in — but it stops it from being "type literally anything."
+// Change this one line whenever you want a different word.
+const ADMIN_PASSWORD = "BAPTIST";
+
 function requireLogin() {
   if (localStorage.getItem("sabc_admin_logged_in") !== "yes") {
     window.location.href = "login.html";
@@ -124,9 +129,12 @@ document.addEventListener("DOMContentLoaded", () => {
     step1.addEventListener("submit", e => {
       e.preventDefault();
       const pw = document.querySelector("#password").value;
-      if (!pw) return;
-      // Prototype only: any non-empty password passes step 1. Real password
-      // checking happens on the server once the admin backend is built.
+      const pwMsg = document.querySelector("#password-message");
+      if (pw.trim().toUpperCase() !== ADMIN_PASSWORD) {
+        if (pwMsg) { pwMsg.className = "error"; pwMsg.textContent = "That's not the password — check with Pastor Ladd if you don't have it."; }
+        return;
+      }
+      if (pwMsg) pwMsg.textContent = "";
       newCode();
       step1.classList.add("hidden-step");
       step2.classList.remove("hidden-step");
