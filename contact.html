@@ -1,0 +1,711 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Contact | St. Andrews Baptist Church</title><style>
+:root{--navy:#0c315f;--blue:#1261b0;--sky:#eaf4ff;--ink:#17202b;--muted:#5e6a78;--line:#d9e0e8;--paper:#fff;--soft:#f5f8fb;--radius:12px;--shadow:0 8px 28px rgba(16,45,80,.08);--shadow-lg:0 16px 40px rgba(12,49,95,.14);--gold:#c69a3f}
+*{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;font-family:Arial,Helvetica,sans-serif;color:var(--ink);background:var(--paper);line-height:1.55}a{color:inherit;text-decoration:none}.container{width:min(1120px,92%);margin:auto}.narrow{max-width:900px}.site-header{position:sticky;top:0;z-index:20;background:#fff;border-bottom:1px solid var(--line)}.nav-wrap{display:flex;align-items:center;justify-content:space-between;min-height:78px;gap:24px}.brand{display:flex;align-items:center;gap:10px;color:var(--navy);font-family:Georgia,serif;font-size:20px;line-height:1}.brand strong{font-family:Arial,sans-serif;font-size:20px}.logo-placeholder{width:58px;height:44px;border:1px solid #b9c5d3;border-radius:7px;display:grid;place-items:center;font:700 10px Arial;color:#6b7785;background:#f7f9fb}.nav{display:flex;gap:18px;font-size:14px;font-weight:700}.nav a{padding:8px 2px;border-bottom:2px solid transparent}.nav a:hover,.nav a.active{color:var(--blue);border-color:var(--blue)}.menu-toggle{display:none;border:0;background:none;font-size:28px}.hero{background:linear-gradient(135deg,#e9f4ff,#fff);border-bottom:1px solid var(--line);padding:90px 0 78px;text-align:center}.eyebrow{margin:0 0 8px;color:var(--blue);font-size:12px;font-weight:800;letter-spacing:1.5px}.hero h1,.page-hero h1{margin:0;color:var(--navy);font-family:Georgia,serif;font-size:clamp(38px,6vw,66px);line-height:1.05}.lead{font-size:21px;color:var(--muted)}.service-card{display:inline-flex;flex-direction:column;background:#fff;border:1px solid var(--line);padding:14px 28px;border-radius:10px;box-shadow:var(--shadow);margin:12px 0 22px}.service-card span{color:var(--muted)}.button{display:inline-block;border:1px solid var(--blue);background:var(--blue);color:#fff;padding:11px 18px;border-radius:7px;font-weight:800;cursor:pointer}.button:hover{filter:brightness(.94)}.button-light{background:#fff;color:var(--blue)}.button-row{display:flex;justify-content:center;gap:10px;flex-wrap:wrap}.section{padding:72px 0}.soft{background:var(--soft)}.section-heading{text-align:center;margin-bottom:28px}.section-heading h2,.section h2{color:var(--navy);font-family:Georgia,serif}.card-grid{display:grid;gap:16px}.card-grid.three{grid-template-columns:repeat(3,1fr)}.card,.event-row,.info-grid article{border:1px solid var(--line);border-radius:var(--radius);padding:20px;background:#fff;box-shadow:var(--shadow)}.card{display:flex;gap:15px}.card h3{margin:0 0 4px;color:var(--navy)}.card p{margin:0;color:var(--muted);font-size:14px}.date-badge{min-width:58px;height:58px;display:grid;place-items:center;text-align:center;border:1px solid #b9cde2;border-radius:8px;background:#f1f7fd;color:var(--blue);font-size:11px;font-weight:800;line-height:1.05}.date-badge b{font-size:21px}.center{text-align:center;margin-top:20px}.text-link{color:var(--blue);font-weight:800}.split{display:grid;grid-template-columns:1fr 1fr;gap:24px}.verse-box,.video-box{background:#fff;border:1px solid var(--line);padding:30px;border-radius:var(--radius);box-shadow:var(--shadow)}blockquote{font-family:Georgia,serif;font-size:24px;color:var(--navy);margin:15px 0}cite{color:var(--muted);font-style:normal}.video-placeholder,.image-placeholder,.map-placeholder{display:grid;place-items:center;background:linear-gradient(135deg,#dcecfd,#c3ddf6);border:1px solid #9dc3ea;color:var(--blue);font-weight:700;min-height:180px;overflow:hidden}.video-placeholder{font-size:42px}.video-placeholder.featured{min-height:420px;max-width:850px;margin:auto}.contact-strip{display:grid;grid-template-columns:1.5fr 1fr auto;gap:30px;align-items:center}.contact-mini{display:flex;flex-direction:column;color:var(--muted)}.footer{background:#0d2e57;color:#fff;padding:32px 0}.footer-grid{display:flex;justify-content:space-between;gap:20px;flex-wrap:wrap}.footer a{color:#dcecff;margin-right:18px;display:inline-block}
+.footer a:last-child{margin-right:0}.page-hero{background:var(--sky);padding:65px 0}.page-hero h1{font-size:clamp(38px,5vw,58px)}.page-hero p:not(.eyebrow){color:var(--muted);font-size:18px}.image-placeholder.large{height:300px;margin-bottom:40px;overflow:hidden}.placeholder-lines{color:var(--muted);max-width:760px}.info-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:15px;margin-top:35px}.info-grid article{box-shadow:none}.archive-title{margin-top:60px}.archive-list{display:grid;gap:10px}.archive-list button{background:#fff;border:1px solid var(--line);padding:16px 20px;text-align:left;font-size:17px;font-weight:800;color:var(--navy);border-radius:8px;cursor:pointer}.archive-list span{float:right}.sermon-meta{text-align:center}.event-row{display:flex;gap:20px;align-items:center;margin-bottom:14px}.month-heading{margin:35px 0 12px}.month-heading h2{margin:0}.form-card{max-width:720px;margin:auto}.form-card label,.login-card label{display:block;font-weight:800;margin-bottom:18px}.form-card label span{color:var(--muted);font-weight:400}.form-card input,.form-card textarea,.login-card input{width:100%;margin-top:7px;padding:12px;border:1px solid #b9c5d3;border-radius:7px;font:inherit}.privacy-note,.small{font-size:13px;color:var(--muted)}.success{color:#19734a;font-weight:700}.error{color:#a62929}.map-placeholder{min-height:220px;margin-top:20px}.check-list{padding-left:22px}.check-list li{margin:10px 0}.admin-page{background:#f3f6fa}.login-wrap{min-height:100vh;display:grid;place-items:center;padding:20px}.login-card{background:#fff;border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow);padding:38px;width:min(420px,100%);text-align:center}.login-card .logo-placeholder{margin:auto}.login-card h1{color:var(--navy);font-family:Georgia,serif}.admin-layout{min-height:100vh;display:grid;grid-template-columns:250px 1fr}.sidebar{background:#0d2e57;color:#fff;padding:25px 16px}.sidebar h2{font-family:Georgia,serif;padding:0 12px 20px;border-bottom:1px solid rgba(255,255,255,.2)}.sidebar nav{display:grid;gap:4px}.sidebar a{padding:11px 12px;border-radius:6px;color:#eaf3ff}.sidebar a:hover,.sidebar a.active{background:#174879}.admin-main{padding:38px}.admin-top{display:flex;justify-content:space-between;align-items:center;gap:20px}.admin-top h1{margin:0;color:var(--navy)}.notice{background:#fff8df;border:1px solid #e7d58a;padding:12px 15px;border-radius:8px}
+.file-warning{background:#fdeaea;border-bottom:3px solid #a62929;color:#7a1f1f;padding:14px 20px;font-weight:700;text-align:center}
+.file-warning a{color:#7a1f1f;text-decoration:underline}.quick-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:15px;margin-top:25px}.quick-grid button{background:#fff;border:1px solid var(--line);border-radius:10px;padding:22px;text-align:left;cursor:pointer;min-height:140px}.quick-grid button:hover{border-color:#8aa9c7;box-shadow:var(--shadow)}.quick-grid b{display:block;font-size:28px;color:var(--blue);margin-bottom:8px}.quick-grid strong,.quick-grid span{display:block}.quick-grid span{font-size:13px;color:var(--muted);margin-top:5px}
+.radio-row{display:flex;gap:22px;margin-top:8px;font-weight:400}
+.radio-row label{display:flex;align-items:center;gap:6px;font-weight:400;margin-bottom:0}
+.radio-row input{width:auto;margin:0}
+.filter-warning{background:#fdeaea;border:1px solid #e6a9a9;color:#8a2626;padding:10px 14px;border-radius:8px;font-size:13px;margin-top:10px;display:none}
+.verse-nav{display:flex;justify-content:space-between;align-items:center;margin-top:16px}
+.verse-nav button{background:#fff;border:1px solid var(--line);border-radius:7px;padding:6px 12px;cursor:pointer;font-weight:700;color:var(--blue);transition:box-shadow .15s,transform .15s}
+.verse-nav button:hover:not(:disabled){box-shadow:var(--shadow);transform:translateY(-1px)}
+.verse-nav button:disabled{opacity:.4;cursor:default}
+
+/* ---------- general polish ---------- */
+a,button{transition:box-shadow .15s ease,transform .15s ease,filter .15s ease,background .15s ease}
+.card:hover,.event-row:hover{box-shadow:var(--shadow-lg);transform:translateY(-2px)}
+.button:active{transform:translateY(1px)}
+.brand strong{position:relative}
+.footer a:hover{text-decoration:underline}
+
+/* Hover "wiggle/lift" used everywhere something is clickable */
+.nav a:hover,.info-grid article:hover,.person-card:hover,.archive-list button:hover,
+.manage-row:hover,.log-entry:hover,.image-upload-slot:hover,.roster-chip:hover,
+.quick-grid button:hover,.check-list li:hover,.text-link:hover,.button-light:hover{
+  box-shadow:var(--shadow);transform:translateY(-2px)
+}
+.person-card,.info-grid article,.archive-list button,.manage-row,.log-entry,.roster-chip,.check-list li{transition:box-shadow .15s ease,transform .15s ease}
+.check-list li{list-style:none;margin-left:-22px;padding:4px 8px 4px 26px;border-radius:6px;position:relative}
+.check-list li::before{content:"✓";position:absolute;left:4px;color:var(--blue);font-weight:800}
+
+/* ---------- Verse "find a day" jump control ---------- */
+.verse-jump{display:flex;align-items:center;gap:8px;margin-top:12px;font-size:13px;color:var(--muted);flex-wrap:wrap}
+.verse-jump input[type=date]{padding:5px 8px;border:1px solid #b9c5d3;border-radius:6px;font:inherit}
+@media(max-width:520px){.verse-jump label{display:none}.verse-jump{gap:6px}.verse-nav button{padding:6px 8px;font-size:13px}}
+
+/* ---------- Dark mode ---------- */
+.theme-toggle{background:#fff;border:1px solid var(--line);border-radius:20px;padding:6px 14px;font-weight:800;cursor:pointer;color:var(--navy);font-size:13px}
+[data-theme="dark"]{--navy:#e7edf6;--blue:#5da3f0;--sky:#16222f;--ink:#e9edf2;--muted:#a3aebb;--line:#2b3646;--paper:#0f1620;--soft:#161f2b;--shadow:0 8px 28px rgba(0,0,0,.35);--shadow-lg:0 16px 40px rgba(0,0,0,.45)}
+[data-theme="dark"] .site-header{background:#0f1620}
+[data-theme="dark"] .card,[data-theme="dark"] .event-row,[data-theme="dark"] .info-grid article,[data-theme="dark"] .service-card,[data-theme="dark"] .roster-chip,
+[data-theme="dark"] .verse-box,[data-theme="dark"] .video-box,[data-theme="dark"] .form-card,
+[data-theme="dark"] .person-card,[data-theme="dark"] .login-card,[data-theme="dark"] .manage-row,
+[data-theme="dark"] .log-entry{background:#141d29}
+[data-theme="dark"] .button-light{background:#141d29}
+[data-theme="dark"] .logo-placeholder{background:#1b2531;border-color:#2b3646;color:#a3aebb}
+[data-theme="dark"] .theme-toggle{background:#141d29;color:#e7edf6;border-color:#2b3646}
+[data-theme="dark"] .hero{background:linear-gradient(135deg,#16222f,#0f1620)}
+[data-theme="dark"] .archive-list button{background:#141d29}
+[data-theme="dark"] input,[data-theme="dark"] textarea,[data-theme="dark"] select{background:#1b2531;color:#e9edf2;border-color:#2b3646}
+
+/* ---------- Admin: page picker / dashboard ---------- */
+.dash-topbar{display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap}
+.toast{max-width:1120px;margin:14px auto 0;background:#e7f7ee;border:1px solid #a9dfc0;color:#1a6b3d;padding:12px 18px;border-radius:9px;font-weight:700;display:none}
+.toast.show{display:block}
+.quick-grid button{display:flex;flex-direction:column;gap:2px}
+
+/* ---------- Admin: edit form ---------- */
+.edit-shell{max-width:760px;margin:0 auto}
+.edit-field{margin-bottom:26px}
+.edit-field label{display:block;font-weight:800;color:var(--navy);margin-bottom:8px}
+.edit-field input[type=text],.edit-field textarea{width:100%;padding:12px;border:1px solid #b9c5d3;border-radius:8px;font:inherit;background:#fff}
+.edit-field textarea{resize:vertical}
+.field-hint{margin:-4px 0 10px;color:var(--muted);font-size:13px}
+.image-upload-slot{display:grid;place-items:center;height:180px;border:2px dashed #9dc3ea;border-radius:10px;background:linear-gradient(135deg,#dcecfd,#c3ddf6);color:var(--blue);font-weight:700;cursor:pointer;overflow:hidden}
+.image-upload-slot img{width:100%;height:100%;object-fit:cover}
+.size-field{margin-top:10px}
+.size-field input[type=range]{width:100%}
+.size-field .size-readout{font-size:12px;color:var(--muted);font-weight:400}
+.edit-actions{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-top:10px;flex-wrap:wrap}
+.edit-back{display:inline-block;margin-bottom:22px;color:var(--blue);font-weight:800}
+
+/* ---------- Modal ---------- */
+.modal-overlay{position:fixed;inset:0;background:rgba(10,25,45,.5);display:none;align-items:center;justify-content:center;z-index:50;padding:20px}
+.modal-overlay.open{display:flex}
+.modal-box{background:#fff;border-radius:14px;box-shadow:var(--shadow-lg);padding:30px;max-width:420px;width:100%;text-align:center}
+.modal-box h3{margin:0 0 10px;color:var(--navy);font-family:Georgia,serif}
+.modal-actions{display:flex;justify-content:center;gap:12px;margin-top:20px}
+
+/* ---------- Two-step login ---------- */
+.hidden-step{display:none}
+.code-box{background:var(--sky);border:1px solid #b9d8f5;border-radius:9px;padding:14px;margin:16px 0;font-size:14px}
+.code-box strong{display:block;font-size:26px;letter-spacing:4px;color:var(--navy);margin-top:4px}
+#code-input{letter-spacing:6px;font-size:20px;text-align:center}
+.text-btn{background:none;border:0;color:var(--blue);font-weight:800;cursor:pointer;padding:0;text-decoration:underline}
+
+/* ---------- Edit page: split editor + live preview ---------- */
+.edit-split{display:grid;grid-template-columns:1fr 1fr;gap:28px;align-items:start}
+.edit-col h3,.preview-col h3{color:var(--navy);font-family:Georgia,serif;margin-top:0}
+.preview-col{position:sticky;top:90px;background:var(--soft);border:1px solid var(--line);border-radius:var(--radius);padding:20px}
+.preview-frame{background:#fff;border:1px solid var(--line);border-radius:10px;padding:22px;box-shadow:var(--shadow)}
+.preview-frame .eyebrow{font-size:10px}
+.preview-frame h1,.preview-frame h2{font-size:22px;margin:8px 0}
+.preview-frame p{font-size:14px}
+@media(max-width:900px){.edit-split{grid-template-columns:1fr}.preview-col{position:static}}
+
+/* ---------- Calendar (Sunday roles) ---------- */
+.cal-topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
+.cal-topbar button{background:#fff;border:1px solid var(--line);border-radius:7px;padding:8px 14px;font-weight:800;color:var(--blue);cursor:pointer}
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;text-align:center}
+.cal-grid .cal-dow{font-size:11px;font-weight:800;color:var(--muted);padding:4px 0}
+.cal-day{border:1px solid var(--line);border-radius:8px;min-height:56px;padding:6px 4px;font-size:13px;color:var(--muted);background:#fff}
+.cal-day.empty{border:none;background:transparent}
+.cal-day.clickable{cursor:pointer}
+.cal-day.clickable:hover{box-shadow:var(--shadow);transform:translateY(-1px)}
+.cal-day.sunday{background:var(--sky);border-color:#b9d8f5;color:var(--navy);font-weight:800}
+.cal-day.has-data::after{content:"●";display:block;color:var(--blue);font-size:10px}
+.cal-day.selected{outline:2px solid var(--blue)}
+.role-panel{margin-top:26px;border:1px solid var(--line);border-radius:var(--radius);padding:22px;background:var(--soft)}
+.role-row{display:grid;grid-template-columns:1fr auto;gap:10px;align-items:center;margin-bottom:12px;background:#fff;border:1px solid var(--line);border-radius:8px;padding:10px 14px}
+.role-row label{font-weight:800;color:var(--navy);font-size:14px;display:block;margin-bottom:4px}
+.role-row input[type=text]{width:100%;padding:8px;border:1px solid #b9c5d3;border-radius:6px;font:inherit}
+.role-row select{padding:8px;border:1px solid #b9c5d3;border-radius:6px;font:inherit;font-weight:700}
+.roster-bar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:18px}
+.roster-chip{background:#fff;border:1px solid var(--line);border-radius:20px;padding:5px 12px;font-size:13px;display:flex;align-items:center;gap:6px}
+.roster-chip button{background:none;border:0;color:#a62929;cursor:pointer;font-weight:800}
+
+/* ---------- Who's Who ---------- */
+.person-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
+.person-card{border:1px solid var(--line);border-radius:var(--radius);background:#fff;box-shadow:var(--shadow);overflow:hidden;text-align:center;padding-bottom:18px}
+.person-photo{height:170px;background:linear-gradient(135deg,#dcecfd,#c3ddf6);display:grid;place-items:center;color:var(--blue);font-weight:700}
+.person-photo img{width:100%;height:100%;object-fit:cover}
+.person-card h3{margin:14px 0 2px;color:var(--navy)}
+.person-role{color:var(--blue);font-weight:700;font-size:13px;margin-bottom:8px}
+.person-contact{font-size:13px;color:var(--muted)}
+@media(max-width:850px){.person-grid{grid-template-columns:1fr 1fr}}
+@media(max-width:520px){.person-grid{grid-template-columns:1fr}}
+
+/* ---------- Admin: people/roster management lists ---------- */
+.manage-list{display:grid;gap:10px;margin:20px 0}
+.manage-row{display:grid;grid-template-columns:1fr 1fr 1fr auto;gap:10px;align-items:center;background:#fff;border:1px solid var(--line);border-radius:8px;padding:10px 14px}
+.manage-row input,.manage-row select{padding:8px;border:1px solid #b9c5d3;border-radius:6px;font:inherit;width:100%}
+.manage-row button{background:none;border:0;color:#a62929;font-weight:800;cursor:pointer}
+@media(max-width:750px){.manage-row{grid-template-columns:1fr}}
+
+/* ---------- Log page ---------- */
+.log-entry{border:1px solid var(--line);border-radius:8px;background:#fff;padding:12px 16px;margin-bottom:10px}
+.log-entry time{font-size:12px;color:var(--muted);display:block;margin-bottom:4px}
+.log-entry .log-page{font-weight:800;color:var(--navy)}
+.log-change{font-size:13px;color:var(--muted);margin:2px 0}
+.log-change b{color:var(--ink)}
+.log-actions{display:flex;gap:16px;margin-top:10px}
+.preview-before-after{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:12px}
+.preview-before-after h4{margin:0 0 6px;color:var(--navy);font-size:13px;text-transform:uppercase;letter-spacing:.5px}
+.preview-before-after .preview-frame{padding:14px;font-size:13px}
+.preview-before-after .preview-frame ul{margin:0;padding-left:18px}
+@media(max-width:700px){.preview-before-after{grid-template-columns:1fr}}
+@media(max-width:850px){.nav{display:none;position:absolute;top:78px;left:0;right:0;background:#fff;border-bottom:1px solid var(--line);padding:15px 4%;flex-direction:column}.nav.open{display:flex}.menu-toggle{display:block}.card-grid.three,.split,.contact-strip{grid-template-columns:1fr}.info-grid{grid-template-columns:repeat(2,1fr)}.quick-grid{grid-template-columns:repeat(2,1fr)}.admin-layout{grid-template-columns:1fr}.sidebar{position:static}.admin-main{padding:24px}.admin-top{align-items:flex-start;flex-direction:column}.video-placeholder.featured{min-height:250px}}
+@media(max-width:520px){.info-grid,.quick-grid{grid-template-columns:1fr}.hero{padding:65px 0}.brand{font-size:17px}.brand strong{font-size:17px}.section{padding:50px 0}.event-row{align-items:flex-start}}
+
+</style></head>
+<body data-page="contact">
+<header class="site-header"><div class="container nav-wrap"><a class="brand" href="index.html"><div class="logo-placeholder" data-image="logo">LOGO</div><span>St. Andrews<br><strong>Baptist Church</strong></span></a><button class="theme-toggle" id="theme-toggle" type="button" aria-label="Toggle dark mode">🌙</button><button class="menu-toggle">☰</button><nav class="nav"><a href="index.html">Home</a><a href="about.html">About</a><a href="sermons.html">Sermons</a><a href="events.html">Events</a><a href="prayer.html">Prayer</a><a href="whoswho.html">Who's Who</a><a class="active" href="contact.html">Contact</a><a href="giving.html">Giving</a></nav></div></header>
+<main><section class="page-hero"><div class="container"><p class="eyebrow">GET IN TOUCH</p><h1>Contact & Location</h1><p>We'd be glad to hear from you.</p></div></section>
+<section class="section"><div class="container split contact-page">
+  <div class="card" style="display:block">
+    <h2>Contact Us</h2>
+    <p>📍 <span data-field="address">115 King Street, St. Andrews, NB</span></p>
+    <p>☎ <a class="text-link" href="tel:+15065293022" data-field="phone">(506) 529-3022</a></p>
+    <p>✉ <a class="text-link" href="mailto:ladd@thebeggardanced.com" data-field="email">ladd@thebeggardanced.com</a></p>
+    <iframe class="map-placeholder" style="width:100%;border:0;border-radius:var(--radius);box-shadow:var(--shadow);margin-top:18px" loading="lazy" allowfullscreen
+      src="https://www.google.com/maps?q=115+King+Street,+St+Andrews,+NB&output=embed" title="Map to St. Andrews Baptist Church, 115 King Street, St. Andrews, NB"></iframe>
+  </div>
+  <div class="card" style="display:block" id="visit">
+    <h2>Plan Your Visit</h2>
+    <ul class="check-list">
+      <li>No dress code</li>
+      <li>Kids are welcome</li>
+      <li>Sunday School available</li>
+      <li>Parking is available along the side of the road</li>
+      <li>Sunday worship begins at 10:30 AM</li>
+      <li>Fellowship often continues after the service</li>
+      <li>Facebook Live message Sundays at 6:30 PM</li>
+      <li>Bible study Tuesdays at 7:00 PM</li>
+    </ul>
+  </div>
+</div></section></main>
+<footer class="footer"><div class="container footer-grid"><strong>St. Andrews Baptist Church</strong><span>Everyone Welcome</span><a href="index.html">Home</a></div></footer>
+<script>
+/* ---------------------------------------------------------------------
+   Prototype CMS "content" layer.
+   Everything a user edits in /admin/edit.html is stored in the browser's
+   localStorage (key: sabc_content) and re-applied on top of the default
+   text/images every time a public page loads. There's no server yet —
+   this is here to prove out the editing experience before a real
+   Raspberry Pi backend replaces it. Content is scoped by page + field id,
+   and only the fields listed below are editable, on purpose, so nobody
+   can accidentally break the page layout.
+--------------------------------------------------------------------- */
+
+/* ---------- Dark mode (works on every page, admin included; defaults to light) ---------- */
+document.addEventListener("DOMContentLoaded", () => {
+  const THEME_KEY = "sabc_theme";
+  const themeBtn = document.querySelector("#theme-toggle");
+  function applyTheme(theme) {
+    if (theme === "dark") { document.documentElement.setAttribute("data-theme", "dark"); if (themeBtn) themeBtn.textContent = "☀"; }
+    else { document.documentElement.removeAttribute("data-theme"); if (themeBtn) themeBtn.textContent = "🌙"; }
+  }
+  applyTheme(localStorage.getItem(THEME_KEY) || "light");
+  if (themeBtn) themeBtn.addEventListener("click", () => {
+    const next = document.documentElement.getAttribute("data-theme") === "dark" ? "light" : "dark";
+    localStorage.setItem(THEME_KEY, next);
+    applyTheme(next);
+  });
+});
+
+/* ---------------- Admin identity & access level (client-side only — a
+   stand-in for real per-person accounts until there's a backend) ---------------- */
+function cmsGetAdminUsers() {
+  try { return JSON.parse(localStorage.getItem("sabc_admin_users")) || []; } catch { return []; }
+}
+function cmsGetCurrentAdmin() {
+  try { return JSON.parse(localStorage.getItem("sabc_current_admin")) || null; } catch { return null; }
+}
+function cmsSetCurrentAdmin(admin) { localStorage.setItem("sabc_current_admin", JSON.stringify(admin)); }
+function cmsCanEdit() {
+  const a = cmsGetCurrentAdmin();
+  return !a || a.access !== "View Only"; // no identity picked yet -> don't lock anyone out
+}
+/* Locks text/select fields (and "add/remove" style buttons) inside a
+   container for View Only admins. File inputs and range sliders are left
+   alone on purpose — "every admin can at least view and upload photos". */
+function cmsApplyViewOnlyLock(container) {
+  if (cmsCanEdit()) return;
+  container.querySelectorAll('input[type="text"], input[type="email"], textarea').forEach(el => el.readOnly = true);
+  container.querySelectorAll('select').forEach(el => el.disabled = true);
+  container.querySelectorAll('button').forEach(el => {
+    if (el.dataset.allowViewOnly === undefined) el.disabled = true;
+  });
+  const banner = document.createElement("p");
+  banner.className = "notice";
+  banner.style.background = "#fdeaea";
+  banner.style.borderColor = "#e6a9a9";
+  banner.textContent = "👁 You're logged in with View Only access — you can browse everything and upload/reposition photos, but text and list changes are locked. Ask a Full Admin or Can-Edit admin for changes.";
+  container.prepend(banner);
+}
+
+const CMS_SCHEMA = {
+  global: {
+    label: "Site-wide",
+    fields: [],
+    images: [
+      { id: "logo", label: "Church Logo", hint: "Shows in the header on every page.", sizable: true, positionable: false, sizeMin: 32, sizeMax: 90, sizeDefault: 44 }
+    ]
+  },
+  home: {
+    label: "Homepage",
+    fields: [
+      { id: "hero_heading", label: "Welcome Heading", type: "text", default: "Welcome to St. Andrews Baptist Church" },
+      { id: "hero_sub", label: "Tagline", type: "text", default: "Everyone Welcome" },
+      { id: "service_time", label: "Sunday Service Time", type: "text", default: "10:30 AM in person · Facebook Live 6:30 PM" }
+    ],
+    images: []
+  },
+  about: {
+    label: "About Page",
+    fields: [
+      { id: "pastor_note", label: "Pastor Welcome Note", type: "textarea",
+        default: "Join Pastor Ladd Dunfield in person on Sunday mornings at 10:30 AM at St. Andrews Baptist Church, on Facebook for weekly Sunday messages at 6:30 PM, and on Tuesdays for Bible study at 7:00 PM." },
+      { id: "history_note", label: "Our History — opening paragraph", type: "textarea",
+        default: "Second St. Andrews Baptist Church organized on January 4, 1865. The building — built that year in the \"Carpenter Gothic\" style and nicknamed the \"Wedding Cake Church\" — still stands today, carrying the memory of the generations who built and cared for it." },
+      { id: "history_note_more", label: "Our History — rest of the story", type: "textarea",
+        default: "Over two centuries ago, St. Andrews was larger than what we think of it today. It wound along the shores of the St. Croix River in what is now Bayside, where the first St. Andrews Baptist Church was built — the \"Mother Church\" that later became Bayside United Baptist Church in 1941.\n\nIn 1796, James and Edward Manning preached up and down the shores of the St. Croix, sparking a revival that helped shape the earliest Baptist congregations in the area. Preachers like Thomas Ansley, Isaac Case, and Henry Hall continued that work through the early 1800s, and by 1806 the church membership had grown to forty-two.\n\nThe church we are part of today organized in the 1860s, as members of the original church found the winter trip into town increasingly difficult. Second St. Andrews Baptist Church was formally organized on January 4, 1865. Its handmade woodwork, the 1965 baptistery, and its stained glass windows all carry the memory of the generations who built and cared for this church.\n\nFor a century and a half, this church has been a place to worship, pray, hear God's Word, and share His love in St. Andrews and beyond." },
+      { id: "partner1_desc", label: "Canadian Baptists of Atlantic Canada — description", type: "textarea",
+        default: "A partnership of more than 450 Baptist churches and 21 associations across Atlantic Canada, resourcing pastors, churches, and shared mission." },
+      { id: "partner2_desc", label: "Canadian Baptist Ministries — description", type: "textarea",
+        default: "A global mission organization sharing God's love in word and deed, and believing God brings healing to a broken world through local churches." },
+      { id: "partner3_desc", label: "Crandall University — description", type: "textarea",
+        default: "Atlantic Canada's leading Christian liberal arts university, founded in 1949 in Moncton, New Brunswick." },
+      { id: "partner4_desc", label: "Acadia Divinity College — description", type: "textarea",
+        default: "The Faculty of Theology at Acadia University, offering the biblical and theological foundation for ministry training." },
+      { id: "what_we_believe", label: "What We Believe", type: "textarea", default: "Full statement of faith to be added here." },
+      { id: "leadership_note", label: "Leadership", type: "textarea", default: "Church leadership information to be added." },
+      { id: "communion_note", label: "Open Communion", type: "textarea", default: "Information about open communion to be added." },
+      { id: "sunday_school_note", label: "Sunday School", type: "textarea", default: "Information for children and families to be added." }
+    ],
+    images: [
+      { id: "church_photo", label: "Church Photo", hint: "Shown near the top of the About page.", sizable: true }
+    ]
+  },
+  sermons: {
+    label: "Sermons Page",
+    fields: [
+      { id: "latest_title", label: "Latest Sermon Title", type: "text", default: "Sermon title" },
+      { id: "latest_speaker", label: "Speaker", type: "text", default: "Speaker" },
+      { id: "latest_passage", label: "Bible Passage", type: "text", default: "Bible passage" },
+      { id: "youtube_id", label: "YouTube Video (paste the video ID or the full link)", type: "text", default: "" }
+    ],
+    images: []
+  },
+  events: {
+    label: "Events Page",
+    fields: [
+      { id: "events_note", label: "Note above the list", type: "textarea", default: "See what's coming up at St. Andrews Baptist Church." }
+    ],
+    images: []
+  },
+  prayer: {
+    label: "Prayer Page",
+    fields: [
+      { id: "prayer_intro", label: "Intro Text", type: "textarea", default: "We would love to pray for you." }
+    ],
+    images: []
+  },
+  contact: {
+    label: "Contact Page",
+    fields: [
+      { id: "address", label: "Address", type: "text", default: "115 King Street, St. Andrews, NB" },
+      { id: "phone", label: "Phone", type: "text", default: "(506) 529-3022" },
+      { id: "email", label: "Email", type: "text", default: "ladd@thebeggardanced.com" }
+    ],
+    images: []
+  },
+  giving: {
+    label: "Giving Page",
+    fields: [
+      { id: "etransfer_note", label: "E-Transfer Instructions", type: "textarea", default: "Giving details are still being finalized. Once Pastor Ladd confirms the e-transfer address and any instructions, they'll go here." },
+      { id: "tax_note", label: "Tax Receipt Note", type: "textarea", default: "Receipts are issued for donations of $20 or more. Final tax receipt details will be confirmed by the church." }
+    ],
+    images: []
+  }
+};
+
+const CMS_KEY = "sabc_content";
+
+function cmsStorageWorks() {
+  try {
+    localStorage.setItem("sabc_test", "1");
+    const ok = localStorage.getItem("sabc_test") === "1";
+    localStorage.removeItem("sabc_test");
+    return ok;
+  } catch { return false; }
+}
+
+function cmsLoadAll() {
+  try {
+    return JSON.parse(localStorage.getItem(CMS_KEY)) || {};
+  } catch {
+    return {};
+  }
+}
+
+function cmsSavePage(pageKey, data) {
+  const all = cmsLoadAll();
+  const before = all[pageKey] || {};
+  const changes = [];
+  Object.keys(data).forEach(k => {
+    if (before[k] !== data[k]) {
+      const rawOld = before[k] ?? null, rawNew = data[k] ?? null;
+      const isImage = (typeof rawOld === "string" && rawOld.startsWith("data:image")) || (typeof rawNew === "string" && rawNew.startsWith("data:image"));
+      const change = { field: k, old: cmsTrim(rawOld), new: cmsTrim(rawNew), revertable: !isImage };
+      if (!isImage) { change.rawOld = rawOld; change.rawNew = rawNew; } // needed to actually revert; skipped for photos to keep the log small
+      changes.push(change);
+    }
+  });
+  all[pageKey] = { ...before, ...data };
+  try {
+    localStorage.setItem(CMS_KEY, JSON.stringify(all));
+  } catch (err) {
+    console.error("cmsSavePage failed to save:", err);
+    return { ok: false, error: err };
+  }
+  cmsLogChange(pageKey, changes);
+  return { ok: true };
+}
+
+/* Reverts every revertable field in a log entry back to its recorded
+   "old" value. Photos can't be auto-reverted (their old data isn't kept
+   in the log, to avoid bloating storage) — those need a manual re-upload. */
+function cmsRevertLogEntry(entry) {
+  const revertData = {};
+  let any = false;
+  (entry.changes || []).forEach(c => {
+    if (c.revertable) { revertData[c.field] = c.rawOld; any = true; }
+  });
+  if (!any) return { ok: false, reason: "nothing revertable" };
+  return cmsSavePage(entry.page, revertData);
+}
+
+/* Same idea as above, but for the non-schema features (Calendar, Who's
+   Who, Admin Users) that save a whole list/object straight to localStorage
+   instead of going through cmsSavePage. Photo fields are stripped out
+   before being kept in the log, same reasoning as above. */
+function cmsStripImages(value) {
+  if (typeof value === "string") return value.startsWith("data:image") ? "(photo — omitted from log to save space)" : value;
+  if (Array.isArray(value)) return value.map(cmsStripImages);
+  if (value && typeof value === "object") {
+    const out = {};
+    Object.keys(value).forEach(k => { out[k] = cmsStripImages(value[k]); });
+    return out;
+  }
+  return value;
+}
+function cmsLogRawChange(label, revertKey, revertPath, before, after) {
+  cmsLogChange(label, [{
+    field: label, old: "(previous version)", new: "(updated)", revertable: true, isRaw: true,
+    revertKey, revertPath, rawOld: cmsStripImages(before), rawNew: cmsStripImages(after)
+  }]);
+}
+function cmsRevertRawEntry(entry) {
+  const c = (entry.changes || [])[0];
+  if (!c || !c.revertable || !c.isRaw) return { ok: false };
+  try {
+    if (c.revertPath) {
+      const data = JSON.parse(localStorage.getItem(c.revertKey) || "{}");
+      data[c.revertPath] = c.rawOld;
+      localStorage.setItem(c.revertKey, JSON.stringify(data));
+    } else {
+      localStorage.setItem(c.revertKey, JSON.stringify(c.rawOld));
+    }
+    return { ok: true };
+  } catch (err) {
+    return { ok: false, error: err };
+  }
+}
+
+/* Shrinks a photo before it's stored, so a phone photo (often several MB)
+   doesn't blow past the browser's ~5-10MB localStorage limit. Without this,
+   uploading a couple of full-size photos can silently fail to save. */
+function compressImage(file, maxDimension = 1000, quality = 0.75) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onerror = () => reject(reader.error);
+    reader.onload = () => {
+      const img = new Image();
+      img.onerror = () => reject(new Error("Could not read that image."));
+      img.onload = () => {
+        let { width, height } = img;
+        if (width > maxDimension || height > maxDimension) {
+          if (width > height) { height = Math.round(height * (maxDimension / width)); width = maxDimension; }
+          else { width = Math.round(width * (maxDimension / height)); height = maxDimension; }
+        }
+        const canvas = document.createElement("canvas");
+        canvas.width = width; canvas.height = height;
+        canvas.getContext("2d").drawImage(img, 0, 0, width, height);
+        resolve(canvas.toDataURL("image/jpeg", quality));
+      };
+      img.src = reader.result;
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
+/* Safe wrapper for any other feature (calendar, Who's Who, admins) that
+   writes straight to localStorage, so a storage failure shows up instead
+   of silently doing nothing. */
+function safeSetItem(key, value) {
+  try {
+    localStorage.setItem(key, value);
+    return true;
+  } catch (err) {
+    console.error("Storage write failed for", key, err);
+    alert("This didn't save — the browser's local storage is full (usually from too many/too-large photos). Try removing a photo or two, or use smaller photos, then try again.");
+    return false;
+  }
+}
+
+function cmsGetPage(pageKey) {
+  const all = cmsLoadAll();
+  const schema = CMS_SCHEMA[pageKey];
+  const saved = all[pageKey] || {};
+  const result = {};
+  if (schema) {
+    schema.fields.forEach(f => { result[f.id] = saved[f.id] ?? f.default; });
+    schema.images.forEach(img => {
+      result[img.id] = saved[img.id] || null;
+      result[img.id + "_h"] = saved[img.id + "_h"] || 300;
+      result[img.id + "_pos"] = saved[img.id + "_pos"] ?? 50;
+    });
+  }
+  return result;
+}
+
+/* ---------------- Audit log ---------------- */
+const CMS_LOG_KEY = "sabc_audit_log";
+
+function cmsLogChange(page, changes) {
+  if (!changes || !changes.length) return;
+  const log = JSON.parse(localStorage.getItem(CMS_LOG_KEY) || "[]");
+  log.unshift({ ts: new Date().toISOString(), page, changes });
+  if (log.length > 500) log.length = 500;
+  safeSetItem(CMS_LOG_KEY, JSON.stringify(log));
+}
+
+function cmsTrim(v) {
+  if (v === null || v === undefined || v === "") return "(empty)";
+  const s = String(v);
+  if (s.startsWith("data:image")) return "(new photo uploaded)";
+  return s.length > 70 ? s.slice(0, 70) + "…" : s;
+}
+
+/* Applies saved content to a public page. Call on DOMContentLoaded with
+   the page key ("home", "about", etc). Looks for elements marked
+   data-field="fieldId" (text) and data-image="imageId" (image slot). */
+function cmsApplyToPage(pageKey) {
+  const global = cmsGetPage("global");
+  if (global.logo) {
+    const logoH = global.logo_h || 44;
+    const logoW = Math.round(logoH * (58 / 44)); // keep the original box's proportions
+    document.querySelectorAll("[data-image='logo']").forEach(el => {
+      el.style.height = logoH + "px";
+      el.style.width = logoW + "px";
+      el.innerHTML = `<img src="${global.logo}" alt="Church logo" style="width:100%;height:100%;object-fit:contain;border-radius:7px">`;
+    });
+  }
+
+  if (!pageKey || !CMS_SCHEMA[pageKey]) return;
+  const content = cmsGetPage(pageKey);
+
+  document.querySelectorAll("[data-field]").forEach(el => {
+    const id = el.getAttribute("data-field");
+    if (content[id] !== undefined && content[id] !== null) {
+      el.textContent = content[id];
+    }
+  });
+
+  document.querySelectorAll("[data-image]").forEach(el => {
+    const id = el.getAttribute("data-image");
+    if (id === "logo") return; // handled above, global
+    if (content[id]) {
+      const h = content[id + "_h"] || 300;
+      const pos = content[id + "_pos"] ?? 50;
+      el.style.height = h + "px";
+      el.style.overflow = "hidden";
+      el.innerHTML = `<img src="${content[id]}" alt="" style="width:100%;height:100%;object-fit:cover;object-position:50% ${pos}%;border-radius:inherit">`;
+    }
+  });
+
+  // Sermons: swap in a YouTube embed if a video has been set
+  if (pageKey === "sermons" && content.youtube_id) {
+    const slot = document.querySelector("#sermon-video");
+    if (slot) {
+      const match = String(content.youtube_id).match(/(?:v=|youtu\.be\/|embed\/)?([a-zA-Z0-9_-]{11})(?:[?&]|$)/);
+      const vid = match ? match[1] : content.youtube_id;
+      slot.innerHTML = `<iframe width="100%" height="100%" style="position:absolute;inset:0;border:0" src="https://www.youtube.com/embed/${vid}" title="Latest sermon" allowfullscreen></iframe>`;
+      slot.style.position = "relative";
+      slot.style.paddingBottom = "56.25%";
+      slot.style.height = "0";
+    }
+  }
+
+  // Homepage "Latest Sermon" box always mirrors the real Sermons page content,
+  // so there's one single place (Admin → Sermons) to edit it, not two.
+  const homeVideoSlot = document.querySelector("#home-sermon-video");
+  if (homeVideoSlot) {
+    const sermonContent = cmsGetPage("sermons");
+    const titleEl = document.querySelector("#home-sermon-title");
+    if (titleEl && sermonContent.latest_title) titleEl.textContent = sermonContent.latest_title;
+    if (sermonContent.youtube_id) {
+      const match = String(sermonContent.youtube_id).match(/(?:v=|youtu\.be\/|embed\/)?([a-zA-Z0-9_-]{11})(?:[?&]|$)/);
+      const vid = match ? match[1] : sermonContent.youtube_id;
+      homeVideoSlot.innerHTML = `<iframe width="100%" height="100%" style="position:absolute;inset:0;border:0" src="https://www.youtube.com/embed/${vid}" title="Latest sermon" allowfullscreen></iframe>`;
+      homeVideoSlot.style.position = "relative";
+      homeVideoSlot.style.paddingBottom = "56.25%";
+      homeVideoSlot.style.height = "0";
+      const fallback = document.querySelector("#home-sermon-fallback-text");
+      if (fallback) fallback.style.display = "none";
+    }
+  }
+}
+
+</script>
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+  const menu = document.querySelector(".menu-toggle");
+  const nav = document.querySelector(".nav");
+  if (menu && nav) menu.addEventListener("click", () => nav.classList.toggle("open"));
+
+  /* ---------- Apply any admin-saved text/photos for this page ---------- */
+  const pageKey = document.body.dataset.page;
+  if (typeof cmsApplyToPage === "function") cmsApplyToPage(pageKey);
+
+  /* ---------- Prayer request form ---------- */
+  const prayerForm = document.querySelector("#prayer-form");
+  if (prayerForm) {
+    const requestBox = prayerForm.querySelector("textarea[name='request']");
+    const warning = document.querySelector("#filter-warning");
+
+    // Very small starter word list to catch hateful/discriminatory language.
+    // Ordinary swearing is allowed through on purpose, per the church's request.
+    // This is a placeholder demo filter, not a finished moderation system.
+    const flaggedWords = ["nigger", "faggot", "retard", "kike", "spic", "chink"];
+
+    function checkText() {
+      if (!requestBox || !warning) return true;
+      const text = requestBox.value.toLowerCase();
+      const hit = flaggedWords.some(w => text.includes(w));
+      warning.style.display = hit ? "block" : "none";
+      return !hit;
+    }
+    if (requestBox) requestBox.addEventListener("input", checkText);
+
+    prayerForm.addEventListener("submit", e => {
+      e.preventDefault();
+      if (!checkText()) {
+        document.querySelector("#form-message").textContent =
+          "This request may contain language our filter flags for review. Please rephrase, or a staff member can help if you're not sure why.";
+        document.querySelector("#form-message").className = "error";
+        return;
+      }
+      document.querySelector("#form-message").className = "success";
+      document.querySelector("#form-message").textContent =
+        "Prototype only — this will be connected to the church's prayer request Google Form so Pastor Ladd can read it directly.";
+      prayerForm.reset();
+      if (warning) warning.style.display = "none";
+    });
+  }
+
+  /* ---------- Admin login (prototype) ---------- */
+  const loginForm = document.querySelector("#login-form");
+  if (loginForm) loginForm.addEventListener("submit", e => {
+    e.preventDefault();
+    document.querySelector("#login-message").className = "success";
+    document.querySelector("#login-message").textContent =
+      "Prototype login — real password checking and the email/app verification code will be added before this goes live.";
+  });
+
+  const apply = document.querySelector("#apply-demo");
+  if (apply) apply.addEventListener("click", () => {
+    alert("Prototype: this button will back up the current site, save your changes, and publish them once the admin system is built.");
+  });
+
+  /* ---------- Daily Bible verse ----------
+     Pulled from bible-api.com — free, no key required, and its default
+     translations (KJV / WEB / etc.) are public domain, so there's no
+     copyright issue reusing the text. We can't legally copy K-LOVE's
+     verse-of-the-day page itself, but this gets the same effect.
+     Each day's verse is cached in localStorage the first time someone
+     visits, so the site slowly builds its own year-by-year archive —
+     exactly like klove.com/faith/votd, just grown locally over time. */
+  const VERSE_REFERENCES = [
+    "psalm+119:105","proverbs+3:5-6","philippians+4:13","psalm+23:1","deuteronomy+31:6",
+    "joshua+1:9","romans+8:28","john+3:16","psalm+46:1","isaiah+41:10",
+    "jeremiah+29:11","matthew+6:33","psalm+27:1","2corinthians+5:17","galatians+5:22-23",
+    "psalm+121:1-2","proverbs+16:3","romans+12:2","1peter+5:7","psalm+34:18",
+    "hebrews+11:1","philippians+4:6-7","matthew+11:28","psalm+91:1-2","isaiah+40:31",
+    "james+1:5","psalm+37:4","john+14:27","romans+15:13","psalm+9:1"
+  ];
+
+  const verseEl = document.querySelector("#daily-verse");
+  const refEl = document.querySelector("#verse-ref");
+  const dateEl = document.querySelector("#verse-date");
+  const prevBtn = document.querySelector("#verse-prev");
+  const nextBtn = document.querySelector("#verse-next");
+  const jumpInput = document.querySelector("#verse-jump");
+  const jumpBtn = document.querySelector("#verse-jump-go");
+
+  if (verseEl) {
+    const VERSE_KEY = "sabc_verse_archive";
+    const archive = JSON.parse(localStorage.getItem(VERSE_KEY) || "{}");
+
+    function dayOfYear(d) {
+      const start = new Date(d.getFullYear(), 0, 0);
+      return Math.floor((d - start) / 86400000);
+    }
+    // Local calendar date (not UTC) — using toISOString() here was the bug:
+    // it converts to UTC first, so anyone west of Greenwich could see "today's"
+    // verse show what was actually tomorrow's, especially in the evening.
+    function isoDate(d) {
+      const y = d.getFullYear(), m = String(d.getMonth() + 1).padStart(2, "0"), day = String(d.getDate()).padStart(2, "0");
+      return `${y}-${m}-${day}`;
+    }
+
+    function referenceFor(d) {
+      return VERSE_REFERENCES[((dayOfYear(d) % VERSE_REFERENCES.length) + VERSE_REFERENCES.length) % VERSE_REFERENCES.length];
+    }
+
+    async function verseFor(d) {
+      const key = isoDate(d);
+      if (archive[key]) return archive[key];
+      try {
+        const res = await fetch("https://bible-api.com/" + referenceFor(d));
+        const data = await res.json();
+        const verse = { text: data.text.trim(), ref: data.reference };
+        archive[key] = verse;
+        localStorage.setItem(VERSE_KEY, JSON.stringify(archive));
+        return verse;
+      } catch {
+        return { text: "Your word is a lamp for my feet, a light on my path.", ref: "Psalm 119:105 (offline fallback)" };
+      }
+    }
+
+    const today = new Date(); today.setHours(0, 0, 0, 0);
+    let current = new Date(today);
+
+    async function renderVerse() {
+      const v = await verseFor(current);
+      verseEl.textContent = "\u201C" + v.text + "\u201D";
+      refEl.textContent = v.ref;
+      const isToday = isoDate(current) === isoDate(today);
+      if (dateEl) dateEl.textContent = isToday ? "Today" : current.toLocaleDateString(undefined, { weekday: "long", month: "long", day: "numeric" });
+      if (nextBtn) nextBtn.disabled = isToday;
+      if (jumpInput) jumpInput.value = isoDate(current);
+    }
+    renderVerse();
+    if (prevBtn) prevBtn.addEventListener("click", () => { current.setDate(current.getDate() - 1); renderVerse(); });
+    if (nextBtn) nextBtn.addEventListener("click", () => { if (current < today) { current.setDate(current.getDate() + 1); renderVerse(); } });
+    if (jumpInput) jumpInput.max = isoDate(today);
+    if (jumpBtn) jumpBtn.addEventListener("click", () => {
+      if (!jumpInput.value) return;
+      const picked = new Date(jumpInput.value + "T00:00:00");
+      if (picked > today) return;
+      current = picked;
+      renderVerse();
+    });
+  }
+});
+
+</script>
+</body></html>
