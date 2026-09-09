@@ -12,6 +12,37 @@ python3 -m http.server 8080
 
 Then open `http://localhost:8080`.
 
+## What's new this round
+
+- **Dark mode icons fixed** — swapped the ugly emoji sun/moon for clean icons.
+- **Admin dark mode actually works now** — was leaving the main content area white with light text on it (unreadable). Fixed with a decisive, guaranteed-to-work override.
+- **Login is now email-based** — type your email instead of picking from a dropdown. If it matches someone on the Admin Users list, you get their name/access level; if not, you still get logged in with a best-effort name guessed from the email (add yourself properly on Admin Users for a cleaner result).
+- **Personalized, time-aware greeting** — dashboard now says "Good morning/afternoon/evening, [FirstName]" instead of a hardcoded "Welcome, Pastor."
+- **"Logged in as X (access level)" tag** on every admin page now, so if something seems locked/won't save, you can check at a glance whether you're on a View Only account instead of chasing a phantom bug.
+- **Who's Who admin editor layout fixed** — was a genuine bug (leftover mismatched class name from an earlier refactor), causing cramped, truncated fields. Redesigned as a proper card layout with breathing room, and the Live Preview panel now actually works too.
+- **Logo now has both sliders** — size and focus-point, matching every other photo upload spot.
+
+## What's new this round (latest)
+
+- **Change Log now has real before/after previews and revert.** Click "Preview before/after" on any log entry to see what the page (or Who's Who, or that Sunday's roles) looked like before vs. after that change — reusing the same preview used in the live editor. Click "Revert to before" to restore it. Scope, on purpose: revert restores text and lists, not photos (keeps the log from bloating storage) — if a change included a new photo, you'll need to re-upload the old one manually after reverting.
+- **Kept the 404 page** — worth keeping even though it can't help with a full power outage (different problem, see below); it's still genuinely useful for plain old broken/typo'd links, which happen on any site.
+
+## What's new this round
+
+- **Fixed the logo size bug** — the slider existed but the actual header code never read it. Fixed; the logo now really does resize.
+- **About page is now fully editable** — Partner Ministries (each org's description), What We Believe, Leadership, Open Communion, and Sunday School are all editable from Admin -> About now, not just the pastor note and history.
+- **Who's Who now has a live preview**, same split-screen style as the other edit pages.
+- **Added a "Remove this photo" option** everywhere a photo can be uploaded (logo, About photo, Who's Who), for when you want to clear one without replacing it.
+- **Fixed the 3-line mobile verse navigation** — tightened up so it doesn't wrap awkwardly on phones.
+- **Calendar roles redesigned properly** — roles are now a persistent global list (add/remove types anytime, they stick around), but each day only shows the roles you've explicitly added to *that* day, with a picker to add from your list and a per-day remove.
+- **Dark mode now works on admin pages too**, and fixed a real bug where the "Sunday Worship" box stayed white in dark mode, making its text unreadable.
+- **Login now persists** (won't log you out just from closing the tab), and login now asks which admin you are - so the dashboard greets you by name.
+- **View Only access is now actually enforced** (soft/prototype-level): a View Only admin can browse everything and still upload/reposition photos, but can't edit text or touch lists (calendar, Who's Who, admin roster). Full Admin / Can Edit accounts are unaffected.
+- **Added a custom 404 "page not found" page**, matching the site design, for whenever the real hosting is in place.
+
+### Still an open question, not a bug
+About page photo positioning — traced the code closely and couldn't find an actual break (unlike the logo, which was a real dead-code bug). Two likely explanations: the slider only updates the *admin preview* live - the real About page only changes after clicking Apply Changes; or the photo's own proportions don't leave much room to reposition within the fixed height. If it's still not doing anything after clicking Apply, a screenshot would help pin it down.
+
 ## What's new in this round
 
 - **"Plan Your Visit" now goes to the Contact page** (parking, dress code, service times) instead of About — matches what you and Pastor Ladd decided made more sense.

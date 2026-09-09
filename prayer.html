@@ -149,6 +149,33 @@ a,button{transition:box-shadow .15s ease,transform .15s ease,filter .15s ease,ba
 @media(max-width:850px){.nav{display:none;position:absolute;top:78px;left:0;right:0;background:#fff;border-bottom:1px solid var(--line);padding:15px 4%;flex-direction:column}.nav.open{display:flex}.menu-toggle{display:block}.card-grid.three,.split,.contact-strip{grid-template-columns:1fr}.info-grid{grid-template-columns:repeat(2,1fr)}.quick-grid{grid-template-columns:repeat(2,1fr)}.admin-layout{grid-template-columns:1fr}.sidebar{position:static}.admin-main{padding:24px}.admin-top{align-items:flex-start;flex-direction:column}.video-placeholder.featured{min-height:250px}}
 @media(max-width:520px){.info-grid,.quick-grid{grid-template-columns:1fr}.hero{padding:65px 0}.brand{font-size:17px}.brand strong{font-size:17px}.section{padding:50px 0}.event-row{align-items:flex-start}}
 
+/* ---------- Dark mode: decisive catch-all (guarantees every surface goes
+   dark, instead of chasing one selector at a time — this is deliberately
+   !important since it's the final safety net for the whole page) ---------- */
+[data-theme="dark"] body{background:var(--paper) !important;color:var(--ink) !important}
+[data-theme="dark"] .admin-page,[data-theme="dark"] .admin-main,[data-theme="dark"] .admin-layout,
+[data-theme="dark"] .login-wrap{background:var(--paper) !important}
+[data-theme="dark"] .card,[data-theme="dark"] .quick-grid button,[data-theme="dark"] .manage-row,
+[data-theme="dark"] .person-card,[data-theme="dark"] .log-entry,[data-theme="dark"] .role-row,
+[data-theme="dark"] .cal-day,[data-theme="dark"] .event-row,[data-theme="dark"] .info-grid article,
+[data-theme="dark"] .service-card,[data-theme="dark"] .verse-box,[data-theme="dark"] .video-box,
+[data-theme="dark"] .form-card,[data-theme="dark"] .login-card,[data-theme="dark"] .preview-frame,
+[data-theme="dark"] .modal-box,[data-theme="dark"] .code-box,[data-theme="dark"] .roster-chip,
+[data-theme="dark"] .archive-list button,[data-theme="dark"] .image-upload-slot,
+[data-theme="dark"] .person-edit-card{
+  background:#141d29 !important;border-color:#2b3646 !important;color:#e9edf2 !important
+}
+[data-theme="dark"] .cal-day.sunday{background:#16222f !important}
+[data-theme="dark"] .notice{background:#2a2716 !important;border-color:#5c5323 !important;color:#e9edf2 !important}
+[data-theme="dark"] .toast{background:#132a1e !important;border-color:#255c3a !important;color:#8fe3b3 !important}
+[data-theme="dark"] .filter-warning{background:#2a1616 !important;border-color:#5c2323 !important;color:#f0a3a3 !important}
+[data-theme="dark"] h1,[data-theme="dark"] h2,[data-theme="dark"] h3,[data-theme="dark"] strong,
+[data-theme="dark"] .quick-grid span,[data-theme="dark"] .field-hint,[data-theme="dark"] .log-change{color:#e9edf2 !important}
+[data-theme="dark"] .quick-grid b{color:#5da3f0 !important}
+[data-theme="dark"] input,[data-theme="dark"] textarea,[data-theme="dark"] select{
+  background:#1b2531 !important;color:#e9edf2 !important;border-color:#2b3646 !important
+}
+
 </style></head>
 <body data-page="prayer">
 <header class="site-header"><div class="container nav-wrap"><a class="brand" href="index.html"><div class="logo-placeholder" data-image="logo">LOGO</div><span>St. Andrews<br><strong>Baptist Church</strong></span></a><button class="theme-toggle" id="theme-toggle" type="button" aria-label="Toggle dark mode">🌙</button><button class="menu-toggle">☰</button><nav class="nav"><a href="index.html">Home</a><a href="about.html">About</a><a href="sermons.html">Sermons</a><a href="events.html">Events</a><a class="active" href="prayer.html">Prayer</a><a href="whoswho.html">Who's Who</a><a href="contact.html">Contact</a><a href="giving.html">Giving</a></nav></div></header>
@@ -190,9 +217,11 @@ a,button{transition:box-shadow .15s ease,transform .15s ease,filter .15s ease,ba
 document.addEventListener("DOMContentLoaded", () => {
   const THEME_KEY = "sabc_theme";
   const themeBtn = document.querySelector("#theme-toggle");
+  const SUN_ICON = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>';
+  const MOON_ICON = '<svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>';
   function applyTheme(theme) {
-    if (theme === "dark") { document.documentElement.setAttribute("data-theme", "dark"); if (themeBtn) themeBtn.textContent = "☀"; }
-    else { document.documentElement.removeAttribute("data-theme"); if (themeBtn) themeBtn.textContent = "🌙"; }
+    if (theme === "dark") { document.documentElement.setAttribute("data-theme", "dark"); if (themeBtn) themeBtn.innerHTML = SUN_ICON; }
+    else { document.documentElement.removeAttribute("data-theme"); if (themeBtn) themeBtn.innerHTML = MOON_ICON; }
   }
   applyTheme(localStorage.getItem(THEME_KEY) || "light");
   if (themeBtn) themeBtn.addEventListener("click", () => {
@@ -238,7 +267,7 @@ const CMS_SCHEMA = {
     label: "Site-wide",
     fields: [],
     images: [
-      { id: "logo", label: "Church Logo", hint: "Shows in the header on every page.", sizable: true, positionable: false, sizeMin: 32, sizeMax: 90, sizeDefault: 44 }
+      { id: "logo", label: "Church Logo", hint: "Shows in the header on every page.", sizable: true, positionable: true, sizeMin: 32, sizeMax: 90, sizeDefault: 44 }
     ]
   },
   home: {
@@ -495,10 +524,11 @@ function cmsApplyToPage(pageKey) {
   if (global.logo) {
     const logoH = global.logo_h || 44;
     const logoW = Math.round(logoH * (58 / 44)); // keep the original box's proportions
+    const logoPos = global.logo_pos ?? 50;
     document.querySelectorAll("[data-image='logo']").forEach(el => {
       el.style.height = logoH + "px";
       el.style.width = logoW + "px";
-      el.innerHTML = `<img src="${global.logo}" alt="Church logo" style="width:100%;height:100%;object-fit:contain;border-radius:7px">`;
+      el.innerHTML = `<img src="${global.logo}" alt="Church logo" style="width:100%;height:100%;object-fit:contain;object-position:50% ${logoPos}%;border-radius:7px">`;
     });
   }
 
