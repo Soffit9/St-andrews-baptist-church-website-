@@ -33,6 +33,10 @@ document.addEventListener("DOMContentLoaded", () => {
   if (document.querySelector("#log-root")) initLog();
   if (document.querySelector("#sermon-archive-admin-root")) initSermonArchiveAdmin();
   if (document.querySelector("#sermon-archive-root")) renderSermonArchivePublic();
+  if (document.querySelector("#hero-bg-a")) initHeroRotation();
+  if (document.querySelector("#hero-photos-admin-root")) initHeroPhotosAdmin();
+  if (document.querySelector("#gallery-admin-root")) initGalleryAdmin();
+  if (document.querySelector("#gallery-public-root")) renderGalleryPublic();
 });
 
 /* ============================= CALENDAR ============================= */
@@ -349,7 +353,7 @@ function initWhoswhoAdmin() {
 
   function personCardHtml(p) {
     return `<div class="person-card">
-      <div class="person-photo">${p.photo ? `<img src="${p.photo}" style="object-position:50% ${p.photo_pos ?? 50}%">` : "PHOTO"}</div>
+      <div class="person-photo">${p.photo ? `<img src="${p.photo}" style="display:block;width:100%;height:100%;object-fit:cover;object-position:50% ${p.photo_pos ?? 50}%">` : "PHOTO"}</div>
       <h3>${p.name || "(no name yet)"}</h3>
       <p class="person-role">${p.role || ""}</p>
       <p class="person-contact">${p.phone ? "☎ " + p.phone : ""}${p.phone && p.email ? "<br>" : ""}${p.email ? "✉ " + p.email : ""}</p>
@@ -474,7 +478,7 @@ function initWhoswhoPublic() {
   }
   root.innerHTML = `<div class="person-grid">` + people.map(p => `
     <div class="person-card">
-      <div class="person-photo">${p.photo ? `<img src="${p.photo}" style="object-position:50% ${p.photo_pos ?? 50}%">` : "PHOTO"}</div>
+      <div class="person-photo">${p.photo ? `<img src="${p.photo}" style="display:block;width:100%;height:100%;object-fit:cover;object-position:50% ${p.photo_pos ?? 50}%">` : "PHOTO"}</div>
       <h3>${p.name}</h3>
       <p class="person-role">${p.role || ""}</p>
       <p class="person-contact">${p.phone ? "☎ " + p.phone : ""}${p.phone && p.email ? "<br>" : ""}${p.email ? "✉ " + p.email : ""}</p>
@@ -676,14 +680,14 @@ function initSermonArchiveAdmin() {
   function render() {
     const sermons = loadJSON("sabc_sermon_archive", []);
     const byYear = {};
-    sermons.forEach(s => { (byYear[s.year] = byYear[s.year] || []).push(s); });
+    sermons.forEach(s => { const y = (s.date || "").slice(0, 4) || s.year || "Undated"; (byYear[y] = byYear[y] || []).push(s); });
     const years = Object.keys(byYear).sort((a, b) => b - a);
 
     let html = `
       <div class="role-panel" style="margin-top:0">
         <h3>Add a Sermon</h3>
-        <div class="role-row" style="grid-template-columns:100px 1fr 1fr">
-          <input type="number" id="new-sermon-year" placeholder="Year" value="${new Date().getFullYear()}">
+        <div class="role-row" style="grid-template-columns:160px 1fr 1fr">
+          <input type="date" id="new-sermon-date" value="${new Date().toISOString().slice(0, 10)}">
           <input type="text" id="new-sermon-title" placeholder="Sermon title">
           <input type="text" id="new-sermon-speaker" placeholder="Speaker">
         </div>
@@ -700,9 +704,10 @@ function initSermonArchiveAdmin() {
     }
     years.forEach(year => {
       html += `<h3>${year}</h3>`;
-      byYear[year].forEach(s => {
+      byYear[year].sort((a, b) => (b.date || "").localeCompare(a.date || "")).forEach(s => {
         html += `
-          <div class="manage-row" data-id="${s.id}" style="grid-template-columns:1fr 1fr 1fr 1fr auto">
+          <div class="manage-row" data-id="${s.id}" style="grid-template-columns:150px 1fr 1fr 1fr 1fr auto">
+            <input type="date" data-sf="date" value="${s.date || ""}">
             <input type="text" data-sf="title" value="${s.title || ""}" placeholder="Title">
             <input type="text" data-sf="speaker" value="${s.speaker || ""}" placeholder="Speaker">
             <input type="text" data-sf="passage" value="${s.passage || ""}" placeholder="Passage">
@@ -719,12 +724,12 @@ function initSermonArchiveAdmin() {
     cmsApplyViewOnlyLock(root);
 
     document.querySelector("#add-sermon-btn").addEventListener("click", () => {
-      const year = document.querySelector("#new-sermon-year").value.trim();
+      const date = document.querySelector("#new-sermon-date").value;
       const title = document.querySelector("#new-sermon-title").value.trim();
-      if (!year || !title) { alert("At least a year and title are needed."); return; }
+      if (!date || !title) { alert("At least a date and title are needed."); return; }
       const sermons = loadJSON("sabc_sermon_archive", []);
       sermons.push({
-        id: uid(), year,
+        id: uid(), date,
         title,
         speaker: document.querySelector("#new-sermon-speaker").value.trim(),
         passage: document.querySelector("#new-sermon-passage").value.trim(),
@@ -746,7 +751,7 @@ function initSermonArchiveAdmin() {
       const rows = root.querySelectorAll("#sermon-list .manage-row");
       const updated = [...rows].map(row => ({
         id: row.dataset.id,
-        year: (before.find(s => s.id === row.dataset.id) || {}).year,
+        date: row.querySelector('[data-sf="date"]').value,
         title: row.querySelector('[data-sf="title"]').value,
         speaker: row.querySelector('[data-sf="speaker"]').value,
         passage: row.querySelector('[data-sf="passage"]').value,
@@ -766,7 +771,7 @@ function renderSermonArchivePublic() {
   const root = document.querySelector("#sermon-archive-root");
   const sermons = loadJSON("sabc_sermon_archive", []);
   const byYear = {};
-  sermons.forEach(s => { (byYear[s.year] = byYear[s.year] || []).push(s); });
+  sermons.forEach(s => { const y = (s.date || "").slice(0, 4) || "Undated"; (byYear[y] = byYear[y] || []).push(s); });
   const years = Object.keys(byYear).sort((a, b) => b - a);
   const thisYear = String(new Date().getFullYear());
   if (!years.includes(thisYear)) years.unshift(thisYear);
@@ -781,17 +786,159 @@ function renderSermonArchivePublic() {
     const open = panel.style.display !== "none";
     root.querySelectorAll(".archive-year-panel").forEach(p => p.style.display = "none");
     if (open) return;
-    const list = byYear[y] || [];
+    const list = (byYear[y] || []).slice().sort((a, b) => (b.date || "").localeCompare(a.date || ""));
     panel.innerHTML = list.length
       ? list.map(s => `
           <div class="event-row">
             <div>
               <h3>${s.title}</h3>
-              <p>${[s.speaker, s.passage].filter(Boolean).join(" · ")}</p>
+              <p>${[s.date ? new Date(s.date + "T00:00:00").toLocaleDateString(undefined, { month: "long", day: "numeric" }) : "", s.speaker, s.passage].filter(Boolean).join(" · ")}</p>
               ${s.youtube_id ? `<a class="text-link" target="_blank" rel="noopener" href="https://www.youtube.com/watch?v=${s.youtube_id}">Watch on YouTube →</a>` : ""}
             </div>
           </div>`).join("")
       : `<p class="field-hint">No sermons added for ${y} yet.</p>`;
     panel.style.display = "block";
   }));
+}
+
+/* ============================= HOME PAGE PHOTO ROTATION ============================= */
+function initHeroRotation() {
+  const photos = loadJSON("sabc_hero_photos", []);
+  if (!photos.length) return; // none set — keep the default light gradient background
+  const bgA = document.querySelector("#hero-bg-a");
+  const bgB = document.querySelector("#hero-bg-b");
+  const overlay = document.querySelector(".hero-overlay");
+  const inner = document.querySelector(".hero-inner");
+  overlay.classList.add("on");
+  if (inner) inner.classList.add("on-photo");
+
+  let idx = 0, useA = true;
+  bgA.style.backgroundImage = `url(${photos[0]})`;
+  bgA.classList.add("active");
+  if (photos.length < 2) return; // only one photo — nothing to rotate to
+  setInterval(() => {
+    idx = (idx + 1) % photos.length;
+    const nextEl = useA ? bgB : bgA;
+    const curEl = useA ? bgA : bgB;
+    nextEl.style.backgroundImage = `url(${photos[idx]})`;
+    nextEl.classList.add("active");
+    curEl.classList.remove("active");
+    useA = !useA;
+  }, 6000);
+}
+
+function initHeroPhotosAdmin() {
+  requireLogin();
+  const root = document.querySelector("#hero-photos-admin-root");
+
+  function render() {
+    const photos = loadJSON("sabc_hero_photos", []);
+    let html = `<p class="field-hint">These rotate behind the homepage welcome text. Add a few, or leave empty to keep the plain background.</p>
+      <div class="person-grid" style="margin-bottom:20px">`;
+    photos.forEach((p, i) => {
+      html += `<div class="person-card" style="text-align:center;padding:10px">
+        <div class="person-photo" style="height:120px"><img src="${p}" style="width:100%;height:100%;object-fit:cover"></div>
+        <button type="button" class="button button-light" data-remove-hero-photo="${i}" style="margin:10px auto;display:block">Remove</button>
+      </div>`;
+    });
+    html += `</div>
+      <label class="image-upload-slot" for="hero-photo-input" style="height:100px;max-width:300px">+ Add a photo</label>
+      <input type="file" accept="image/*" id="hero-photo-input" style="display:none">
+      <p id="hero-photos-toast" class="toast"></p>`;
+    root.innerHTML = html;
+    cmsApplyViewOnlyLock(root);
+
+    document.querySelector("#hero-photo-input").addEventListener("change", e => {
+      const file = e.target.files[0];
+      if (!file) return;
+      compressImage(file, 1400, 0.75).then(dataUrl => {
+        const photos = loadJSON("sabc_hero_photos", []);
+        photos.push(dataUrl);
+        saveJSON("sabc_hero_photos", photos);
+        cmsLogRawChange("Homepage Photos", "sabc_hero_photos", null, photos.slice(0, -1), photos);
+        render();
+        const toast = document.querySelector("#hero-photos-toast");
+        if (toast) { toast.textContent = "✓ Photo added."; toast.classList.add("show"); }
+      }).catch(err => alert("Couldn't process that photo: " + err.message));
+    });
+
+    root.querySelectorAll("[data-remove-hero-photo]").forEach(btn => btn.addEventListener("click", () => {
+      const photos = loadJSON("sabc_hero_photos", []);
+      photos.splice(Number(btn.dataset.removeHeroPhoto), 1);
+      saveJSON("sabc_hero_photos", photos);
+      render();
+    }));
+  }
+  render();
+}
+
+/* ============================= GALLERY ============================= */
+function initGalleryAdmin() {
+  requireLogin();
+  const root = document.querySelector("#gallery-admin-root");
+
+  function render() {
+    const photos = loadJSON("sabc_gallery", []);
+    let html = `<div class="person-grid" style="margin-bottom:20px">`;
+    photos.forEach(p => {
+      html += `<div class="person-card" style="text-align:center;padding:10px">
+        <div class="person-photo" style="height:140px"><img src="${p.photo}" style="width:100%;height:100%;object-fit:cover"></div>
+        <input type="text" data-gf="label" data-id="${p.id}" value="${p.label || ""}" placeholder="Label (e.g. Christmas 2026)" style="margin:10px 0;width:100%;padding:6px;border:1px solid #b9c5d3;border-radius:6px">
+        <button type="button" class="button button-light" data-remove-gallery="${p.id}">Remove</button>
+      </div>`;
+    });
+    html += `</div>
+      <label class="image-upload-slot" for="gallery-photo-input" style="height:100px;max-width:300px">+ Add a photo</label>
+      <input type="file" accept="image/*" id="gallery-photo-input" style="display:none">
+      <div class="edit-actions"><span></span><button class="button" id="save-gallery-labels" type="button">Save Labels</button></div>
+      <p id="gallery-toast" class="toast"></p>`;
+    root.innerHTML = html;
+    cmsApplyViewOnlyLock(root);
+
+    document.querySelector("#gallery-photo-input").addEventListener("change", e => {
+      const file = e.target.files[0];
+      if (!file) return;
+      compressImage(file, 1600, 0.8).then(dataUrl => {
+        const photos = loadJSON("sabc_gallery", []);
+        photos.push({ id: uid(), photo: dataUrl, label: "" });
+        saveJSON("sabc_gallery", photos);
+        cmsLogRawChange("Gallery", "sabc_gallery", null, photos.slice(0, -1), photos);
+        render();
+      }).catch(err => alert("Couldn't process that photo: " + err.message));
+    });
+
+    root.querySelectorAll("[data-remove-gallery]").forEach(btn => btn.addEventListener("click", () => {
+      const photos = loadJSON("sabc_gallery", []).filter(p => p.id !== btn.dataset.removeGallery);
+      saveJSON("sabc_gallery", photos);
+      render();
+    }));
+
+    document.querySelector("#save-gallery-labels").addEventListener("click", () => {
+      const photos = loadJSON("sabc_gallery", []);
+      root.querySelectorAll('[data-gf="label"]').forEach(input => {
+        const p = photos.find(x => x.id === input.dataset.id);
+        if (p) p.label = input.value;
+      });
+      saveJSON("sabc_gallery", photos);
+      const toast = document.querySelector("#gallery-toast");
+      toast.textContent = "✓ Labels saved.";
+      toast.classList.add("show");
+    });
+  }
+  render();
+}
+
+function renderGalleryPublic() {
+  const root = document.querySelector("#gallery-public-root");
+  const photos = loadJSON("sabc_gallery", []);
+  if (!photos.length) {
+    root.innerHTML = `<p class="placeholder-lines center">No photos here yet — add some from the admin Gallery page.</p>`;
+    return;
+  }
+  root.innerHTML = `<div class="person-grid">` + photos.map(p => `
+    <div class="person-card" style="text-align:center;padding:14px">
+      <div class="person-photo" style="height:180px"><img src="${p.photo}" style="width:100%;height:100%;object-fit:cover"></div>
+      <p style="margin:10px 0 6px;font-weight:700;color:var(--navy)">${p.label || ""}</p>
+      <a class="button button-light" download="church-photo.jpg" href="${p.photo}">Download</a>
+    </div>`).join("") + `</div>`;
 }

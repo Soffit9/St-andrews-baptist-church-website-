@@ -131,7 +131,7 @@ document.addEventListener("DOMContentLoaded", () => {
       const pw = document.querySelector("#password").value;
       const pwMsg = document.querySelector("#password-message");
       if (pw.trim().toUpperCase() !== ADMIN_PASSWORD) {
-        if (pwMsg) { pwMsg.className = "error"; pwMsg.textContent = "That's not the password — check with Pastor Ladd if you don't have it."; }
+        if (pwMsg) { pwMsg.className = "error"; pwMsg.textContent = "Incorrect password. Try again."; }
         return;
       }
       if (pwMsg) pwMsg.textContent = "";

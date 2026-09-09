@@ -14,6 +14,19 @@ Then open `http://localhost:8080`.
 
 ## What's new this round
 
+- **Sticky footer fixed** — the blue bar now always pins to the bottom of the screen on short pages (like an empty Events list) instead of floating up mid-page.
+- **Who's Who text-on-photo issue** — hardened the photo sizing directly on the image itself (belt-and-suspenders fix) and added a clear divider line between photo and text, so there's no ambiguity either way.
+- **Giving page card width fixed** — was forcing 4 columns even with only 2 cards, causing one-word-per-line wrapping. Now sizes cards based on how many actually exist.
+- **Password error message simplified** — just says "Incorrect password," no longer names who to ask.
+- **Sermon Archive now uses real dates** (year/month/day) instead of just a year number — pick from a date picker, archive still groups by year on the public page.
+- **Homepage photo rotation** — new Admin → Homepage Photos page to upload a few photos that slowly crossfade behind the welcome text. Leave it empty and the plain background stays as-is.
+- **New Gallery page** — admins can upload photos ahead of time and anyone can grab/download them from the Gallery page. **Important limitation, called out directly on the admin page too:** these photos are saved to whichever browser uploaded them — they won't show up on a different device until there's real shared backend storage. Works best today if you upload from the same computer you'll present from (e.g. the church PC itself), ahead of the service.
+
+### Needs a fresh screenshot from you
+"Church calendar — get rid of what I highlighted, it's pointless and confusing, just that one step" — I wasn't sure exactly which screen/step this refers to without seeing what was highlighted. Send a new screenshot with it marked and I'll get it sorted next round.
+
+## What's new this round
+
 - **Real login password: "BAPTIST"** — case-insensitive, easy to change (it's one clearly-labeled line at the top of `assets/admin.js`, `const ADMIN_PASSWORD = "..."`). Wrong password now shows an actual error instead of letting anything through.
 - **Login screen simplified** — step 2 is just email + code now, less clutter.
 - **Found and fixed a real bug in the Who's Who editor** — the layout classes (`fields-col`, `photo-col`) were used in the code but never had any CSS defined for them, so the browser fell back to default behavior and crammed fields two-per-row. Now properly one field per row, full width.
