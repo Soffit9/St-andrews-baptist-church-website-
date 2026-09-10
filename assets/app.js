@@ -3,10 +3,6 @@ document.addEventListener("DOMContentLoaded", () => {
   const nav = document.querySelector(".nav");
   if (menu && nav) menu.addEventListener("click", () => nav.classList.toggle("open"));
 
-  /* ---------- Apply any admin-saved text/photos for this page ---------- */
-  const pageKey = document.body.dataset.page;
-  if (typeof cmsApplyToPage === "function") cmsApplyToPage(pageKey);
-
   /* ---------- Prayer request form ---------- */
   const prayerForm = document.querySelector("#prayer-form");
   if (prayerForm) {
@@ -164,4 +160,13 @@ document.addEventListener("DOMContentLoaded", () => {
       renderVerse();
     });
   }
+});
+
+/* Apply any admin-saved text/photos for this page — waits for the real
+   shared data to actually finish loading from the server first (see
+   content.js), otherwise this would run too early and show the default
+   placeholder text instead of what's really been saved. */
+document.addEventListener("sabc:session-ready", () => {
+  const pageKey = document.body.dataset.page;
+  if (typeof cmsApplyToPage === "function") cmsApplyToPage(pageKey);
 });

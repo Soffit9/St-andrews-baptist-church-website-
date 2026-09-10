@@ -240,8 +240,35 @@ document.addEventListener("DOMContentLoaded", async () => {
   // features.js both wait for this event instead of their own
   // DOMContentLoaded, so they never run against stale/empty session data.
   await fetchSession();
+  await fetchAllStoredData();
   document.dispatchEvent(new CustomEvent("sabc:session-ready"));
 });
+
+/* ---------------- Real shared storage — Who's Who, Gallery, Events,
+   Calendar, Sermon Archive, and page content all live on the server now,
+   not per-browser. This pulls everything down ONCE per page load into an
+   in-memory cache (window.__serverStore), so the rest of the existing
+   code — all written against a synchronous loadJSON/saveJSON — doesn't
+   need to be rewritten to be async everywhere it's used. saveJSON still
+   writes to the cache immediately (so the page feels instant) and fires
+   the real save to the server in the background. ---------------- */
+window.__serverStore = {};
+const STORE_KEYS = [
+  "sabc_content", "sabc_roster", "sabc_schedule_roles", "sabc_schedule",
+  "sabc_events", "sabc_whoswho", "sabc_sermon_archive", "sabc_gallery",
+  "sabc_hero_photos", "sabc_audit_log"
+];
+
+async function fetchAllStoredData() {
+  await Promise.all(STORE_KEYS.map(async key => {
+    try {
+      const res = await fetch(`/api/store/${key}`, { credentials: "same-origin" });
+      window.__serverStore[key] = await res.json();
+    } catch {
+      window.__serverStore[key] = null; // backend unreachable — code below falls back to defaults
+    }
+  }));
+}
 
 /* ---------------- Admin identity & access level — REAL now, backed by
    the Flask server's session cookie instead of a client-side guess. ---------------- */
@@ -382,21 +409,20 @@ const CMS_SCHEMA = {
 
 const CMS_KEY = "sabc_content";
 
-function cmsStorageWorks() {
-  try {
-    localStorage.setItem("sabc_test", "1");
-    const ok = localStorage.getItem("sabc_test") === "1";
-    localStorage.removeItem("sabc_test");
-    return ok;
-  } catch { return false; }
+function cmsLoadAll() {
+  return window.__serverStore[CMS_KEY] || {};
 }
 
-function cmsLoadAll() {
-  try {
-    return JSON.parse(localStorage.getItem(CMS_KEY)) || {};
-  } catch {
-    return {};
-  }
+/* Fire-and-forget save to the server for any of the shared-storage keys.
+   The in-memory cache is already updated by the caller before this runs,
+   so the page feels instant even though the network call happens after. */
+function serverStoreSave(key, value) {
+  fetch(`/api/store/${key}`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    credentials: "same-origin",
+    body: JSON.stringify(value)
+  }).catch(err => console.error("Save to server failed for", key, err));
 }
 
 function cmsSavePage(pageKey, data) {
@@ -413,12 +439,8 @@ function cmsSavePage(pageKey, data) {
     }
   });
   all[pageKey] = { ...before, ...data };
-  try {
-    localStorage.setItem(CMS_KEY, JSON.stringify(all));
-  } catch (err) {
-    console.error("cmsSavePage failed to save:", err);
-    return { ok: false, error: err };
-  }
+  window.__serverStore[CMS_KEY] = all;
+  serverStoreSave(CMS_KEY, all);
   cmsLogChange(pageKey, changes);
   return { ok: true };
 }
@@ -459,18 +481,16 @@ function cmsLogRawChange(label, revertKey, revertPath, before, after) {
 function cmsRevertRawEntry(entry) {
   const c = (entry.changes || [])[0];
   if (!c || !c.revertable || !c.isRaw) return { ok: false };
-  try {
-    if (c.revertPath) {
-      const data = JSON.parse(localStorage.getItem(c.revertKey) || "{}");
-      data[c.revertPath] = c.rawOld;
-      localStorage.setItem(c.revertKey, JSON.stringify(data));
-    } else {
-      localStorage.setItem(c.revertKey, JSON.stringify(c.rawOld));
-    }
-    return { ok: true };
-  } catch (err) {
-    return { ok: false, error: err };
+  if (c.revertPath) {
+    const data = window.__serverStore[c.revertKey] || {};
+    data[c.revertPath] = c.rawOld;
+    window.__serverStore[c.revertKey] = data;
+    serverStoreSave(c.revertKey, data);
+  } else {
+    window.__serverStore[c.revertKey] = c.rawOld;
+    serverStoreSave(c.revertKey, c.rawOld);
   }
+  return { ok: true };
 }
 
 /* Shrinks a photo before it's stored, so a phone photo (often several MB)
@@ -535,10 +555,11 @@ const CMS_LOG_KEY = "sabc_audit_log";
 
 function cmsLogChange(page, changes) {
   if (!changes || !changes.length) return;
-  const log = JSON.parse(localStorage.getItem(CMS_LOG_KEY) || "[]");
+  const log = window.__serverStore[CMS_LOG_KEY] || [];
   log.unshift({ ts: new Date().toISOString(), page, changes });
   if (log.length > 500) log.length = 500;
-  safeSetItem(CMS_LOG_KEY, JSON.stringify(log));
+  window.__serverStore[CMS_LOG_KEY] = log;
+  serverStoreSave(CMS_LOG_KEY, log);
 }
 
 function cmsTrim(v) {
@@ -859,8 +880,8 @@ document.addEventListener("sabc:session-ready", () => {
     });
   }
   const logoutBtn = document.querySelector("#logout");
-  if (logoutBtn) logoutBtn.addEventListener("click", () => {
-    localStorage.removeItem("sabc_admin_logged_in");
+  if (logoutBtn) logoutBtn.addEventListener("click", async () => {
+    try { await fetch("/api/auth/logout", { method: "POST", credentials: "same-origin" }); } catch {}
     window.location.href = "login.html";
   });
 
@@ -1059,10 +1080,13 @@ document.addEventListener("sabc:session-ready", () => {
 </script>
 <script>
 /* ---------------------------------------------------------------------
-   Extra admin tools, all localStorage-backed prototypes:
+   Extra admin tools — all backed by real shared server storage now
+   (window.__serverStore, populated in content.js before any of this
+   runs). loadJSON/saveJSON below keep their old localStorage-style
+   signatures on purpose, so nothing else in this file needed rewriting:
    - Sunday roles calendar   (sabc_schedule, sabc_roster)
    - Who's Who directory      (sabc_whoswho)
-   - Admin user list          (sabc_admin_users)
+   - Admin user list          (sabc_admin_users, its own dedicated /api/admins)
    - Change log                (sabc_audit_log, via content.js)
 --------------------------------------------------------------------- */
 
@@ -1070,9 +1094,15 @@ const DEFAULT_SCHEDULE_ROLES = ["Opening Prayer", "Worship / Singing", "Offering
 function getScheduleRoles() { return loadJSON("sabc_schedule_roles", DEFAULT_SCHEDULE_ROLES); }
 
 function loadJSON(key, fallback) {
-  try { return JSON.parse(localStorage.getItem(key)) ?? fallback; } catch { return fallback; }
+  const v = window.__serverStore ? window.__serverStore[key] : undefined;
+  return v ?? fallback;
 }
-function saveJSON(key, value) { return safeSetItem(key, JSON.stringify(value)); }
+function saveJSON(key, value) {
+  if (!window.__serverStore) return false;
+  window.__serverStore[key] = value;
+  serverStoreSave(key, value);
+  return true;
+}
 // Local calendar date (not UTC) — matches the fix in app.js. Using
 // toISOString() here was quietly excluding "today's" events from the
 // upcoming list in the evening, since UTC had already rolled to tomorrow.

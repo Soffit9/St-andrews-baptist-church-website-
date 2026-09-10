@@ -1,8 +1,11 @@
 /* ---------------------------------------------------------------------
-   Extra admin tools, all localStorage-backed prototypes:
+   Extra admin tools — all backed by real shared server storage now
+   (window.__serverStore, populated in content.js before any of this
+   runs). loadJSON/saveJSON below keep their old localStorage-style
+   signatures on purpose, so nothing else in this file needed rewriting:
    - Sunday roles calendar   (sabc_schedule, sabc_roster)
    - Who's Who directory      (sabc_whoswho)
-   - Admin user list          (sabc_admin_users)
+   - Admin user list          (sabc_admin_users, its own dedicated /api/admins)
    - Change log                (sabc_audit_log, via content.js)
 --------------------------------------------------------------------- */
 
@@ -10,9 +13,15 @@ const DEFAULT_SCHEDULE_ROLES = ["Opening Prayer", "Worship / Singing", "Offering
 function getScheduleRoles() { return loadJSON("sabc_schedule_roles", DEFAULT_SCHEDULE_ROLES); }
 
 function loadJSON(key, fallback) {
-  try { return JSON.parse(localStorage.getItem(key)) ?? fallback; } catch { return fallback; }
+  const v = window.__serverStore ? window.__serverStore[key] : undefined;
+  return v ?? fallback;
 }
-function saveJSON(key, value) { return safeSetItem(key, JSON.stringify(value)); }
+function saveJSON(key, value) {
+  if (!window.__serverStore) return false;
+  window.__serverStore[key] = value;
+  serverStoreSave(key, value);
+  return true;
+}
 // Local calendar date (not UTC) — matches the fix in app.js. Using
 // toISOString() here was quietly excluding "today's" events from the
 // upcoming list in the evening, since UTC had already rolled to tomorrow.

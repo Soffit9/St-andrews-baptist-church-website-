@@ -236,8 +236,8 @@ document.addEventListener("sabc:session-ready", () => {
     });
   }
   const logoutBtn = document.querySelector("#logout");
-  if (logoutBtn) logoutBtn.addEventListener("click", () => {
-    localStorage.removeItem("sabc_admin_logged_in");
+  if (logoutBtn) logoutBtn.addEventListener("click", async () => {
+    try { await fetch("/api/auth/logout", { method: "POST", credentials: "same-origin" }); } catch {}
     window.location.href = "login.html";
   });
 

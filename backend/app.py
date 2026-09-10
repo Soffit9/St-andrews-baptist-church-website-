@@ -30,6 +30,25 @@ BASE_DIR = Path(__file__).parent
 CONFIG_PATH = BASE_DIR / "config.json"
 ADMINS_PATH = BASE_DIR / "admins.json"
 PRAYER_REQUESTS_PATH = BASE_DIR / "prayer_requests.json"
+DATA_DIR = BASE_DIR / "data"
+DATA_DIR.mkdir(exist_ok=True)
+
+# Every kind of content the site actually saves, now living here instead
+# of scattered across whichever browser last touched it. Locked to this
+# specific list on purpose — the API won't read/write anything not named
+# here, so a stray request can't create arbitrary files on the Pi.
+ALLOWED_STORE_KEYS = {
+    "sabc_content",        # Home/About/Sermons/Events/Prayer/Contact/Giving/logo text+photos
+    "sabc_roster",         # Sunday Calendar volunteer names
+    "sabc_schedule_roles", # Sunday Calendar role catalog
+    "sabc_schedule",       # Sunday Calendar day-by-day assignments
+    "sabc_events",         # Events calendar entries
+    "sabc_whoswho",        # Who's Who directory
+    "sabc_sermon_archive", # Sermon Archive entries
+    "sabc_gallery",        # Gallery photos
+    "sabc_hero_photos",    # Homepage rotating background photos
+    "sabc_audit_log",      # Change Log
+}
 
 # This email is always Full Admin, no matter what anyone edits on the
 # Admin Users page later — a permanent safety net so nobody (including
@@ -262,6 +281,32 @@ def create_app():
             return jsonify(ok=False, error="Login required."), 401
         items = [i for i in load_prayer_requests() if i["id"] != req_id]
         save_prayer_requests(items)
+        return jsonify(ok=True)
+
+    # ---- Generic shared storage: everything Who's Who / Gallery / Events /
+    # Calendar / Sermon Archive / page content used to keep in each
+    # browser's local storage now lives here instead, so it's the same
+    # for every admin, on every device. ----
+    @app.get("/api/store/<key>")
+    def get_store(key):
+        if key not in ALLOWED_STORE_KEYS:
+            return jsonify(error="Unknown key."), 404
+        path = DATA_DIR / f"{key}.json"
+        if not path.exists():
+            return jsonify(None)
+        return jsonify(json.loads(path.read_text()))
+
+    @app.post("/api/store/<key>")
+    def set_store(key):
+        if key not in ALLOWED_STORE_KEYS:
+            return jsonify(ok=False, error="Unknown key."), 404
+        if "email" not in session:
+            return jsonify(ok=False, error="Login required."), 401
+        if session.get("access") not in ("Full Admin", "Can Edit"):
+            return jsonify(ok=False, error="View Only accounts can't save changes."), 403
+        value = request.get_json(silent=True)
+        path = DATA_DIR / f"{key}.json"
+        path.write_text(json.dumps(value, indent=2))
         return jsonify(ok=True)
 
     return app
