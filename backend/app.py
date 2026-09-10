@@ -18,15 +18,18 @@ import random
 import secrets
 import smtplib
 import time
+import uuid
 from email.mime.text import MIMEText
 from pathlib import Path
 
+import pyotp
 from flask import Flask, jsonify, request, session
 from werkzeug.security import check_password_hash
 
 BASE_DIR = Path(__file__).parent
 CONFIG_PATH = BASE_DIR / "config.json"
 ADMINS_PATH = BASE_DIR / "admins.json"
+PRAYER_REQUESTS_PATH = BASE_DIR / "prayer_requests.json"
 
 # This email is always Full Admin, no matter what anyone edits on the
 # Admin Users page later — a permanent safety net so nobody (including
@@ -128,7 +131,7 @@ def create_app():
         except Exception:
             emailed = False
 
-        resp = {"ok": True, "emailed": emailed}
+        resp = {"ok": True, "emailed": emailed, "totpAvailable": bool(cfg.get("totp_secret"))}
         if not emailed:
             # Email isn't set up yet — same graceful fallback as the old
             # prototype: show the code directly so testing still works.
@@ -140,14 +143,20 @@ def create_app():
         data = request.get_json(silent=True) or {}
         email = (data.get("email") or "").strip().lower()
         code = (data.get("code") or "").strip()
+        cfg = load_config()
 
+        # Accept EITHER a valid emailed/on-screen code OR a valid
+        # authenticator-app code — whichever the person actually has handy.
+        valid = False
         pending = PENDING_CODES.get(email)
-        if not pending or time.time() > pending["expires"]:
-            return jsonify(ok=False, error="That code has expired — request a new one."), 401
-        if code != pending["code"]:
-            return jsonify(ok=False, error="That code doesn't match."), 401
+        if pending and time.time() <= pending["expires"] and code == pending["code"]:
+            valid = True
+            del PENDING_CODES[email]
+        elif cfg.get("totp_secret") and pyotp.TOTP(cfg["totp_secret"]).verify(code, valid_window=1):
+            valid = True
 
-        del PENDING_CODES[email]
+        if not valid:
+            return jsonify(ok=False, error="That code doesn't match or has expired."), 401
 
         admin = find_admin_by_email(email)
         if admin:
@@ -190,6 +199,70 @@ def create_app():
         admins = request.get_json(silent=True) or []
         save_admins(admins)
         return jsonify(ok=True, admins=load_admins())
+
+    # ---- Prayer requests: real, shared, server-side storage ----
+    # A short list of words the filter blocks outright — ordinary swearing is
+    # allowed through on purpose (matches the original ask), this only
+    # catches hateful/discriminatory language. Deliberately not exhaustive;
+    # a real moderation system is a bigger project than this prototype.
+    BLOCKED_WORDS = ["nigger", "faggot", "retard", "kike", "spic", "chink"]
+
+    def load_prayer_requests():
+        if not PRAYER_REQUESTS_PATH.exists():
+            return []
+        return json.loads(PRAYER_REQUESTS_PATH.read_text())
+
+    def save_prayer_requests(items):
+        PRAYER_REQUESTS_PATH.write_text(json.dumps(items, indent=2))
+
+    @app.post("/api/prayer-requests")
+    def submit_prayer_request():
+        data = request.get_json(silent=True) or {}
+        text = (data.get("request") or "").strip()
+        if not text:
+            return jsonify(ok=False, error="A prayer request is required."), 400
+        lowered = text.lower()
+        if any(w in lowered for w in BLOCKED_WORDS):
+            return jsonify(ok=False, error="This may contain language flagged for review — please rephrase."), 400
+
+        items = load_prayer_requests()
+        items.insert(0, {
+            "id": str(uuid.uuid4())[:8],
+            "name": (data.get("name") or "").strip(),
+            "email": (data.get("email") or "").strip(),
+            "request": text,
+            "pray_aloud": bool(data.get("pray_aloud")),
+            "status": "unread",
+            "submitted": time.strftime("%Y-%m-%d %H:%M:%S"),
+        })
+        save_prayer_requests(items)
+        return jsonify(ok=True)
+
+    @app.get("/api/prayer-requests")
+    def get_prayer_requests():
+        if "email" not in session:
+            return jsonify(ok=False, error="Login required."), 401
+        return jsonify(load_prayer_requests())
+
+    @app.post("/api/prayer-requests/<req_id>")
+    def update_prayer_request(req_id):
+        if "email" not in session:
+            return jsonify(ok=False, error="Login required."), 401
+        data = request.get_json(silent=True) or {}
+        items = load_prayer_requests()
+        for item in items:
+            if item["id"] == req_id:
+                item["status"] = data.get("status", item["status"])
+        save_prayer_requests(items)
+        return jsonify(ok=True)
+
+    @app.delete("/api/prayer-requests/<req_id>")
+    def delete_prayer_request(req_id):
+        if "email" not in session:
+            return jsonify(ok=False, error="Login required."), 401
+        items = [i for i in load_prayer_requests() if i["id"] != req_id]
+        save_prayer_requests(items)
+        return jsonify(ok=True)
 
     return app
 

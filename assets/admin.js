@@ -103,58 +103,98 @@ document.addEventListener("sabc:session-ready", () => {
 
   /* ---------- Login page (2-step prototype) ---------- */
   const step1 = document.querySelector("#login-step-1");
+  const stepMethod = document.querySelector("#login-step-method");
+  const stepEmail = document.querySelector("#login-step-email");
   const step2 = document.querySelector("#login-step-2");
-  if (step1 && step2) {
-    let currentEmail = "";
+  if (step1 && stepMethod && stepEmail && step2) {
+    let currentPassword = "";
+    let chosenMethod = "email"; // "email" or "totp" — just changes the messaging, both call the same endpoints
 
-    step1.addEventListener("submit", async e => {
+    function showOnly(el) {
+      [step1, stepMethod, stepEmail, step2].forEach(s => s.classList.add("hidden-step"));
+      el.classList.remove("hidden-step");
+    }
+
+    step1.addEventListener("submit", e => {
       e.preventDefault();
-      const pw = document.querySelector("#password").value;
-      const email = document.querySelector("#who-email").value.trim();
-      const pwMsg = document.querySelector("#password-message");
-      if (pwMsg) pwMsg.textContent = "";
+      currentPassword = document.querySelector("#password").value;
+      document.querySelector("#password-message").textContent = "";
+      showOnly(stepMethod);
+    });
 
+    document.querySelector("#back-to-password").addEventListener("click", () => showOnly(step1));
+
+    document.querySelector("#method-email").addEventListener("click", () => {
+      chosenMethod = "email";
+      showOnly(stepEmail);
+      document.querySelector("#who-email").focus();
+    });
+    document.querySelector("#method-totp").addEventListener("click", () => {
+      chosenMethod = "totp";
+      showOnly(stepEmail);
+      document.querySelector("#who-email").focus();
+    });
+
+    async function requestCode() {
+      const email = document.querySelector("#who-email").value.trim();
+      const emailMsg = document.querySelector("#email-message");
+      emailMsg.textContent = "";
       try {
         const res = await fetch("/api/auth/password", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           credentials: "same-origin",
-          body: JSON.stringify({ password: pw, email })
+          body: JSON.stringify({ password: currentPassword, email })
         });
         const data = await res.json();
         if (!res.ok || !data.ok) {
-          if (pwMsg) { pwMsg.className = "error"; pwMsg.textContent = data.error || "Incorrect password. Try again."; }
-          return;
+          emailMsg.className = "error";
+          emailMsg.textContent = data.error || "Something went wrong — check your password and try again.";
+          if ((data.error || "").toLowerCase().includes("password")) showOnly(step1);
+          return false;
         }
-        currentEmail = email;
         const codeBox = document.querySelector("#code-box");
-        const codeDisplay = document.querySelector("#demo-code-display");
-        if (data.emailed) {
-          if (codeBox) codeBox.innerHTML = `A code was just emailed to <b>${email}</b>. Enter it below.`;
-        } else if (codeBox && codeDisplay) {
-          codeBox.innerHTML = `Email isn't set up yet, so here's the code directly (this box goes away once real email sending is turned on): <strong id="demo-code-display">${data.demo_code}</strong>`;
+        const resendWrap = document.querySelector("#resend-wrap");
+        if (chosenMethod === "totp") {
+          codeBox.innerHTML = "Enter the current code from your authenticator app.";
+          resendWrap.style.display = "none";
+        } else if (data.emailed) {
+          codeBox.innerHTML = `A code was just emailed to <b>${email}</b>.`;
+          resendWrap.style.display = "";
+        } else {
+          codeBox.innerHTML = `Email isn't set up yet, so here's the code directly: <strong>${data.demo_code}</strong>`;
+          resendWrap.style.display = "";
         }
-        step1.classList.add("hidden-step");
-        step2.classList.remove("hidden-step");
+        return true;
+      } catch {
+        emailMsg.className = "error";
+        emailMsg.textContent = "Couldn't reach the server — is the backend running?";
+        return false;
+      }
+    }
+
+    stepEmail.addEventListener("submit", async e => {
+      e.preventDefault();
+      if (await requestCode()) {
+        showOnly(step2);
         document.querySelector("#code-input").focus();
-      } catch (err) {
-        if (pwMsg) { pwMsg.className = "error"; pwMsg.textContent = "Couldn't reach the server — is the backend running?"; }
       }
     });
 
     const resend = document.querySelector("#resend-code");
-    if (resend) resend.addEventListener("click", () => step1.requestSubmit());
+    if (resend) resend.addEventListener("click", requestCode);
 
     step2.addEventListener("submit", async e => {
       e.preventDefault();
       const entered = document.querySelector("#code-input").value.trim();
+      const email = document.querySelector("#who-email").value.trim();
       const msg = document.querySelector("#login-message");
       try {
         const res = await fetch("/api/auth/verify", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           credentials: "same-origin",
-          body: JSON.stringify({ email: currentEmail, code: entered })
+          body: JSON.stringify({ email, code: entered })
         });
         const data = await res.json();
         if (!res.ok || !data.ok) {

@@ -37,6 +37,7 @@ document.addEventListener("sabc:session-ready", () => {
   if (document.querySelector("#hero-photos-admin-root")) initHeroPhotosAdmin();
   if (document.querySelector("#gallery-admin-root")) initGalleryAdmin();
   if (document.querySelector("#gallery-public-root")) renderGalleryPublic();
+  if (document.querySelector("#prayer-requests-admin-root")) initPrayerRequestsAdmin();
 });
 
 /* ============================= CALENDAR ============================= */
@@ -968,4 +969,56 @@ function renderGalleryPublic() {
       <p style="margin:10px 0 6px;font-weight:700;color:var(--navy)">${p.label || ""}</p>
       <a class="button button-light" download="church-photo.jpg" href="${p.photo}">Download</a>
     </div>`).join("") + `</div>`;
+}
+
+/* ============================= PRAYER REQUESTS (admin) ============================= */
+function initPrayerRequestsAdmin() {
+  requireLogin();
+  const root = document.querySelector("#prayer-requests-admin-root");
+
+  async function render() {
+    let items;
+    try {
+      const res = await fetch("/api/prayer-requests", { credentials: "same-origin" });
+      if (res.status === 401) { requireLogin(); return; }
+      items = await res.json();
+    } catch {
+      root.innerHTML = "<p class='field-hint'>Couldn't reach the server — is the backend running?</p>";
+      return;
+    }
+
+    if (!items.length) {
+      root.innerHTML = "<p class='field-hint'>No prayer requests yet.</p>";
+      return;
+    }
+
+    root.innerHTML = items.map(item => `
+      <div class="log-entry" data-id="${item.id}" style="${item.status === "archived" ? "opacity:.6" : ""}">
+        <time>${item.submitted}${item.status === "unread" ? " · <b style='color:var(--blue)'>UNREAD</b>" : item.status === "archived" ? " · archived" : " · read"}</time>
+        <p class="log-change"><b>${item.name || "(anonymous)"}</b>${item.email ? " · " + item.email : ""}${item.pray_aloud ? " · wants this said aloud in the prayer meeting" : ""}</p>
+        <p style="white-space:pre-wrap;margin:10px 0">${item.request}</p>
+        <div class="log-actions">
+          ${item.status !== "read" ? `<button type="button" class="text-btn" data-mark-read="${item.id}">Mark read</button>` : ""}
+          ${item.status !== "archived" ? `<button type="button" class="text-btn" data-archive="${item.id}">Archive</button>` : `<button type="button" class="text-btn" data-unarchive="${item.id}">Unarchive</button>`}
+          <button type="button" class="text-btn" data-delete="${item.id}" style="color:#a62929">Delete</button>
+        </div>
+      </div>`).join("");
+
+    async function setStatus(id, status) {
+      await fetch(`/api/prayer-requests/${id}`, {
+        method: "POST", headers: { "Content-Type": "application/json" }, credentials: "same-origin",
+        body: JSON.stringify({ status })
+      });
+      render();
+    }
+    root.querySelectorAll("[data-mark-read]").forEach(b => b.addEventListener("click", () => setStatus(b.dataset.markRead, "read")));
+    root.querySelectorAll("[data-archive]").forEach(b => b.addEventListener("click", () => setStatus(b.dataset.archive, "archived")));
+    root.querySelectorAll("[data-unarchive]").forEach(b => b.addEventListener("click", () => setStatus(b.dataset.unarchive, "read")));
+    root.querySelectorAll("[data-delete]").forEach(b => b.addEventListener("click", async () => {
+      if (!confirm("Delete this request permanently? This can't be undone.")) return;
+      await fetch(`/api/prayer-requests/${b.dataset.delete}`, { method: "DELETE", credentials: "same-origin" });
+      render();
+    }));
+  }
+  render();
 }

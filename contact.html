@@ -666,7 +666,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
     if (requestBox) requestBox.addEventListener("input", checkText);
 
-    prayerForm.addEventListener("submit", e => {
+    prayerForm.addEventListener("submit", async e => {
       e.preventDefault();
       if (!checkText()) {
         document.querySelector("#form-message").textContent =
@@ -674,11 +674,34 @@ document.addEventListener("DOMContentLoaded", () => {
         document.querySelector("#form-message").className = "error";
         return;
       }
-      document.querySelector("#form-message").className = "success";
-      document.querySelector("#form-message").textContent =
-        "Prototype only — this will be connected to the church's prayer request Google Form so Pastor Ladd can read it directly.";
-      prayerForm.reset();
-      if (warning) warning.style.display = "none";
+      const formData = new FormData(prayerForm);
+      const payload = {
+        name: formData.get("name") || "",
+        email: formData.get("email") || "",
+        request: formData.get("request") || "",
+        pray_aloud: formData.get("pray_aloud") === "yes"
+      };
+      const msgEl = document.querySelector("#form-message");
+      try {
+        const res = await fetch("/api/prayer-requests", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload)
+        });
+        const data = await res.json();
+        if (!res.ok || !data.ok) {
+          msgEl.className = "error";
+          msgEl.textContent = data.error || "Couldn't submit that — please try again.";
+          return;
+        }
+        msgEl.className = "success";
+        msgEl.textContent = "Thank you — your prayer request has been received.";
+        prayerForm.reset();
+        if (warning) warning.style.display = "none";
+      } catch {
+        msgEl.className = "error";
+        msgEl.textContent = "Couldn't reach the server right now — please try again in a moment.";
+      }
     });
   }
 
