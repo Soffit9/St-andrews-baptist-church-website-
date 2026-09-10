@@ -1,0 +1,2046 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Admin Users | St. Andrews Baptist Church</title><style>
+:root{--navy:#0c315f;--blue:#1261b0;--sky:#eaf4ff;--ink:#17202b;--muted:#5e6a78;--line:#d9e0e8;--paper:#fff;--soft:#f5f8fb;--radius:12px;--shadow:0 8px 28px rgba(16,45,80,.08);--shadow-lg:0 16px 40px rgba(12,49,95,.14);--gold:#c69a3f}
+*{box-sizing:border-box}html{scroll-behavior:smooth;height:100%}body{margin:0;min-height:100vh;display:flex;flex-direction:column;font-family:Arial,Helvetica,sans-serif;color:var(--ink);background:var(--paper);line-height:1.55}main{flex:1 0 auto}a{color:inherit;text-decoration:none}.container{width:min(1120px,92%);margin:auto}.narrow{max-width:900px}.site-header{position:sticky;top:0;z-index:20;background:#fff;border-bottom:1px solid var(--line)}.nav-wrap{display:flex;align-items:center;justify-content:space-between;min-height:78px;gap:24px}.brand{display:flex;align-items:center;gap:10px;color:var(--navy);font-family:Georgia,serif;font-size:20px;line-height:1}.brand strong{font-family:Arial,sans-serif;font-size:20px}.logo-placeholder{width:58px;height:44px;border:1px solid #b9c5d3;border-radius:7px;display:grid;place-items:center;font:700 10px Arial;color:#6b7785;background:#f7f9fb}.nav{display:flex;gap:18px;font-size:14px;font-weight:700}.nav a{padding:8px 2px;border-bottom:2px solid transparent}.nav a:hover,.nav a.active{color:var(--blue);border-color:var(--blue)}.menu-toggle{display:none;border:0;background:none;font-size:28px}.hero{background:linear-gradient(135deg,#e9f4ff,#fff);border-bottom:1px solid var(--line);padding:90px 0 78px;text-align:center;position:relative;overflow:hidden}
+.hero-bg{position:absolute;inset:0;background-size:cover;background-position:center;opacity:0;transition:opacity 1.8s ease;z-index:0}
+.hero-bg.active{opacity:1}
+.hero-overlay{position:absolute;inset:0;background:rgba(12,49,95,.6);z-index:1;opacity:0;transition:opacity 1.8s ease}
+.hero-overlay.on{opacity:1}
+.hero-inner{position:relative;z-index:2}
+.hero-inner.on-photo .eyebrow{color:#bcdcff}
+.hero-inner.on-photo h1,.hero-inner.on-photo .lead{color:#fff}.eyebrow{margin:0 0 8px;color:var(--blue);font-size:12px;font-weight:800;letter-spacing:1.5px}.hero h1,.page-hero h1{margin:0;color:var(--navy);font-family:Georgia,serif;font-size:clamp(38px,6vw,66px);line-height:1.05}.lead{font-size:21px;color:var(--muted)}.service-card{display:inline-flex;flex-direction:column;background:#fff;border:1px solid var(--line);padding:14px 28px;border-radius:10px;box-shadow:var(--shadow);margin:12px 0 22px}.service-card span{color:var(--muted)}.button{display:inline-block;border:1px solid var(--blue);background:var(--blue);color:#fff;padding:11px 18px;border-radius:7px;font-weight:800;cursor:pointer}.button:hover{filter:brightness(.94)}.button-light{background:#fff;color:var(--blue)}.button-row{display:flex;justify-content:center;gap:10px;flex-wrap:wrap}.section{padding:72px 0}.soft{background:var(--soft)}.section-heading{text-align:center;margin-bottom:28px}.section-heading h2,.section h2{color:var(--navy);font-family:Georgia,serif}.card-grid{display:grid;gap:16px}.card-grid.three{grid-template-columns:repeat(3,1fr)}.card,.event-row,.info-grid article{border:1px solid var(--line);border-radius:var(--radius);padding:20px;background:#fff;box-shadow:var(--shadow)}.card{display:flex;gap:15px}.card h3{margin:0 0 4px;color:var(--navy)}.card p{margin:0;color:var(--muted);font-size:14px}.date-badge{min-width:58px;height:58px;display:grid;place-items:center;text-align:center;border:1px solid #b9cde2;border-radius:8px;background:#f1f7fd;color:var(--blue);font-size:11px;font-weight:800;line-height:1.05}.date-badge b{font-size:21px}.center{text-align:center;margin-top:20px}.text-link{color:var(--blue);font-weight:800}.split{display:grid;grid-template-columns:1fr 1fr;gap:24px}.verse-box,.video-box{background:#fff;border:1px solid var(--line);padding:30px;border-radius:var(--radius);box-shadow:var(--shadow)}blockquote{font-family:Georgia,serif;font-size:24px;color:var(--navy);margin:15px 0}cite{color:var(--muted);font-style:normal}.video-placeholder,.image-placeholder,.map-placeholder{display:grid;place-items:center;background:linear-gradient(135deg,#dcecfd,#c3ddf6);border:1px solid #9dc3ea;color:var(--blue);font-weight:700;min-height:180px;overflow:hidden}.video-placeholder{font-size:42px}.video-placeholder.featured{min-height:420px;max-width:850px;margin:auto}.contact-strip{display:grid;grid-template-columns:1.5fr 1fr auto;gap:30px;align-items:center}.contact-mini{display:flex;flex-direction:column;color:var(--muted)}.footer{background:#0d2e57;color:#fff;padding:32px 0}.footer-grid{display:flex;justify-content:space-between;gap:20px;flex-wrap:wrap}.footer a{color:#dcecff;margin-right:18px;display:inline-block}
+.footer a:last-child{margin-right:0}.page-hero{background:var(--sky);padding:65px 0}.page-hero h1{font-size:clamp(38px,5vw,58px)}.page-hero p:not(.eyebrow){color:var(--muted);font-size:18px}.image-placeholder.large{height:300px;margin-bottom:40px;overflow:hidden}.placeholder-lines{color:var(--muted);max-width:760px}.info-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:15px;margin-top:35px}.info-grid article{box-shadow:none}.archive-title{margin-top:60px}.archive-list{display:grid;gap:10px}.archive-list button{background:#fff;border:1px solid var(--line);padding:16px 20px;text-align:left;font-size:17px;font-weight:800;color:var(--navy);border-radius:8px;cursor:pointer}.archive-list span{float:right}.sermon-meta{text-align:center}.event-row{display:flex;gap:20px;align-items:center;margin-bottom:14px}.month-heading{margin:35px 0 12px}.month-heading h2{margin:0}.form-card{max-width:720px;margin:auto}.form-card label,.login-card label{display:block;font-weight:800;margin-bottom:18px}.form-card label span{color:var(--muted);font-weight:400}.form-card input,.form-card textarea,.login-card input{width:100%;margin-top:7px;padding:12px;border:1px solid #b9c5d3;border-radius:7px;font:inherit}.privacy-note,.small{font-size:13px;color:var(--muted)}.success{color:#19734a;font-weight:700}.error{color:#a62929}.map-placeholder{min-height:220px;margin-top:20px}.check-list{padding-left:22px}.check-list li{margin:10px 0}.admin-page{background:#f3f6fa}.login-wrap{min-height:100vh;display:grid;place-items:center;padding:20px}.login-card{background:#fff;border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow);padding:38px;width:min(420px,100%);text-align:center}.login-card .logo-placeholder{margin:auto}.login-card h1{color:var(--navy);font-family:Georgia,serif}.admin-layout{min-height:100vh;display:grid;grid-template-columns:250px 1fr}.sidebar{background:#0d2e57;color:#fff;padding:25px 16px}.sidebar h2{font-family:Georgia,serif;padding:0 12px 20px;border-bottom:1px solid rgba(255,255,255,.2)}.sidebar nav{display:grid;gap:4px}.sidebar a{padding:11px 12px;border-radius:6px;color:#eaf3ff}.sidebar a:hover,.sidebar a.active{background:#174879}.admin-main{padding:38px}.admin-top{display:flex;justify-content:space-between;align-items:center;gap:20px}.admin-top h1{margin:0;color:var(--navy)}.notice{background:#fff8df;border:1px solid #e7d58a;padding:12px 15px;border-radius:8px}
+.file-warning{background:#fdeaea;border-bottom:3px solid #a62929;color:#7a1f1f;padding:14px 20px;font-weight:700;text-align:center}
+.file-warning a{color:#7a1f1f;text-decoration:underline}.quick-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:15px;margin-top:25px}.quick-grid button{background:#fff;border:1px solid var(--line);border-radius:10px;padding:22px;text-align:left;cursor:pointer;min-height:140px}.quick-grid button:hover{border-color:#8aa9c7;box-shadow:var(--shadow)}.quick-grid b{display:block;font-size:28px;color:var(--blue);margin-bottom:8px}.quick-grid strong,.quick-grid span{display:block}.quick-grid span{font-size:13px;color:var(--muted);margin-top:5px}
+.radio-row{display:flex;gap:22px;margin-top:8px;font-weight:400}
+.radio-row label{display:flex;align-items:center;gap:6px;font-weight:400;margin-bottom:0}
+.radio-row input{width:auto;margin:0}
+.filter-warning{background:#fdeaea;border:1px solid #e6a9a9;color:#8a2626;padding:10px 14px;border-radius:8px;font-size:13px;margin-top:10px;display:none}
+.verse-nav{display:flex;justify-content:space-between;align-items:center;margin-top:16px}
+.verse-nav button{background:#fff;border:1px solid var(--line);border-radius:7px;padding:6px 12px;cursor:pointer;font-weight:700;color:var(--blue);transition:box-shadow .15s,transform .15s}
+.verse-nav button:hover:not(:disabled){box-shadow:var(--shadow);transform:translateY(-1px)}
+.verse-nav button:disabled{opacity:.4;cursor:default}
+
+/* ---------- general polish ---------- */
+a,button{transition:box-shadow .15s ease,transform .15s ease,filter .15s ease,background .15s ease}
+.card:hover,.event-row:hover{box-shadow:var(--shadow-lg);transform:translateY(-2px)}
+.button:active{transform:translateY(1px)}
+.brand strong{position:relative}
+.footer a:hover{text-decoration:underline}
+
+/* Hover "wiggle/lift" used everywhere something is clickable */
+.nav a:hover,.info-grid article:hover,.person-card:hover,.archive-list button:hover,
+.manage-row:hover,.log-entry:hover,.image-upload-slot:hover,.roster-chip:hover,
+.quick-grid button:hover,.check-list li:hover,.text-link:hover,.button-light:hover{
+  box-shadow:var(--shadow);transform:translateY(-2px)
+}
+.person-card,.info-grid article,.archive-list button,.manage-row,.log-entry,.roster-chip,.check-list li{transition:box-shadow .15s ease,transform .15s ease}
+.check-list li{list-style:none;margin-left:-22px;padding:4px 8px 4px 26px;border-radius:6px;position:relative}
+.check-list li::before{content:"✓";position:absolute;left:4px;color:var(--blue);font-weight:800}
+
+/* ---------- Verse "find a day" jump control ---------- */
+.verse-jump{display:flex;align-items:center;gap:8px;margin-top:12px;font-size:13px;color:var(--muted);flex-wrap:wrap}
+.verse-jump input[type=date]{padding:5px 8px;border:1px solid #b9c5d3;border-radius:6px;font:inherit}
+@media(max-width:520px){.verse-jump label{display:none}.verse-jump{gap:6px}.verse-nav button{padding:6px 8px;font-size:13px}}
+
+/* ---------- Dark mode ---------- */
+.theme-toggle{background:#fff;border:1px solid var(--line);border-radius:20px;padding:6px 14px;font-weight:800;cursor:pointer;color:var(--navy);font-size:13px}
+[data-theme="dark"]{--navy:#e7edf6;--blue:#5da3f0;--sky:#16222f;--ink:#e9edf2;--muted:#a3aebb;--line:#2b3646;--paper:#0f1620;--soft:#161f2b;--shadow:0 8px 28px rgba(0,0,0,.35);--shadow-lg:0 16px 40px rgba(0,0,0,.45)}
+[data-theme="dark"] .site-header{background:#0f1620}
+[data-theme="dark"] .card,[data-theme="dark"] .event-row,[data-theme="dark"] .info-grid article,[data-theme="dark"] .service-card,[data-theme="dark"] .roster-chip,
+[data-theme="dark"] .verse-box,[data-theme="dark"] .video-box,[data-theme="dark"] .form-card,
+[data-theme="dark"] .person-card,[data-theme="dark"] .login-card,[data-theme="dark"] .manage-row,
+[data-theme="dark"] .log-entry{background:#141d29}
+[data-theme="dark"] .button-light{background:#141d29}
+[data-theme="dark"] .logo-placeholder{background:#1b2531;border-color:#2b3646;color:#a3aebb}
+[data-theme="dark"] .theme-toggle{background:#141d29;color:#e7edf6;border-color:#2b3646}
+[data-theme="dark"] .hero{background:linear-gradient(135deg,#16222f,#0f1620)}
+[data-theme="dark"] .archive-list button{background:#141d29}
+[data-theme="dark"] input,[data-theme="dark"] textarea,[data-theme="dark"] select{background:#1b2531;color:#e9edf2;border-color:#2b3646}
+
+/* ---------- Admin: page picker / dashboard ---------- */
+.dash-topbar{display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap}
+.toast{max-width:1120px;margin:14px auto 0;background:#e7f7ee;border:1px solid #a9dfc0;color:#1a6b3d;padding:12px 18px;border-radius:9px;font-weight:700;display:none}
+.toast.show{display:block}
+.quick-grid button{display:flex;flex-direction:column;gap:2px}
+
+/* ---------- Admin: edit form ---------- */
+.edit-shell{max-width:760px;margin:0 auto}
+.edit-field{margin-bottom:26px}
+.edit-field label{display:block;font-weight:800;color:var(--navy);margin-bottom:8px}
+.edit-field input[type=text],.edit-field textarea{width:100%;padding:12px;border:1px solid #b9c5d3;border-radius:8px;font:inherit;background:#fff}
+.edit-field textarea{resize:vertical}
+.field-hint{margin:-4px 0 10px;color:var(--muted);font-size:13px}
+.image-upload-slot{display:grid;place-items:center;height:180px;border:2px dashed #9dc3ea;border-radius:10px;background:linear-gradient(135deg,#dcecfd,#c3ddf6);color:var(--blue);font-weight:700;cursor:pointer;overflow:hidden}
+.image-upload-slot img{width:100%;height:100%;object-fit:cover}
+.size-field{margin-top:10px}
+.size-field input[type=range]{width:100%}
+.size-field .size-readout{font-size:12px;color:var(--muted);font-weight:400}
+.edit-actions{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-top:10px;flex-wrap:wrap}
+.edit-back{display:inline-block;margin-bottom:22px;color:var(--blue);font-weight:800}
+
+/* ---------- Modal ---------- */
+.modal-overlay{position:fixed;inset:0;background:rgba(10,25,45,.5);display:none;align-items:center;justify-content:center;z-index:50;padding:20px}
+.modal-overlay.open{display:flex}
+.modal-box{background:#fff;border-radius:14px;box-shadow:var(--shadow-lg);padding:30px;max-width:420px;width:100%;text-align:center}
+.modal-box h3{margin:0 0 10px;color:var(--navy);font-family:Georgia,serif}
+.modal-actions{display:flex;justify-content:center;gap:12px;margin-top:20px}
+
+/* ---------- Two-step login ---------- */
+.hidden-step{display:none}
+.code-box{background:var(--sky);border:1px solid #b9d8f5;border-radius:9px;padding:14px;margin:16px 0;font-size:14px}
+.code-box strong{display:block;font-size:26px;letter-spacing:4px;color:var(--navy);margin-top:4px}
+#code-input{letter-spacing:6px;font-size:20px;text-align:center}
+.text-btn{background:none;border:0;color:var(--blue);font-weight:800;cursor:pointer;padding:0;text-decoration:underline}
+
+/* ---------- Edit page: split editor + live preview ---------- */
+.edit-split{display:grid;grid-template-columns:1fr 1fr;gap:28px;align-items:start}
+.edit-col h3,.preview-col h3{color:var(--navy);font-family:Georgia,serif;margin-top:0}
+.preview-col{position:sticky;top:90px;background:var(--soft);border:1px solid var(--line);border-radius:var(--radius);padding:20px}
+.preview-frame{background:#fff;border:1px solid var(--line);border-radius:10px;padding:22px;box-shadow:var(--shadow)}
+.preview-frame .eyebrow{font-size:10px}
+.preview-frame h1,.preview-frame h2{font-size:22px;margin:8px 0}
+.preview-frame p{font-size:14px}
+@media(max-width:900px){.edit-split{grid-template-columns:1fr}.preview-col{position:static}}
+
+/* ---------- Calendar (Sunday roles) ---------- */
+.cal-topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
+.cal-topbar button{background:#fff;border:1px solid var(--line);border-radius:7px;padding:8px 14px;font-weight:800;color:var(--blue);cursor:pointer}
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;text-align:center}
+.cal-grid .cal-dow{font-size:11px;font-weight:800;color:var(--muted);padding:4px 0}
+.cal-day{border:1px solid var(--line);border-radius:8px;min-height:56px;padding:6px 4px;font-size:13px;color:var(--muted);background:#fff}
+.cal-day.empty{border:none;background:transparent}
+.cal-day.clickable{cursor:pointer}
+.cal-day.clickable:hover{box-shadow:var(--shadow);transform:translateY(-1px)}
+.cal-day.sunday{background:var(--sky);border-color:#b9d8f5;color:var(--navy);font-weight:800}
+.cal-day.has-data::after{content:"●";display:block;color:var(--blue);font-size:10px}
+.cal-day.selected{outline:2px solid var(--blue)}
+.role-panel{margin-top:26px;border:1px solid var(--line);border-radius:var(--radius);padding:22px;background:var(--soft)}
+.role-row{display:grid;grid-template-columns:1fr auto;gap:10px;align-items:center;margin-bottom:12px;background:#fff;border:1px solid var(--line);border-radius:8px;padding:10px 14px}
+.role-row label{font-weight:800;color:var(--navy);font-size:14px;display:block;margin-bottom:4px}
+.role-row input[type=text]{width:100%;padding:8px;border:1px solid #b9c5d3;border-radius:6px;font:inherit}
+.role-row select{padding:8px;border:1px solid #b9c5d3;border-radius:6px;font:inherit;font-weight:700}
+.roster-bar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:18px}
+.roster-chip{background:#fff;border:1px solid var(--line);border-radius:20px;padding:5px 12px;font-size:13px;display:flex;align-items:center;gap:6px}
+.roster-chip button{background:none;border:0;color:#a62929;cursor:pointer;font-weight:800}
+
+/* ---------- Who's Who ---------- */
+.person-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
+.person-card{border:1px solid var(--line);border-radius:var(--radius);background:#fff;box-shadow:var(--shadow);overflow:hidden;text-align:center;padding-bottom:18px}
+.person-photo{height:170px;background:linear-gradient(135deg,#dcecfd,#c3ddf6);display:grid;place-items:center;color:var(--blue);font-weight:700;overflow:hidden}
+.person-photo img{display:block;width:100%;height:100%;object-fit:cover}
+.person-card h3{margin:16px 0 2px;padding-top:2px;color:var(--navy);border-top:1px solid var(--line)}
+.person-role{color:var(--blue);font-weight:700;font-size:13px;margin-bottom:8px}
+.person-contact{font-size:13px;color:var(--muted)}
+@media(max-width:850px){.person-grid{grid-template-columns:1fr 1fr}}
+@media(max-width:520px){.person-grid{grid-template-columns:1fr}}
+
+/* ---------- Admin: people/roster management lists ---------- */
+.manage-list{display:grid;gap:10px;margin:20px 0}
+.manage-row{display:grid;grid-template-columns:1fr 1fr 1fr auto;gap:10px;align-items:center;background:#fff;border:1px solid var(--line);border-radius:8px;padding:10px 14px}
+.manage-row input,.manage-row select{padding:8px;border:1px solid #b9c5d3;border-radius:6px;font:inherit;width:100%}
+.manage-row button{background:none;border:0;color:#a62929;font-weight:800;cursor:pointer}
+@media(max-width:750px){.manage-row{grid-template-columns:1fr}}
+
+/* ---------- Log page ---------- */
+.log-entry{border:1px solid var(--line);border-radius:8px;background:#fff;padding:12px 16px;margin-bottom:10px}
+.log-entry time{font-size:12px;color:var(--muted);display:block;margin-bottom:4px}
+.log-entry .log-page{font-weight:800;color:var(--navy)}
+.log-change{font-size:13px;color:var(--muted);margin:2px 0}
+.log-change b{color:var(--ink)}
+.log-actions{display:flex;gap:16px;margin-top:10px}
+.preview-before-after{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:12px}
+.preview-before-after h4{margin:0 0 6px;color:var(--navy);font-size:13px;text-transform:uppercase;letter-spacing:.5px}
+.preview-before-after .preview-frame{padding:14px;font-size:13px}
+.preview-before-after .preview-frame ul{margin:0;padding-left:18px}
+@media(max-width:700px){.preview-before-after{grid-template-columns:1fr}}
+@media(max-width:850px){.nav{display:none;position:absolute;top:78px;left:0;right:0;background:#fff;border-bottom:1px solid var(--line);padding:15px 4%;flex-direction:column}.nav.open{display:flex}.menu-toggle{display:block}.card-grid.three,.split,.contact-strip{grid-template-columns:1fr}.quick-grid{grid-template-columns:repeat(2,1fr)}.admin-layout{grid-template-columns:1fr}.sidebar{position:static}.admin-main{padding:24px}.admin-top{align-items:flex-start;flex-direction:column}.video-placeholder.featured{min-height:250px}}
+@media(max-width:520px){.info-grid,.quick-grid{grid-template-columns:1fr}.hero{padding:65px 0}.brand{font-size:17px}.brand strong{font-size:17px}.section{padding:50px 0}.event-row{align-items:flex-start}}
+
+/* ---------- Dark mode: decisive catch-all (guarantees every surface goes
+   dark, instead of chasing one selector at a time — this is deliberately
+   !important since it's the final safety net for the whole page) ---------- */
+[data-theme="dark"] body{background:var(--paper) !important;color:var(--ink) !important}
+[data-theme="dark"] .admin-page,[data-theme="dark"] .admin-main,[data-theme="dark"] .admin-layout,
+[data-theme="dark"] .login-wrap{background:var(--paper) !important}
+[data-theme="dark"] .card,[data-theme="dark"] .quick-grid button,[data-theme="dark"] .manage-row,
+[data-theme="dark"] .person-card,[data-theme="dark"] .log-entry,[data-theme="dark"] .role-row,
+[data-theme="dark"] .cal-day,[data-theme="dark"] .event-row,[data-theme="dark"] .info-grid article,
+[data-theme="dark"] .service-card,[data-theme="dark"] .verse-box,[data-theme="dark"] .video-box,
+[data-theme="dark"] .form-card,[data-theme="dark"] .login-card,[data-theme="dark"] .preview-frame,
+[data-theme="dark"] .modal-box,[data-theme="dark"] .code-box,[data-theme="dark"] .roster-chip,
+[data-theme="dark"] .archive-list button,[data-theme="dark"] .image-upload-slot,
+[data-theme="dark"] .person-edit-card{
+  background:#141d29 !important;border-color:#2b3646 !important;color:#e9edf2 !important
+}
+[data-theme="dark"] .cal-day.sunday{background:#16222f !important}
+[data-theme="dark"] .notice{background:#2a2716 !important;border-color:#5c5323 !important;color:#e9edf2 !important}
+[data-theme="dark"] .toast{background:#132a1e !important;border-color:#255c3a !important;color:#8fe3b3 !important}
+[data-theme="dark"] .filter-warning{background:#2a1616 !important;border-color:#5c2323 !important;color:#f0a3a3 !important}
+[data-theme="dark"] h1,[data-theme="dark"] h2,[data-theme="dark"] h3,[data-theme="dark"] strong,
+[data-theme="dark"] .quick-grid span,[data-theme="dark"] .field-hint,[data-theme="dark"] .log-change{color:#e9edf2 !important}
+[data-theme="dark"] .quick-grid b{color:#5da3f0 !important}
+[data-theme="dark"] input,[data-theme="dark"] textarea,[data-theme="dark"] select{
+  background:#1b2531 !important;color:#e9edf2 !important;border-color:#2b3646 !important
+}
+
+/* Fix: .fields-col/.photo-col/.person-edit-top were referenced in the
+   Who's Who admin editor but never had CSS defined, so inputs fell back
+   to default inline-block flow and wrapped 2-per-row instead of stacking
+   cleanly. This defines them properly, one field per row. */
+.person-edit-top{display:contents}
+.photo-col{display:flex;flex-direction:column;gap:6px}
+.photo-col .image-upload-slot{height:120px}
+.fields-col{display:grid;grid-template-columns:1fr;gap:10px;align-content:start}
+.fields-col input{display:block;width:100%;padding:9px 12px;border:1px solid #b9c5d3;border-radius:7px;font:inherit;box-sizing:border-box}
+@media(max-width:600px){.person-edit-top{display:block}}
+
+</style></head>
+<body class="admin-page">
+<div class="admin-topbar"><button class="theme-toggle" id="theme-toggle" type="button" aria-label="Toggle dark mode">🌙</button></div>
+<div class="admin-main" style="max-width:900px;margin:0 auto">
+  <a class="edit-back" href="dashboard.html">← Back to Dashboard</a>
+  <h1>Admin Users</h1>
+  <p class="notice">Keep track of who's on the admin team and what they should be able to do. Real per-person login comes with the backend — see the note below.</p>
+  <div id="admins-root"></div>
+</div>
+<script>
+/* ---------------------------------------------------------------------
+   Prototype CMS "content" layer.
+   Everything a user edits in /admin/edit.html is stored in the browser's
+   localStorage (key: sabc_content) and re-applied on top of the default
+   text/images every time a public page loads. There's no server yet —
+   this is here to prove out the editing experience before a real
+   Raspberry Pi backend replaces it. Content is scoped by page + field id,
+   and only the fields listed below are editable, on purpose, so nobody
+   can accidentally break the page layout.
+--------------------------------------------------------------------- */
+
+/* ---------- Dark mode (works on every page, admin included; defaults to light) ---------- */
+document.addEventListener("DOMContentLoaded", async () => {
+  const THEME_KEY = "sabc_theme";
+  const themeBtn = document.querySelector("#theme-toggle");
+  const SUN_ICON = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>';
+  const MOON_ICON = '<svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>';
+  function applyTheme(theme) {
+    if (theme === "dark") { document.documentElement.setAttribute("data-theme", "dark"); if (themeBtn) themeBtn.innerHTML = SUN_ICON; }
+    else { document.documentElement.removeAttribute("data-theme"); if (themeBtn) themeBtn.innerHTML = MOON_ICON; }
+  }
+  applyTheme(localStorage.getItem(THEME_KEY) || "light");
+  if (themeBtn) themeBtn.addEventListener("click", () => {
+    const next = document.documentElement.getAttribute("data-theme") === "dark" ? "light" : "dark";
+    localStorage.setItem(THEME_KEY, next);
+    applyTheme(next);
+  });
+
+  // Load the REAL server-side login session before anything on the page
+  // tries to check "is someone logged in, and as who" — admin.js and
+  // features.js both wait for this event instead of their own
+  // DOMContentLoaded, so they never run against stale/empty session data.
+  await fetchSession();
+  document.dispatchEvent(new CustomEvent("sabc:session-ready"));
+});
+
+/* ---------------- Admin identity & access level — REAL now, backed by
+   the Flask server's session cookie instead of a client-side guess. ---------------- */
+window.__adminSession = null; // populated once, at page load, by fetchSession() below
+
+async function fetchSession() {
+  try {
+    const res = await fetch("/api/auth/session", { credentials: "same-origin" });
+    window.__adminSession = await res.json();
+  } catch {
+    // Backend unreachable (e.g. testing a page straight off disk with no
+    // server behind it) — treat as logged out rather than crash the page.
+    window.__adminSession = { loggedIn: false };
+  }
+  return window.__adminSession;
+}
+
+async function cmsGetAdminUsers() {
+  try {
+    const res = await fetch("/api/admins", { credentials: "same-origin" });
+    return await res.json();
+  } catch {
+    return [];
+  }
+}
+function cmsGetCurrentAdmin() {
+  const s = window.__adminSession;
+  if (!s || !s.loggedIn) return null;
+  return { name: s.name, email: s.email, access: s.access };
+}
+function cmsCanEdit() {
+  const a = cmsGetCurrentAdmin();
+  return !a || a.access !== "View Only"; // no identity picked yet -> don't lock anyone out
+}
+/* Locks text/select fields (and "add/remove" style buttons) inside a
+   container for View Only admins. File inputs and range sliders are left
+   alone on purpose — "every admin can at least view and upload photos". */
+function cmsApplyViewOnlyLock(container) {
+  if (cmsCanEdit()) return;
+  container.querySelectorAll('input[type="text"], input[type="email"], textarea').forEach(el => el.readOnly = true);
+  container.querySelectorAll('select').forEach(el => el.disabled = true);
+  container.querySelectorAll('button').forEach(el => {
+    if (el.dataset.allowViewOnly === undefined) el.disabled = true;
+  });
+  const banner = document.createElement("p");
+  banner.className = "notice";
+  banner.style.background = "#fdeaea";
+  banner.style.borderColor = "#e6a9a9";
+  banner.textContent = "👁 You're logged in with View Only access — you can browse everything and upload/reposition photos, but text and list changes are locked. Ask a Full Admin or Can-Edit admin for changes.";
+  container.prepend(banner);
+}
+
+const CMS_SCHEMA = {
+  global: {
+    label: "Site-wide",
+    fields: [],
+    images: [
+      { id: "logo", label: "Church Logo", hint: "Shows in the header on every page.", sizable: true, positionable: true, sizeMin: 32, sizeMax: 90, sizeDefault: 44 }
+    ]
+  },
+  home: {
+    label: "Homepage",
+    fields: [
+      { id: "hero_heading", label: "Welcome Heading", type: "text", default: "Welcome to St. Andrews Baptist Church" },
+      { id: "hero_sub", label: "Tagline", type: "text", default: "Everyone Welcome" },
+      { id: "service_time", label: "Sunday Service Time", type: "text", default: "10:30 AM in person · Facebook Live 6:30 PM" }
+    ],
+    images: []
+  },
+  about: {
+    label: "About Page",
+    fields: [
+      { id: "pastor_note", label: "Pastor Welcome Note", type: "textarea",
+        default: "Join Pastor Ladd Dunfield in person on Sunday mornings at 10:30 AM at St. Andrews Baptist Church, on Facebook for weekly Sunday messages at 6:30 PM, and on Tuesdays for Bible study at 7:00 PM." },
+      { id: "history_note", label: "Our History — opening paragraph", type: "textarea",
+        default: "Second St. Andrews Baptist Church organized on January 4, 1865. The building — built that year in the \"Carpenter Gothic\" style and nicknamed the \"Wedding Cake Church\" — still stands today, carrying the memory of the generations who built and cared for it." },
+      { id: "history_note_more", label: "Our History — rest of the story", type: "textarea",
+        default: "Over two centuries ago, St. Andrews was larger than what we think of it today. It wound along the shores of the St. Croix River in what is now Bayside, where the first St. Andrews Baptist Church was built — the \"Mother Church\" that later became Bayside United Baptist Church in 1941.\n\nIn 1796, James and Edward Manning preached up and down the shores of the St. Croix, sparking a revival that helped shape the earliest Baptist congregations in the area. Preachers like Thomas Ansley, Isaac Case, and Henry Hall continued that work through the early 1800s, and by 1806 the church membership had grown to forty-two.\n\nThe church we are part of today organized in the 1860s, as members of the original church found the winter trip into town increasingly difficult. Second St. Andrews Baptist Church was formally organized on January 4, 1865. Its handmade woodwork, the 1965 baptistery, and its stained glass windows all carry the memory of the generations who built and cared for this church.\n\nFor a century and a half, this church has been a place to worship, pray, hear God's Word, and share His love in St. Andrews and beyond." },
+      { id: "partner1_desc", label: "Canadian Baptists of Atlantic Canada — description", type: "textarea",
+        default: "A partnership of more than 450 Baptist churches and 21 associations across Atlantic Canada, resourcing pastors, churches, and shared mission." },
+      { id: "partner2_desc", label: "Canadian Baptist Ministries — description", type: "textarea",
+        default: "A global mission organization sharing God's love in word and deed, and believing God brings healing to a broken world through local churches." },
+      { id: "partner3_desc", label: "Crandall University — description", type: "textarea",
+        default: "Atlantic Canada's leading Christian liberal arts university, founded in 1949 in Moncton, New Brunswick." },
+      { id: "partner4_desc", label: "Acadia Divinity College — description", type: "textarea",
+        default: "The Faculty of Theology at Acadia University, offering the biblical and theological foundation for ministry training." },
+      { id: "what_we_believe", label: "What We Believe", type: "textarea", default: "Full statement of faith to be added here." },
+      { id: "leadership_note", label: "Leadership", type: "textarea", default: "Church leadership information to be added." },
+      { id: "communion_note", label: "Open Communion", type: "textarea", default: "Information about open communion to be added." },
+      { id: "sunday_school_note", label: "Sunday School", type: "textarea", default: "Information for children and families to be added." }
+    ],
+    images: [
+      { id: "church_photo", label: "Church Photo", hint: "Shown near the top of the About page.", sizable: true }
+    ]
+  },
+  sermons: {
+    label: "Sermons Page",
+    fields: [
+      { id: "latest_title", label: "Latest Sermon Title", type: "text", default: "Sermon title" },
+      { id: "latest_speaker", label: "Speaker", type: "text", default: "Speaker" },
+      { id: "latest_passage", label: "Bible Passage", type: "text", default: "Bible passage" },
+      { id: "youtube_id", label: "YouTube Video (paste the video ID or the full link)", type: "text", default: "" }
+    ],
+    images: []
+  },
+  events: {
+    label: "Events Page",
+    fields: [
+      { id: "events_note", label: "Note above the list", type: "textarea", default: "See what's coming up at St. Andrews Baptist Church." }
+    ],
+    images: []
+  },
+  prayer: {
+    label: "Prayer Page",
+    fields: [
+      { id: "prayer_intro", label: "Intro Text", type: "textarea", default: "We would love to pray for you." }
+    ],
+    images: []
+  },
+  contact: {
+    label: "Contact Page",
+    fields: [
+      { id: "address", label: "Address", type: "text", default: "115 King Street, St. Andrews, NB" },
+      { id: "phone", label: "Phone", type: "text", default: "(506) 529-3022" },
+      { id: "email", label: "Email", type: "text", default: "ladd@thebeggardanced.com" }
+    ],
+    images: []
+  },
+  giving: {
+    label: "Giving Page",
+    fields: [
+      { id: "etransfer_note", label: "E-Transfer Instructions", type: "textarea", default: "Giving details are still being finalized. Once Pastor Ladd confirms the e-transfer address and any instructions, they'll go here." },
+      { id: "tax_note", label: "Tax Receipt Note", type: "textarea", default: "Receipts are issued for donations of $20 or more. Final tax receipt details will be confirmed by the church." }
+    ],
+    images: []
+  }
+};
+
+const CMS_KEY = "sabc_content";
+
+function cmsStorageWorks() {
+  try {
+    localStorage.setItem("sabc_test", "1");
+    const ok = localStorage.getItem("sabc_test") === "1";
+    localStorage.removeItem("sabc_test");
+    return ok;
+  } catch { return false; }
+}
+
+function cmsLoadAll() {
+  try {
+    return JSON.parse(localStorage.getItem(CMS_KEY)) || {};
+  } catch {
+    return {};
+  }
+}
+
+function cmsSavePage(pageKey, data) {
+  const all = cmsLoadAll();
+  const before = all[pageKey] || {};
+  const changes = [];
+  Object.keys(data).forEach(k => {
+    if (before[k] !== data[k]) {
+      const rawOld = before[k] ?? null, rawNew = data[k] ?? null;
+      const isImage = (typeof rawOld === "string" && rawOld.startsWith("data:image")) || (typeof rawNew === "string" && rawNew.startsWith("data:image"));
+      const change = { field: k, old: cmsTrim(rawOld), new: cmsTrim(rawNew), revertable: !isImage };
+      if (!isImage) { change.rawOld = rawOld; change.rawNew = rawNew; } // needed to actually revert; skipped for photos to keep the log small
+      changes.push(change);
+    }
+  });
+  all[pageKey] = { ...before, ...data };
+  try {
+    localStorage.setItem(CMS_KEY, JSON.stringify(all));
+  } catch (err) {
+    console.error("cmsSavePage failed to save:", err);
+    return { ok: false, error: err };
+  }
+  cmsLogChange(pageKey, changes);
+  return { ok: true };
+}
+
+/* Reverts every revertable field in a log entry back to its recorded
+   "old" value. Photos can't be auto-reverted (their old data isn't kept
+   in the log, to avoid bloating storage) — those need a manual re-upload. */
+function cmsRevertLogEntry(entry) {
+  const revertData = {};
+  let any = false;
+  (entry.changes || []).forEach(c => {
+    if (c.revertable) { revertData[c.field] = c.rawOld; any = true; }
+  });
+  if (!any) return { ok: false, reason: "nothing revertable" };
+  return cmsSavePage(entry.page, revertData);
+}
+
+/* Same idea as above, but for the non-schema features (Calendar, Who's
+   Who, Admin Users) that save a whole list/object straight to localStorage
+   instead of going through cmsSavePage. Photo fields are stripped out
+   before being kept in the log, same reasoning as above. */
+function cmsStripImages(value) {
+  if (typeof value === "string") return value.startsWith("data:image") ? "(photo — omitted from log to save space)" : value;
+  if (Array.isArray(value)) return value.map(cmsStripImages);
+  if (value && typeof value === "object") {
+    const out = {};
+    Object.keys(value).forEach(k => { out[k] = cmsStripImages(value[k]); });
+    return out;
+  }
+  return value;
+}
+function cmsLogRawChange(label, revertKey, revertPath, before, after) {
+  cmsLogChange(label, [{
+    field: label, old: "(previous version)", new: "(updated)", revertable: true, isRaw: true,
+    revertKey, revertPath, rawOld: cmsStripImages(before), rawNew: cmsStripImages(after)
+  }]);
+}
+function cmsRevertRawEntry(entry) {
+  const c = (entry.changes || [])[0];
+  if (!c || !c.revertable || !c.isRaw) return { ok: false };
+  try {
+    if (c.revertPath) {
+      const data = JSON.parse(localStorage.getItem(c.revertKey) || "{}");
+      data[c.revertPath] = c.rawOld;
+      localStorage.setItem(c.revertKey, JSON.stringify(data));
+    } else {
+      localStorage.setItem(c.revertKey, JSON.stringify(c.rawOld));
+    }
+    return { ok: true };
+  } catch (err) {
+    return { ok: false, error: err };
+  }
+}
+
+/* Shrinks a photo before it's stored, so a phone photo (often several MB)
+   doesn't blow past the browser's ~5-10MB localStorage limit. Without this,
+   uploading a couple of full-size photos can silently fail to save. */
+function compressImage(file, maxDimension = 1000, quality = 0.75) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onerror = () => reject(reader.error);
+    reader.onload = () => {
+      const img = new Image();
+      img.onerror = () => reject(new Error("Could not read that image."));
+      img.onload = () => {
+        let { width, height } = img;
+        if (width > maxDimension || height > maxDimension) {
+          if (width > height) { height = Math.round(height * (maxDimension / width)); width = maxDimension; }
+          else { width = Math.round(width * (maxDimension / height)); height = maxDimension; }
+        }
+        const canvas = document.createElement("canvas");
+        canvas.width = width; canvas.height = height;
+        canvas.getContext("2d").drawImage(img, 0, 0, width, height);
+        resolve(canvas.toDataURL("image/jpeg", quality));
+      };
+      img.src = reader.result;
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
+/* Safe wrapper for any other feature (calendar, Who's Who, admins) that
+   writes straight to localStorage, so a storage failure shows up instead
+   of silently doing nothing. */
+function safeSetItem(key, value) {
+  try {
+    localStorage.setItem(key, value);
+    return true;
+  } catch (err) {
+    console.error("Storage write failed for", key, err);
+    alert("This didn't save — the browser's local storage is full (usually from too many/too-large photos). Try removing a photo or two, or use smaller photos, then try again.");
+    return false;
+  }
+}
+
+function cmsGetPage(pageKey) {
+  const all = cmsLoadAll();
+  const schema = CMS_SCHEMA[pageKey];
+  const saved = all[pageKey] || {};
+  const result = {};
+  if (schema) {
+    schema.fields.forEach(f => { result[f.id] = saved[f.id] ?? f.default; });
+    schema.images.forEach(img => {
+      result[img.id] = saved[img.id] || null;
+      result[img.id + "_h"] = saved[img.id + "_h"] || 300;
+      result[img.id + "_pos"] = saved[img.id + "_pos"] ?? 50;
+    });
+  }
+  return result;
+}
+
+/* ---------------- Audit log ---------------- */
+const CMS_LOG_KEY = "sabc_audit_log";
+
+function cmsLogChange(page, changes) {
+  if (!changes || !changes.length) return;
+  const log = JSON.parse(localStorage.getItem(CMS_LOG_KEY) || "[]");
+  log.unshift({ ts: new Date().toISOString(), page, changes });
+  if (log.length > 500) log.length = 500;
+  safeSetItem(CMS_LOG_KEY, JSON.stringify(log));
+}
+
+function cmsTrim(v) {
+  if (v === null || v === undefined || v === "") return "(empty)";
+  const s = String(v);
+  if (s.startsWith("data:image")) return "(new photo uploaded)";
+  return s.length > 70 ? s.slice(0, 70) + "…" : s;
+}
+
+/* Applies saved content to a public page. Call on DOMContentLoaded with
+   the page key ("home", "about", etc). Looks for elements marked
+   data-field="fieldId" (text) and data-image="imageId" (image slot). */
+function cmsApplyToPage(pageKey) {
+  const global = cmsGetPage("global");
+  if (global.logo) {
+    const logoH = global.logo_h || 44;
+    const logoW = Math.round(logoH * (58 / 44)); // keep the original box's proportions
+    const logoPos = global.logo_pos ?? 50;
+    document.querySelectorAll("[data-image='logo']").forEach(el => {
+      el.style.height = logoH + "px";
+      el.style.width = logoW + "px";
+      el.innerHTML = `<img src="${global.logo}" alt="Church logo" style="width:100%;height:100%;object-fit:contain;object-position:50% ${logoPos}%;border-radius:7px">`;
+    });
+  }
+
+  if (!pageKey || !CMS_SCHEMA[pageKey]) return;
+  const content = cmsGetPage(pageKey);
+
+  document.querySelectorAll("[data-field]").forEach(el => {
+    const id = el.getAttribute("data-field");
+    if (content[id] !== undefined && content[id] !== null) {
+      el.textContent = content[id];
+    }
+  });
+
+  document.querySelectorAll("[data-image]").forEach(el => {
+    const id = el.getAttribute("data-image");
+    if (id === "logo") return; // handled above, global
+    if (content[id]) {
+      const h = content[id + "_h"] || 300;
+      const pos = content[id + "_pos"] ?? 50;
+      el.style.height = h + "px";
+      el.style.overflow = "hidden";
+      el.innerHTML = `<img src="${content[id]}" alt="" style="width:100%;height:100%;object-fit:cover;object-position:50% ${pos}%;border-radius:inherit">`;
+    }
+  });
+
+  // Sermons: swap in a YouTube embed if a video has been set
+  if (pageKey === "sermons" && content.youtube_id) {
+    const slot = document.querySelector("#sermon-video");
+    if (slot) {
+      const match = String(content.youtube_id).match(/(?:v=|youtu\.be\/|embed\/)?([a-zA-Z0-9_-]{11})(?:[?&]|$)/);
+      const vid = match ? match[1] : content.youtube_id;
+      slot.innerHTML = `<iframe width="100%" height="100%" style="position:absolute;inset:0;border:0" src="https://www.youtube.com/embed/${vid}" title="Latest sermon" allowfullscreen></iframe>`;
+      slot.style.position = "relative";
+      slot.style.paddingBottom = "56.25%";
+      slot.style.height = "0";
+    }
+  }
+
+  // Homepage "Latest Sermon" box always mirrors the real Sermons page content,
+  // so there's one single place (Admin → Sermons) to edit it, not two.
+  const homeVideoSlot = document.querySelector("#home-sermon-video");
+  if (homeVideoSlot) {
+    const sermonContent = cmsGetPage("sermons");
+    const titleEl = document.querySelector("#home-sermon-title");
+    if (titleEl && sermonContent.latest_title) titleEl.textContent = sermonContent.latest_title;
+    if (sermonContent.youtube_id) {
+      const match = String(sermonContent.youtube_id).match(/(?:v=|youtu\.be\/|embed\/)?([a-zA-Z0-9_-]{11})(?:[?&]|$)/);
+      const vid = match ? match[1] : sermonContent.youtube_id;
+      homeVideoSlot.innerHTML = `<iframe width="100%" height="100%" style="position:absolute;inset:0;border:0" src="https://www.youtube.com/embed/${vid}" title="Latest sermon" allowfullscreen></iframe>`;
+      homeVideoSlot.style.position = "relative";
+      homeVideoSlot.style.paddingBottom = "56.25%";
+      homeVideoSlot.style.height = "0";
+      const fallback = document.querySelector("#home-sermon-fallback-text");
+      if (fallback) fallback.style.display = "none";
+    }
+  }
+}
+
+</script>
+<script>
+/* ---------------------------------------------------------------------
+   Admin-only behaviour: login flow (prototype 2-step), the "which page
+   do you want to edit" picker, and the edit form itself.
+--------------------------------------------------------------------- */
+
+// Password checking now happens server-side (backend/app.py) — nothing
+// resembling a password lives in this file anymore, on purpose. That was
+// the entire point of building the real backend: a visitor viewing this
+// page's source can no longer just read the password.
+
+function requireLogin() {
+  if (!window.__adminSession || !window.__adminSession.loggedIn) {
+    window.location.href = "login.html";
+  }
+}
+
+/* Shows a small "logged in as X (access level)" indicator on every admin
+   page, so if something seems locked/won't save, it's obvious at a glance
+   whether you're on a View Only account instead of a mystery bug. */
+function showWhoAmI() {
+  if (document.querySelector("#login-step-1")) return; // not logged in yet on this page
+  const me = cmsGetCurrentAdmin();
+  if (!me) return;
+  const topbar = document.querySelector(".admin-topbar") || document.querySelector(".admin-top");
+  if (!topbar) return;
+  const tag = document.createElement("span");
+  tag.style.cssText = "font-size:12px;color:var(--muted);margin-left:auto;margin-right:12px;align-self:center";
+  tag.textContent = `Logged in as ${me.name || me.email} (${me.access || "Full Admin"})`;
+  topbar.appendChild(tag);
+}
+document.addEventListener("sabc:session-ready", showWhoAmI);
+
+/* Small mockups of each page's editable region, used as the live preview
+   pane in edit.html. Kept intentionally simple (not the full page chrome)
+   so it's fast and can't drift out of sync with the real header/nav. */
+function previewTemplate(pageKey, c) {
+  const imgBox = (id, label) => c[id]
+    ? `<div data-preview-image="${id}" style="height:${c[id+'_h']||300}px;border-radius:10px;overflow:hidden"><img src="${c[id]}" style="width:100%;height:100%;object-fit:cover;object-position:50% ${c[id+'_pos']??50}%"></div>`
+    : `<div class="image-placeholder" data-preview-image="${id}" style="height:${c[id+'_h']||300}px;border-radius:10px">${label}</div>`;
+
+  switch (pageKey) {
+    case "global":
+      return `<div style="display:flex;align-items:center;gap:10px">
+        <div class="logo-placeholder" data-preview-image="logo" style="${c.logo ? `height:${c.logo_h||44}px;width:${Math.round((c.logo_h||44)*(58/44))}px` : ""}">${c.logo ? `<img src="${c.logo}" style="width:100%;height:100%;object-fit:contain;object-position:50% ${c.logo_pos??50}%">` : "LOGO"}</div>
+        <strong>St. Andrews Baptist Church</strong></div>
+        <p class="field-hint" style="margin-top:14px">The logo appears at this size in the header on every page.</p>`;
+    case "home":
+      return `<p class="eyebrow">ST. ANDREWS BAPTIST CHURCH</p>
+        <h1 data-preview="hero_heading">${c.hero_heading}</h1>
+        <p class="lead" data-preview="hero_sub">${c.hero_sub}</p>
+        <div class="service-card"><strong>Sunday Worship</strong><span data-preview="service_time">${c.service_time}</span></div>`;
+    case "about":
+      return `${imgBox("church_photo", "CHURCH PHOTO")}
+        <h2 style="margin-top:16px">Meet Our Pastor</h2>
+        <p data-preview="pastor_note">${c.pastor_note}</p>
+        <h2>Our History</h2>
+        <p data-preview="history_note">${c.history_note}</p>
+        <p data-preview="history_note_more" style="white-space:pre-line">${c.history_note_more}</p>
+        <h2>Partner Ministries</h2>
+        <p><b>Canadian Baptists of Atlantic Canada</b><br><span data-preview="partner1_desc">${c.partner1_desc}</span></p>
+        <p><b>Canadian Baptist Ministries</b><br><span data-preview="partner2_desc">${c.partner2_desc}</span></p>
+        <p><b>Crandall University</b><br><span data-preview="partner3_desc">${c.partner3_desc}</span></p>
+        <p><b>Acadia Divinity College</b><br><span data-preview="partner4_desc">${c.partner4_desc}</span></p>
+        <h2>What We Believe</h2>
+        <p data-preview="what_we_believe">${c.what_we_believe}</p>
+        <h2>Leadership</h2><p data-preview="leadership_note">${c.leadership_note}</p>
+        <h2>Open Communion</h2><p data-preview="communion_note">${c.communion_note}</p>
+        <h2>Sunday School</h2><p data-preview="sunday_school_note">${c.sunday_school_note}</p>`;
+    case "sermons":
+      return `<div class="video-placeholder featured" style="min-height:160px">▶</div>
+        <div class="sermon-meta" style="margin-top:10px">
+          <h2 data-preview="latest_title">${c.latest_title}</h2>
+          <p><span data-preview="latest_speaker">${c.latest_speaker}</span> · <span data-preview="latest_passage">${c.latest_passage}</span></p>
+        </div>
+        <p class="field-hint">${c.youtube_id ? "A YouTube video is set — it'll replace the ▶ box above on the real page." : "No YouTube video set yet."}</p>`;
+    case "events":
+      return `<h1>Upcoming Events</h1><p data-preview="events_note">${c.events_note}</p>`;
+    case "prayer":
+      return `<h1>Prayer Request</h1><p data-preview="prayer_intro">${c.prayer_intro}</p>`;
+    case "contact":
+      return `<h2>Contact Us</h2>
+        <p>📍 <span data-preview="address">${c.address}</span></p>
+        <p>☎ <span data-preview="phone">${c.phone}</span></p>
+        <p>✉ <span data-preview="email">${c.email}</span></p>`;
+    case "giving":
+      return `<h2>E-Transfer</h2><p data-preview="etransfer_note">${c.etransfer_note}</p>
+        <h2 style="margin-top:16px">Tax Receipts</h2><p data-preview="tax_note">${c.tax_note}</p>`;
+    default:
+      return "<p>No preview available.</p>";
+  }
+}
+
+document.addEventListener("sabc:session-ready", () => {
+
+  if (window.location.protocol === "file:") {
+    const banner = document.createElement("div");
+    banner.className = "file-warning";
+    banner.innerHTML = "⚠ You're opening this page directly as a file. Some browsers won't reliably save admin changes this way (photos, calendar entries, the log) — see README.md, \"Running this properly,\" for the easiest fix.";
+    document.body.prepend(banner);
+  }
+
+  if (typeof cmsApplyToPage === "function") cmsApplyToPage(null); // just applies the global logo, if set
+
+  /* ---------- Login page (2-step prototype) ---------- */
+  const step1 = document.querySelector("#login-step-1");
+  const step2 = document.querySelector("#login-step-2");
+  if (step1 && step2) {
+    let currentEmail = "";
+
+    step1.addEventListener("submit", async e => {
+      e.preventDefault();
+      const pw = document.querySelector("#password").value;
+      const email = document.querySelector("#who-email").value.trim();
+      const pwMsg = document.querySelector("#password-message");
+      if (pwMsg) pwMsg.textContent = "";
+
+      try {
+        const res = await fetch("/api/auth/password", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          credentials: "same-origin",
+          body: JSON.stringify({ password: pw, email })
+        });
+        const data = await res.json();
+        if (!res.ok || !data.ok) {
+          if (pwMsg) { pwMsg.className = "error"; pwMsg.textContent = data.error || "Incorrect password. Try again."; }
+          return;
+        }
+        currentEmail = email;
+        const codeBox = document.querySelector("#code-box");
+        const totpNote = data.totpAvailable ? " Or, if you've set up an authenticator app, just type the current code from that instead." : "";
+        if (data.emailed) {
+          if (codeBox) codeBox.innerHTML = `A code was just emailed to <b>${email}</b>.${totpNote}`;
+        } else if (codeBox) {
+          codeBox.innerHTML = data.totpAvailable
+            ? `Enter the current code from your authenticator app.`
+            : `Email isn't set up yet, so here's the code directly (this box goes away once real email sending is turned on): <strong id="demo-code-display">${data.demo_code}</strong>`;
+        }
+        step1.classList.add("hidden-step");
+        step2.classList.remove("hidden-step");
+        document.querySelector("#code-input").focus();
+      } catch (err) {
+        if (pwMsg) { pwMsg.className = "error"; pwMsg.textContent = "Couldn't reach the server — is the backend running?"; }
+      }
+    });
+
+    const resend = document.querySelector("#resend-code");
+    if (resend) resend.addEventListener("click", () => step1.requestSubmit());
+
+    step2.addEventListener("submit", async e => {
+      e.preventDefault();
+      const entered = document.querySelector("#code-input").value.trim();
+      const msg = document.querySelector("#login-message");
+      try {
+        const res = await fetch("/api/auth/verify", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          credentials: "same-origin",
+          body: JSON.stringify({ email: currentEmail, code: entered })
+        });
+        const data = await res.json();
+        if (!res.ok || !data.ok) {
+          msg.className = "error";
+          msg.textContent = data.error || "That code doesn't match. Double check and try again.";
+          return;
+        }
+        window.__adminSession = { loggedIn: true, name: data.name, email: data.email, access: data.access };
+        const returnTo = localStorage.getItem("sabc_return_to");
+        if (returnTo) { localStorage.removeItem("sabc_return_to"); window.location.href = returnTo; }
+        else window.location.href = "dashboard.html";
+      } catch (err) {
+        msg.className = "error";
+        msg.textContent = "Couldn't reach the server — is the backend running?";
+      }
+    });
+  }
+
+  /* ---------- Dashboard page picker ---------- */
+  const pageButtons = document.querySelectorAll("[data-goto-page]");
+  if (pageButtons.length) {
+    requireLogin();
+    const welcomeEl = document.querySelector("#welcome-heading");
+    if (welcomeEl) {
+      const me = cmsGetCurrentAdmin();
+      welcomeEl.textContent = (() => {
+        const rawName = me ? (me.name || me.email || "Admin") : "Admin";
+        const firstWord = rawName.trim().split(/\s+/)[0];
+        const firstName = firstWord.charAt(0).toUpperCase() + firstWord.slice(1);
+        const hour = new Date().getHours();
+        const greeting = hour < 12 ? "Good morning" : hour < 17 ? "Good afternoon" : "Good evening";
+        return `${greeting}, ${firstName}`;
+      })();
+    }
+    pageButtons.forEach(btn => {
+      btn.addEventListener("click", () => {
+        window.location.href = "edit.html?page=" + btn.getAttribute("data-goto-page");
+      });
+    });
+  }
+  const logoutBtn = document.querySelector("#logout");
+  if (logoutBtn) logoutBtn.addEventListener("click", () => {
+    localStorage.removeItem("sabc_admin_logged_in");
+    window.location.href = "login.html";
+  });
+
+  /* ---------- Edit page ---------- */
+  const editRoot = document.querySelector("#edit-root");
+  if (editRoot) {
+    requireLogin();
+    const params = new URLSearchParams(window.location.search);
+    const pageKey = params.get("page");
+    const schema = CMS_SCHEMA[pageKey];
+    const titleEl = document.querySelector("#edit-title");
+
+    if (!schema) {
+      editRoot.innerHTML = "<p>Unknown page. <a href='dashboard.html'>Go back</a>.</p>";
+    } else {
+      if (titleEl) titleEl.textContent = "Edit: " + schema.label;
+      const current = cmsGetPage(pageKey);
+
+      let formHtml = "<form id='edit-form'>";
+
+      schema.images.forEach(img => {
+        const preview = current[img.id]
+          ? `<img src="${current[img.id]}" alt="">`
+          : `<span>Click to add photo</span>`;
+        formHtml += `
+          <div class="edit-field">
+            <label>${img.label}</label>
+            <p class="field-hint">${img.hint || ""}</p>
+            <label class="image-upload-slot" for="img_${img.id}">${preview}</label>
+            <input type="file" accept="image/*" id="img_${img.id}" data-image-id="${img.id}" style="display:none">
+            ${current[img.id] ? `<button type="button" class="text-btn" data-clear-image="${img.id}" data-allow-view-only style="font-size:13px;margin-top:6px">Remove this photo</button>` : ""}`;
+        if (img.sizable) {
+          const minH = img.sizeMin ?? 150, maxH = img.sizeMax ?? 500, defH = current[img.id + "_h"] || img.sizeDefault || 300;
+          formHtml += `
+            <div class="size-field">
+              <label for="size_${img.id}">Photo height <span class="size-readout" id="size_readout_${img.id}">${defH}px</span></label>
+              <input type="range" min="${minH}" max="${maxH}" step="2" id="size_${img.id}" data-size-id="${img.id}" value="${defH}">
+            </div>`;
+          if (img.positionable !== false) {
+            formHtml += `
+            <div class="size-field">
+              <label for="pos_${img.id}">Focus point <span class="size-readout" id="pos_readout_${img.id}">${current[img.id + "_pos"] < 34 ? "top" : current[img.id + "_pos"] > 66 ? "bottom" : "center"}</span></label>
+              <p class="field-hint">Drag left to show more of the top of the photo, right to show more of the bottom.</p>
+              <input type="range" min="0" max="100" step="1" id="pos_${img.id}" data-pos-id="${img.id}" value="${current[img.id + "_pos"]}">
+            </div>`;
+          }
+        }
+        formHtml += `</div>`;
+      });
+
+      schema.fields.forEach(f => {
+        const val = (current[f.id] || "").toString();
+        formHtml += `<div class="edit-field"><label for="f_${f.id}">${f.label}</label>`;
+        formHtml += f.type === "textarea"
+          ? `<textarea id="f_${f.id}" data-field-id="${f.id}" rows="4">${val}</textarea>`
+          : `<input id="f_${f.id}" data-field-id="${f.id}" type="text" value="${val.replace(/"/g, "&quot;")}">`;
+        formHtml += `</div>`;
+      });
+
+      formHtml += `
+        <div class="edit-actions">
+          <a class="button button-light" href="dashboard.html">← Back without saving</a>
+          <button type="submit" class="button" data-allow-view-only>Apply Changes</button>
+        </div>
+      </form>`;
+
+      editRoot.innerHTML = `
+        <div class="edit-split">
+          <div class="edit-col" id="edit-col"><h3>Edit</h3>${formHtml}</div>
+          <div class="preview-col"><h3>Live Preview</h3><div class="preview-frame" id="preview-frame">${previewTemplate(pageKey, current)}</div></div>
+        </div>`;
+      cmsApplyViewOnlyLock(document.querySelector("#edit-col"));
+
+      function refreshPreview(id, value) {
+        document.querySelectorAll(`#preview-frame [data-preview="${id}"]`).forEach(el => el.textContent = value);
+      }
+      function refreshPreviewImage(id, dataUrl, height, pos) {
+        document.querySelectorAll(`#preview-frame [data-preview-image="${id}"]`).forEach(el => {
+          if (id === "logo") {
+            const w = Math.round(height * (58 / 44));
+            el.style.height = height + "px";
+            el.style.width = w + "px";
+            el.innerHTML = `<img src="${dataUrl}" alt="" style="width:100%;height:100%;object-fit:contain;object-position:50% ${pos ?? 50}%">`;
+          } else {
+            el.style.height = (height || 300) + "px";
+            el.innerHTML = `<img src="${dataUrl}" alt="" style="width:100%;height:100%;object-fit:cover;object-position:50% ${pos ?? 50}%">`;
+          }
+        });
+      }
+      function currentPos(id) {
+        const range = editRoot.querySelector(`[data-pos-id="${id}"]`);
+        return range ? range.value : (current[id + "_pos"] ?? 50);
+      }
+      function currentSize(id) {
+        const range = editRoot.querySelector(`[data-size-id="${id}"]`);
+        return range ? range.value : (current[id + "_h"] || 300);
+      }
+
+      // Live text updates as you type
+      editRoot.querySelectorAll("[data-field-id]").forEach(input => {
+        input.addEventListener("input", () => refreshPreview(input.dataset.fieldId, input.value));
+      });
+
+      // Live size updates
+      editRoot.querySelectorAll("[data-size-id]").forEach(range => {
+        range.addEventListener("input", () => {
+          const id = range.dataset.sizeId;
+          document.querySelector(`#size_readout_${id}`).textContent = range.value + "px";
+          const imgInput = editRoot.querySelector(`[data-image-id="${id}"]`);
+          const src = imgInput.dataset.value || current[id];
+          if (src) refreshPreviewImage(id, src, range.value, currentPos(id));
+        });
+      });
+
+      // Live focus-point updates
+      editRoot.querySelectorAll("[data-pos-id]").forEach(range => {
+        range.addEventListener("input", () => {
+          const id = range.dataset.posId;
+          const label = range.value < 34 ? "top" : range.value > 66 ? "bottom" : "center";
+          document.querySelector(`#pos_readout_${id}`).textContent = label;
+          const imgInput = editRoot.querySelector(`[data-image-id="${id}"]`);
+          const src = imgInput.dataset.value || current[id];
+          if (src) refreshPreviewImage(id, src, currentSize(id), range.value);
+        });
+      });
+
+      // Image previews + storage as a compressed photo (keeps localStorage small
+      // enough that a couple of full-size phone photos won't silently fail to save)
+      editRoot.querySelectorAll("input[type=file]").forEach(input => {
+        input.addEventListener("change", () => {
+          const file = input.files[0];
+          if (!file) return;
+          compressImage(file, 1000, 0.75).then(dataUrl => {
+            const slot = input.previousElementSibling;
+            slot.innerHTML = `<img src="${dataUrl}" alt="">`;
+            input.dataset.value = dataUrl;
+            delete input.dataset.cleared;
+            refreshPreviewImage(input.dataset.imageId, dataUrl, currentSize(input.dataset.imageId), currentPos(input.dataset.imageId));
+          }).catch(err => alert("Couldn't process that photo: " + err.message));
+        });
+      });
+
+      editRoot.querySelectorAll("[data-clear-image]").forEach(btn => {
+        btn.addEventListener("click", () => {
+          const id = btn.dataset.clearImage;
+          const input = editRoot.querySelector(`[data-image-id="${id}"]`);
+          input.dataset.cleared = "true";
+          delete input.dataset.value;
+          input.previousElementSibling.innerHTML = "<span>Click to add photo</span>";
+          const frame = document.querySelector(`#preview-frame [data-preview-image="${id}"]`);
+          if (frame) frame.innerHTML = id === "global" || id === "logo" ? "LOGO" : "";
+          btn.remove();
+        });
+      });
+
+      document.querySelector("#edit-form").addEventListener("submit", e => {
+        e.preventDefault();
+        document.querySelector("#confirm-modal").classList.add("open");
+      });
+
+      document.querySelector("#confirm-yes").addEventListener("click", () => {
+        const data = {};
+        editRoot.querySelectorAll("[data-field-id]").forEach(el => { data[el.dataset.fieldId] = el.value; });
+        editRoot.querySelectorAll("[data-image-id]").forEach(el => {
+          if (el.dataset.cleared === "true") data[el.dataset.imageId] = null;
+          else if (el.dataset.value) data[el.dataset.imageId] = el.dataset.value;
+        });
+        editRoot.querySelectorAll("[data-size-id]").forEach(el => { data[el.dataset.sizeId + "_h"] = el.value; });
+        editRoot.querySelectorAll("[data-pos-id]").forEach(el => { data[el.dataset.posId + "_pos"] = el.value; });
+        const result = cmsSavePage(pageKey, data);
+        document.querySelector("#confirm-modal").classList.remove("open");
+        if (!result.ok) {
+          alert("This didn't save — the browser's storage is full (usually from too many/too-large photos). Try a smaller photo, or remove an existing one first, then try again.");
+          return;
+        }
+        window.location.href = "dashboard.html?updated=" + encodeURIComponent(schema.label);
+      });
+      document.querySelector("#confirm-no").addEventListener("click", () => {
+        document.querySelector("#confirm-modal").classList.remove("open");
+      });
+    }
+  }
+
+  /* ---------- "Updated!" toast on the dashboard ---------- */
+  const params = new URLSearchParams(window.location.search);
+  const updated = params.get("updated");
+  if (updated) {
+    const toast = document.querySelector("#updated-toast");
+    if (toast) {
+      toast.textContent = "✓ " + updated + " updated — the live pages now reflect your change.";
+      toast.classList.add("show");
+    }
+  }
+});
+
+</script>
+<script>
+/* ---------------------------------------------------------------------
+   Extra admin tools, all localStorage-backed prototypes:
+   - Sunday roles calendar   (sabc_schedule, sabc_roster)
+   - Who's Who directory      (sabc_whoswho)
+   - Admin user list          (sabc_admin_users)
+   - Change log                (sabc_audit_log, via content.js)
+--------------------------------------------------------------------- */
+
+const DEFAULT_SCHEDULE_ROLES = ["Opening Prayer", "Worship / Singing", "Offering", "Sound", "Slides / Projection", "Greeting / Doors"];
+function getScheduleRoles() { return loadJSON("sabc_schedule_roles", DEFAULT_SCHEDULE_ROLES); }
+
+function loadJSON(key, fallback) {
+  try { return JSON.parse(localStorage.getItem(key)) ?? fallback; } catch { return fallback; }
+}
+function saveJSON(key, value) { return safeSetItem(key, JSON.stringify(value)); }
+// Local calendar date (not UTC) — matches the fix in app.js. Using
+// toISOString() here was quietly excluding "today's" events from the
+// upcoming list in the evening, since UTC had already rolled to tomorrow.
+function isoDate(d) {
+  const y = d.getFullYear(), m = String(d.getMonth() + 1).padStart(2, "0"), day = String(d.getDate()).padStart(2, "0");
+  return `${y}-${m}-${day}`;
+}
+function uid() { return Math.random().toString(36).slice(2, 9); }
+
+document.addEventListener("sabc:session-ready", () => {
+  if (document.querySelector("#cal-grid")) initCalendar();
+  if (document.querySelector("#events-cal-grid")) initEventsAdmin();
+  if (document.querySelector("#home-events")) renderUpcomingEvents("#home-events", 3);
+  if (document.querySelector("#events-list-root")) renderUpcomingEvents("#events-list-root");
+  if (document.querySelector("#whoswho-admin-root")) initWhoswhoAdmin();
+  if (document.querySelector("#whoswho-public-root")) initWhoswhoPublic();
+  if (document.querySelector("#admins-root")) initAdmins();
+  if (document.querySelector("#log-root")) initLog();
+  if (document.querySelector("#sermon-archive-admin-root")) initSermonArchiveAdmin();
+  if (document.querySelector("#sermon-archive-root")) renderSermonArchivePublic();
+  if (document.querySelector("#hero-bg-a")) initHeroRotation();
+  if (document.querySelector("#hero-photos-admin-root")) initHeroPhotosAdmin();
+  if (document.querySelector("#gallery-admin-root")) initGalleryAdmin();
+  if (document.querySelector("#gallery-public-root")) renderGalleryPublic();
+  if (document.querySelector("#prayer-requests-admin-root")) initPrayerRequestsAdmin();
+});
+
+/* ============================= CALENDAR ============================= */
+function initCalendar() {
+  requireLogin();
+  const monthLabel = document.querySelector("#cal-month-label");
+  const grid = document.querySelector("#cal-grid");
+  const roster = document.querySelector("#roster-bar");
+  const rolesBar = document.querySelector("#roles-bar");
+  const panel = document.querySelector("#role-panel");
+  let view = new Date(); view.setDate(1);
+  let selected = null;
+
+  function renderRolesBar() {
+    if (!rolesBar) return;
+    const roles = getScheduleRoles();
+    rolesBar.innerHTML = roles.map(r =>
+      `<span class="roster-chip">${r} <button data-remove-role="${r}" type="button">×</button></span>`
+    ).join("") + `
+      <input type="text" id="new-role-name" placeholder="Add a role (e.g. Nursery)" style="padding:6px 10px;border:1px solid #b9c5d3;border-radius:20px">
+      <button class="button" id="add-role-name" type="button" style="padding:6px 14px">+ Add Role</button>`;
+    rolesBar.querySelectorAll("[data-remove-role]").forEach(btn => btn.addEventListener("click", () => {
+      const roles = getScheduleRoles().filter(r => r !== btn.dataset.removeRole);
+      saveJSON("sabc_schedule_roles", roles);
+      renderRolesBar();
+      if (selected) renderPanel();
+    }));
+    rolesBar.querySelector("#add-role-name").addEventListener("click", () => {
+      const input = rolesBar.querySelector("#new-role-name");
+      const val = input.value.trim();
+      if (!val) return;
+      const roles = getScheduleRoles();
+      if (!roles.includes(val)) { roles.push(val); saveJSON("sabc_schedule_roles", roles); }
+      renderRolesBar();
+      if (selected) renderPanel();
+    });
+    cmsApplyViewOnlyLock(rolesBar);
+  }
+
+  function renderRoster() {
+    const names = loadJSON("sabc_roster", []);
+    roster.innerHTML = names.map(n =>
+      `<span class="roster-chip">${n} <button data-remove-name="${n}" type="button">×</button></span>`
+    ).join("") + `
+      <input type="text" id="new-roster-name" placeholder="Add a volunteer's name" style="padding:6px 10px;border:1px solid #b9c5d3;border-radius:20px">
+      <button class="button" id="add-roster-name" type="button" style="padding:6px 14px">+ Add</button>`;
+    roster.querySelectorAll("[data-remove-name]").forEach(btn => btn.addEventListener("click", () => {
+      const names = loadJSON("sabc_roster", []).filter(n => n !== btn.dataset.removeName);
+      saveJSON("sabc_roster", names);
+      renderRoster(); renderNameOptions();
+    }));
+    document.querySelector("#add-roster-name").addEventListener("click", () => {
+      const input = roster.querySelector("#new-roster-name");
+      const val = input.value.trim();
+      if (!val) return;
+      const names = loadJSON("sabc_roster", []);
+      if (!names.includes(val)) { names.push(val); saveJSON("sabc_roster", names); }
+      renderRoster(); renderNameOptions();
+    });
+    cmsApplyViewOnlyLock(roster);
+  }
+
+  function renderNameOptions() {
+    const dl = document.querySelector("#roster-datalist");
+    if (!dl) return;
+    dl.innerHTML = loadJSON("sabc_roster", []).map(n => `<option value="${n}">`).join("");
+  }
+
+  function renderGrid() {
+    const schedule = loadJSON("sabc_schedule", {});
+    monthLabel.textContent = view.toLocaleDateString(undefined, { month: "long", year: "numeric" });
+    const firstDow = view.getDay();
+    const daysIn = new Date(view.getFullYear(), view.getMonth() + 1, 0).getDate();
+    let html = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map(d => `<div class="cal-dow">${d}</div>`).join("");
+    for (let i = 0; i < firstDow; i++) html += `<div class="cal-day empty"></div>`;
+    for (let day = 1; day <= daysIn; day++) {
+      const d = new Date(view.getFullYear(), view.getMonth(), day);
+      const iso = isoDate(d);
+      const isSunday = d.getDay() === 0;
+      const hasData = !!schedule[iso];
+      html += `<div class="cal-day clickable${isSunday ? " sunday" : ""}${hasData ? " has-data" : ""}${selected === iso ? " selected" : ""}"
+                    data-date="${iso}">${day}</div>`;
+    }
+    grid.innerHTML = html;
+    grid.querySelectorAll("[data-date]").forEach(el => el.addEventListener("click", () => {
+      selected = el.dataset.date;
+      renderGrid();
+      renderPanel();
+    }));
+  }
+
+  function renderPanel() {
+    if (!selected) { panel.innerHTML = "<p class='field-hint'>Click a day above to fill in who's doing what.</p>"; return; }
+    const schedule = loadJSON("sabc_schedule", {});
+    const entry = schedule[selected] || {};
+    const activeRoles = Object.keys(entry); // only roles explicitly added to THIS day
+    const catalog = getScheduleRoles();
+    const availableToAdd = catalog.filter(r => !activeRoles.includes(r));
+    const niceDate = new Date(selected + "T00:00:00").toLocaleDateString(undefined, { weekday: "long", month: "long", day: "numeric" });
+
+    let html = `<h3>${niceDate}</h3>`;
+    if (!activeRoles.length) {
+      html += `<p class="field-hint">No roles added to this day yet. Pick one below to get started.</p>`;
+    }
+    activeRoles.forEach(role => {
+      const cur = entry[role] || { name: "", status: "" };
+      html += `
+        <div class="role-row">
+          <div>
+            <label>${role}</label>
+            <input type="text" list="roster-datalist" data-role="${role}" data-kind="name" value="${cur.name}" placeholder="Who's doing this?">
+          </div>
+          <select data-role="${role}" data-kind="status">
+            <option value="" ${cur.status === "" ? "selected" : ""}>Unconfirmed</option>
+            <option value="yes" ${cur.status === "yes" ? "selected" : ""}>Yes, confirmed</option>
+            <option value="no" ${cur.status === "no" ? "selected" : ""}>No / can't make it</option>
+          </select>
+          <button type="button" data-remove-day-role="${role}" title="Remove this role from this day" style="background:none;border:0;color:#a62929;font-weight:800;cursor:pointer">✕</button>
+        </div>`;
+    });
+    html += `<datalist id="roster-datalist"></datalist>`;
+    if (availableToAdd.length) {
+      html += `
+        <div class="role-row" style="grid-template-columns:1fr auto">
+          <select id="add-role-to-day"><option value="">+ Add a role to this day…</option>${availableToAdd.map(r => `<option value="${r}">${r}</option>`).join("")}</select>
+          <button type="button" id="add-role-to-day-btn" class="button button-light">Add</button>
+        </div>`;
+    } else {
+      html += `<p class="field-hint">Every role in your catalog is already added to this day. Add more role types above if you need another.</p>`;
+    }
+    html += `<div class="edit-actions"><span></span><button class="button" id="save-schedule" type="button">Apply Changes</button></div>`;
+    panel.innerHTML = html;
+    renderNameOptions();
+    cmsApplyViewOnlyLock(panel);
+
+    panel.querySelectorAll("[data-remove-day-role]").forEach(btn => btn.addEventListener("click", () => {
+      const schedule = loadJSON("sabc_schedule", {});
+      if (schedule[selected]) { delete schedule[selected][btn.dataset.removeDayRole]; saveJSON("sabc_schedule", schedule); }
+      renderPanel();
+      renderGrid();
+    }));
+    const addBtn = panel.querySelector("#add-role-to-day-btn");
+    if (addBtn) addBtn.addEventListener("click", () => {
+      const roleToAdd = panel.querySelector("#add-role-to-day").value;
+      if (!roleToAdd) return;
+      const schedule = loadJSON("sabc_schedule", {});
+      if (!schedule[selected]) schedule[selected] = {};
+      schedule[selected][roleToAdd] = { name: "", status: "" };
+      saveJSON("sabc_schedule", schedule);
+      renderPanel();
+    });
+
+    const saveBtn = document.querySelector("#save-schedule");
+    if (saveBtn) saveBtn.addEventListener("click", () => {
+      const newEntry = {};
+      activeRoles.forEach(role => {
+        const name = panel.querySelector(`[data-role="${role}"][data-kind="name"]`).value;
+        const status = panel.querySelector(`[data-role="${role}"][data-kind="status"]`).value;
+        newEntry[role] = { name, status };
+      });
+      const schedule = loadJSON("sabc_schedule", {});
+      const before = schedule[selected] || {};
+      schedule[selected] = newEntry;
+      saveJSON("sabc_schedule", schedule);
+      cmsLogRawChange("Church Calendar — " + niceDate, "sabc_schedule", selected, before, newEntry);
+      renderGrid();
+      const toast = document.querySelector("#cal-toast");
+      if (toast) { toast.textContent = "✓ Saved for " + niceDate; toast.classList.add("show"); setTimeout(() => toast.classList.remove("show"), 2500); }
+    });
+  }
+
+  document.querySelector("#cal-prev").addEventListener("click", () => { view.setMonth(view.getMonth() - 1); renderGrid(); });
+  document.querySelector("#cal-next").addEventListener("click", () => { view.setMonth(view.getMonth() + 1); renderGrid(); });
+
+  renderRolesBar();
+  renderRoster();
+  renderGrid();
+  renderPanel();
+}
+
+/* ============================= EVENTS (admin) ============================= */
+function initEventsAdmin() {
+  requireLogin();
+  const monthLabel = document.querySelector("#events-cal-month-label");
+  const grid = document.querySelector("#events-cal-grid");
+  const panel = document.querySelector("#events-panel");
+  let view = new Date(); view.setDate(1);
+  let selected = null;
+
+  function renderGrid() {
+    const events = loadJSON("sabc_events", {});
+    monthLabel.textContent = view.toLocaleDateString(undefined, { month: "long", year: "numeric" });
+    const firstDow = view.getDay();
+    const daysIn = new Date(view.getFullYear(), view.getMonth() + 1, 0).getDate();
+    let html = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map(d => `<div class="cal-dow">${d}</div>`).join("");
+    for (let i = 0; i < firstDow; i++) html += `<div class="cal-day empty"></div>`;
+    for (let day = 1; day <= daysIn; day++) {
+      const d = new Date(view.getFullYear(), view.getMonth(), day);
+      const iso = isoDate(d);
+      const count = (events[iso] || []).length;
+      html += `<div class="cal-day clickable${count ? " has-data" : ""}${selected === iso ? " selected" : ""}" data-date="${iso}">
+        ${day}${count ? `<div style="font-size:10px;color:var(--blue);font-weight:800">${count} event${count > 1 ? "s" : ""}</div>` : ""}
+      </div>`;
+    }
+    grid.innerHTML = html;
+    grid.querySelectorAll("[data-date]").forEach(el => el.addEventListener("click", () => {
+      selected = el.dataset.date; renderGrid(); renderPanel();
+    }));
+  }
+
+  function renderPanel() {
+    if (!selected) { panel.innerHTML = "<p class='field-hint'>Click a day above to add or edit events for that date.</p>"; return; }
+    const events = loadJSON("sabc_events", {});
+    const dayEvents = events[selected] || [];
+    const niceDate = new Date(selected + "T00:00:00").toLocaleDateString(undefined, { weekday: "long", month: "long", day: "numeric" });
+    let html = `<h3>${niceDate}</h3><div id="events-list">`;
+    dayEvents.forEach(ev => {
+      html += `
+        <div class="role-row" data-event-id="${ev.id}" style="grid-template-columns:1fr auto">
+          <div>
+            <label>Event Title</label>
+            <input type="text" data-ev="title" value="${ev.title || ""}" placeholder="e.g. Youth Group Night">
+            <label style="margin-top:8px">Time</label>
+            <input type="text" data-ev="time" value="${ev.time || ""}" placeholder="e.g. 6:30 PM">
+            <label style="margin-top:8px">Description</label>
+            <input type="text" data-ev="description" value="${ev.description || ""}" placeholder="Short description">
+          </div>
+          <button type="button" class="text-btn" data-remove-event="${ev.id}" style="color:#a62929;align-self:start">Remove</button>
+        </div>`;
+    });
+    html += `</div>
+      <button class="button button-light" id="add-event" type="button">+ Add Another Event This Day</button>
+      <div class="edit-actions"><span></span><button class="button" id="save-events" type="button">Apply Changes</button></div>`;
+    panel.innerHTML = html;
+    cmsApplyViewOnlyLock(panel);
+
+    panel.querySelector("#add-event").addEventListener("click", () => {
+      const events = loadJSON("sabc_events", {});
+      if (!events[selected]) events[selected] = [];
+      events[selected].push({ id: uid(), title: "", time: "", description: "" });
+      saveJSON("sabc_events", events);
+      renderGrid(); renderPanel();
+    });
+    panel.querySelectorAll("[data-remove-event]").forEach(btn => btn.addEventListener("click", () => {
+      const events = loadJSON("sabc_events", {});
+      events[selected] = (events[selected] || []).filter(e => e.id !== btn.dataset.removeEvent);
+      if (!events[selected].length) delete events[selected];
+      saveJSON("sabc_events", events);
+      renderGrid(); renderPanel();
+    }));
+    const saveBtn = panel.querySelector("#save-events");
+    if (saveBtn) saveBtn.addEventListener("click", () => {
+      const events = loadJSON("sabc_events", {});
+      const before = events[selected] || [];
+      const rows = panel.querySelectorAll("[data-event-id]");
+      const updated = [...rows].map(row => ({
+        id: row.dataset.eventId,
+        title: row.querySelector('[data-ev="title"]').value,
+        time: row.querySelector('[data-ev="time"]').value,
+        description: row.querySelector('[data-ev="description"]').value
+      }));
+      if (updated.length) events[selected] = updated; else delete events[selected];
+      saveJSON("sabc_events", events);
+      cmsLogRawChange("Events — " + niceDate, "sabc_events", selected, before, updated);
+      renderGrid();
+      const toast = document.querySelector("#events-toast");
+      if (toast) { toast.textContent = "✓ Saved for " + niceDate; toast.classList.add("show"); setTimeout(() => toast.classList.remove("show"), 2500); }
+    });
+  }
+
+  document.querySelector("#events-cal-prev").addEventListener("click", () => { view.setMonth(view.getMonth() - 1); renderGrid(); });
+  document.querySelector("#events-cal-next").addEventListener("click", () => { view.setMonth(view.getMonth() + 1); renderGrid(); });
+
+  renderGrid();
+  renderPanel();
+}
+
+/* ====================== EVENTS (public rendering) ====================== */
+function renderUpcomingEvents(targetSelector, max) {
+  const el = document.querySelector(targetSelector);
+  if (!el) return;
+  const events = loadJSON("sabc_events", {});
+  const today = isoDate(new Date());
+  const flat = [];
+  Object.keys(events).sort().forEach(dateKey => {
+    if (dateKey >= today) events[dateKey].forEach(ev => flat.push({ ...ev, date: dateKey }));
+  });
+  if (!flat.length) {
+    el.innerHTML = `<p class="placeholder-lines center">No upcoming events posted yet. Add some from the admin Events calendar.</p>`;
+    return;
+  }
+  const shown = max ? flat.slice(0, max) : flat;
+  let lastMonth = "";
+  let html = "";
+  shown.forEach(ev => {
+    const d = new Date(ev.date + "T00:00:00");
+    const month = d.toLocaleDateString(undefined, { month: "long", year: "numeric" });
+    if (el.dataset.grouped === "true" && month !== lastMonth) {
+      html += `<div class="month-heading"><h2>${month}</h2></div>`;
+      lastMonth = month;
+    }
+    const badge = `${d.toLocaleDateString(undefined, { month: "short" }).toUpperCase()}<br><b>${d.getDate()}</b>`;
+    if (el.dataset.grouped === "true") {
+      html += `<article class="event-row"><span class="date-badge">${badge}</span><div><h3>${ev.title || "Untitled Event"}</h3><p>${ev.time ? `<strong>${ev.time}</strong> · ` : ""}${ev.description || ""}</p></div></article>`;
+    } else {
+      html += `<article class="card"><span class="date-badge">${badge}</span><div><h3>${ev.title || "Untitled Event"}</h3><p>${ev.time ? ev.time + " · " : ""}${ev.description || ""}</p></div></article>`;
+    }
+  });
+  el.innerHTML = html;
+}
+function initWhoswhoAdmin() {
+  requireLogin();
+  const root = document.querySelector("#whoswho-admin-root");
+
+  function personCardHtml(p) {
+    return `<div class="person-card">
+      <div class="person-photo">${p.photo ? `<img src="${p.photo}" style="display:block;width:100%;height:100%;object-fit:cover;object-position:50% ${p.photo_pos ?? 50}%">` : "PHOTO"}</div>
+      <h3>${p.name || "(no name yet)"}</h3>
+      <p class="person-role">${p.role || ""}</p>
+      <p class="person-contact">${p.phone ? "☎ " + p.phone : ""}${p.phone && p.email ? "<br>" : ""}${p.email ? "✉ " + p.email : ""}</p>
+    </div>`;
+  }
+
+  function refreshPreview() {
+    const previewEl = document.querySelector("#whoswho-preview");
+    if (!previewEl) return;
+    const rows = root.querySelectorAll(".person-edit-card");
+    const people = [...rows].map(row => ({
+      name: row.querySelector('[data-field="name"]').value,
+      role: row.querySelector('[data-field="role"]').value,
+      phone: row.querySelector('[data-field="phone"]').value,
+      email: row.querySelector('[data-field="email"]').value,
+      photo: row.querySelector("[data-photo-for]").dataset.value || row.querySelector("[data-photo-for]").previousElementSibling.querySelector("img")?.src || null,
+      photo_pos: row.querySelector("[data-pos-for]").value
+    })).filter(p => p.name || p.photo);
+    previewEl.innerHTML = people.length
+      ? `<div class="person-grid">${people.map(personCardHtml).join("")}</div>`
+      : `<p class="field-hint">Add a name or photo on the left to see it appear here.</p>`;
+  }
+
+  function render() {
+    const people = loadJSON("sabc_whoswho", []);
+    let html = `<div class="manage-list" id="people-list">`;
+    people.forEach(p => {
+      html += `
+        <div class="person-edit-card" data-id="${p.id}">
+          <div class="person-edit-top">
+            <div class="photo-col">
+              <label class="image-upload-slot" style="height:90px" for="photo_${p.id}">${p.photo ? `<img src="${p.photo}" style="object-position:50% ${p.photo_pos ?? 50}%">` : "Photo"}</label>
+              <input type="file" accept="image/*" id="photo_${p.id}" data-photo-for="${p.id}" style="display:none">
+              <input type="range" min="0" max="100" data-pos-for="${p.id}" value="${p.photo_pos ?? 50}" title="Focus point (top/bottom)" style="width:100%;margin-top:4px">
+              ${p.photo ? `<button type="button" class="text-btn" data-clear-photo="${p.id}" data-allow-view-only style="font-size:12px;margin-top:2px">Remove photo</button>` : ""}
+            </div>
+            <div class="fields-col">
+              <input type="text" data-field="name" placeholder="Name" value="${p.name || ""}">
+              <input type="text" data-field="role" placeholder="Role (e.g. Deacon, Worship Leader)" value="${p.role || ""}">
+              <input type="text" data-field="phone" placeholder="Phone" value="${p.phone || ""}">
+              <input type="text" data-field="email" placeholder="Email" value="${p.email || ""}">
+            </div>
+          </div>
+          <button type="button" class="button button-light" data-remove="${p.id}" style="margin-top:10px">Remove This Person</button>
+        </div>`;
+    });
+    html += `</div>
+      <button class="button button-light" id="add-person" type="button">+ Add Person</button>
+      <div class="edit-actions"><span></span><button class="button" id="save-people" type="button" data-allow-view-only>Apply Changes</button></div>
+      <p id="whoswho-toast" class="toast"></p>`;
+
+    root.innerHTML = `
+      <div class="edit-split">
+        <div class="edit-col">${html}</div>
+        <div class="preview-col"><h3>Live Preview</h3><div class="preview-frame" id="whoswho-preview"></div></div>
+      </div>`;
+    cmsApplyViewOnlyLock(root);
+    refreshPreview();
+
+    root.querySelectorAll('[data-field], [data-pos-for]').forEach(el => el.addEventListener("input", refreshPreview));
+
+    root.querySelectorAll("[data-clear-photo]").forEach(btn => btn.addEventListener("click", () => {
+      const people = loadJSON("sabc_whoswho", []);
+      const person = people.find(p => p.id === btn.dataset.clearPhoto);
+      if (person) { person.photo = null; saveJSON("sabc_whoswho", people); }
+      render();
+    }));
+
+    root.querySelectorAll("[data-remove]").forEach(btn => btn.addEventListener("click", () => {
+      const people = loadJSON("sabc_whoswho", []).filter(p => p.id !== btn.dataset.remove);
+      saveJSON("sabc_whoswho", people);
+      render();
+    }));
+    root.querySelectorAll("[data-photo-for]").forEach(input => input.addEventListener("change", () => {
+      const file = input.files[0]; if (!file) return;
+      compressImage(file, 500, 0.75).then(dataUrl => {
+        const posRange = root.querySelector(`[data-pos-for="${input.dataset.photoFor}"]`);
+        input.previousElementSibling.innerHTML = `<img src="${dataUrl}" style="object-position:50% ${posRange ? posRange.value : 50}%">`;
+        input.dataset.value = dataUrl;
+        refreshPreview();
+      }).catch(err => alert("Couldn't process that photo: " + err.message));
+    }));
+    root.querySelectorAll("[data-pos-for]").forEach(range => range.addEventListener("input", () => {
+      const img = root.querySelector(`#photo_${range.dataset.posFor}`).previousElementSibling.querySelector("img");
+      if (img) img.style.objectPosition = `50% ${range.value}%`;
+    }));
+    document.querySelector("#add-person").addEventListener("click", () => {
+      const people = loadJSON("sabc_whoswho", []);
+      people.push({ id: uid(), name: "", role: "", phone: "", email: "", photo: null });
+      saveJSON("sabc_whoswho", people);
+      render();
+    });
+    document.querySelector("#save-people").addEventListener("click", () => {
+      const before = loadJSON("sabc_whoswho", []);
+      const rows = root.querySelectorAll(".person-edit-card");
+      const people = [...rows].map(row => ({
+        id: row.dataset.id,
+        name: row.querySelector('[data-field="name"]').value,
+        role: row.querySelector('[data-field="role"]').value,
+        phone: row.querySelector('[data-field="phone"]').value,
+        email: row.querySelector('[data-field="email"]').value,
+        photo: row.querySelector("[data-photo-for]").dataset.value || (before.find(p => p.id === row.dataset.id) || {}).photo || null,
+        photo_pos: row.querySelector("[data-pos-for]").value
+      }));
+      saveJSON("sabc_whoswho", people);
+      cmsLogRawChange("Who's Who", "sabc_whoswho", null, before, people);
+      const toast = document.querySelector("#whoswho-toast");
+      toast.textContent = "✓ Who's Who updated — the live page now reflects this.";
+      toast.classList.add("show");
+    });
+  }
+  render();
+}
+
+/* ============================= WHO'S WHO (public page) ============================= */
+function initWhoswhoPublic() {
+  const root = document.querySelector("#whoswho-public-root");
+  const people = loadJSON("sabc_whoswho", []).filter(p => p.name);
+  if (!people.length) {
+    root.innerHTML = `<p class="placeholder-lines center">No one's been added yet. Once the admin team adds people on the Who's Who admin page, they'll show up here with their photo, role, and contact info.</p>`;
+    return;
+  }
+  root.innerHTML = `<div class="person-grid">` + people.map(p => `
+    <div class="person-card">
+      <div class="person-photo">${p.photo ? `<img src="${p.photo}" style="display:block;width:100%;height:100%;object-fit:cover;object-position:50% ${p.photo_pos ?? 50}%">` : "PHOTO"}</div>
+      <h3>${p.name}</h3>
+      <p class="person-role">${p.role || ""}</p>
+      <p class="person-contact">${p.phone ? "☎ " + p.phone : ""}${p.phone && p.email ? "<br>" : ""}${p.email ? "✉ " + p.email : ""}</p>
+    </div>`).join("") + `</div>`;
+}
+
+/* ============================= ADMIN USERS ============================= */
+function initAdmins() {
+  requireLogin();
+  const root = document.querySelector("#admins-root");
+  const PERMANENT_EMAIL = "danteeugenemclaughlin@gmail.com";
+
+  async function render() {
+    let users = await cmsGetAdminUsers();
+    let html = `<div class="manage-list">`;
+    users.forEach(u => {
+      const isPermanent = (u.email || "").toLowerCase() === PERMANENT_EMAIL;
+      html += `
+        <div class="manage-row" data-id="${u.id}" style="grid-template-columns:1fr 1fr 1fr auto">
+          <input type="text" data-field="name" placeholder="Name" value="${u.name}" ${isPermanent ? "readonly" : ""}>
+          <input type="text" data-field="email" placeholder="Email" value="${u.email}" ${isPermanent ? "readonly" : ""}>
+          <select data-field="access" ${isPermanent ? "disabled" : ""}>
+            <option ${u.access === "Full Admin" ? "selected" : ""}>Full Admin</option>
+            <option ${u.access === "Can Edit" ? "selected" : ""}>Can Edit</option>
+            <option ${u.access === "View Only" ? "selected" : ""}>View Only</option>
+          </select>
+          <button type="button" data-remove="${u.id}" ${isPermanent ? "disabled title=\"This account always stays Full Admin\"" : ""}>Remove</button>
+        </div>`;
+    });
+    html += `</div>
+      <button class="button button-light" id="add-admin" type="button">+ Add Admin</button>
+      <div class="edit-actions"><span></span><button class="button" id="save-admins" type="button">Apply Changes</button></div>
+      <p class="field-hint" style="margin-top:16px">This list is now real — it's stored on the server and actually controls login access and permissions, not just a plan for later. One account (danteeugenemclaughlin@gmail.com) always stays Full Admin no matter what, as a safety net.</p>
+      <p id="admins-toast" class="toast"></p>`;
+    root.innerHTML = html;
+    cmsApplyViewOnlyLock(root);
+
+    root.querySelectorAll("[data-remove]:not([disabled])").forEach(btn => btn.addEventListener("click", async () => {
+      const current = await cmsGetAdminUsers();
+      const updated = current.filter(u => u.id !== btn.dataset.remove);
+      await saveAdmins(updated);
+      render();
+    }));
+    document.querySelector("#add-admin").addEventListener("click", async () => {
+      const current = await cmsGetAdminUsers();
+      current.push({ id: uid(), name: "", email: "", access: "Can Edit" });
+      await saveAdmins(current);
+      render();
+    });
+    document.querySelector("#save-admins").addEventListener("click", async () => {
+      const rows = root.querySelectorAll(".manage-row");
+      const updated = [...rows].map(row => ({
+        id: row.dataset.id,
+        name: row.querySelector('[data-field="name"]').value,
+        email: row.querySelector('[data-field="email"]').value,
+        access: row.querySelector('[data-field="access"]').value
+      }));
+      const result = await saveAdmins(updated);
+      const toast = document.querySelector("#admins-toast");
+      if (result.ok) {
+        toast.textContent = "✓ Admin list updated on the server.";
+        toast.classList.add("show");
+      } else {
+        toast.textContent = "✗ " + (result.error || "Couldn't save — check you're a Full Admin.");
+        toast.classList.add("show");
+      }
+    });
+  }
+
+  async function saveAdmins(users) {
+    try {
+      const res = await fetch("/api/admins", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "same-origin",
+        body: JSON.stringify(users)
+      });
+      return await res.json();
+    } catch {
+      return { ok: false, error: "Couldn't reach the server." };
+    }
+  }
+
+  render();
+}
+
+/* ============================= CHANGE LOG ============================= */
+/* Turns a raw (non-CMS-schema) snapshot into something readable for the
+   before/after preview — Who's Who, Admin Users, Calendar, and Events all
+   store their data differently, so each gets its own small renderer. */
+function renderRawSnapshot(revertKey, snapshot) {
+  if (!snapshot) return "<p class='field-hint'>(empty)</p>";
+  if (revertKey === "sabc_whoswho" && Array.isArray(snapshot)) {
+    if (!snapshot.length) return "<p class='field-hint'>No one in the directory.</p>";
+    return "<ul>" + snapshot.map(p => `<li><b>${p.name || "(no name)"}</b> — ${p.role || ""}${p.phone ? " · " + p.phone : ""}${p.email ? " · " + p.email : ""}</li>`).join("") + "</ul>";
+  }
+  if (revertKey === "sabc_admin_users" && Array.isArray(snapshot)) {
+    if (!snapshot.length) return "<p class='field-hint'>No admins listed.</p>";
+    return "<ul>" + snapshot.map(u => `<li><b>${u.name || u.email}</b> — ${u.access}</li>`).join("") + "</ul>";
+  }
+  if (revertKey === "sabc_schedule" && typeof snapshot === "object") {
+    const roles = Object.keys(snapshot);
+    if (!roles.length) return "<p class='field-hint'>No roles set for this day.</p>";
+    return "<ul>" + roles.map(r => `<li><b>${r}</b>: ${snapshot[r].name || "(nobody yet)"} — ${snapshot[r].status === "yes" ? "✓ confirmed" : snapshot[r].status === "no" ? "✗ can't make it" : "(unconfirmed)"}</li>`).join("") + "</ul>";
+  }
+  if (revertKey === "sabc_events" && Array.isArray(snapshot)) {
+    if (!snapshot.length) return "<p class='field-hint'>No events that day.</p>";
+    return "<ul>" + snapshot.map(e => `<li><b>${e.title || "Untitled"}</b>${e.time ? " — " + e.time : ""}</li>`).join("") + "</ul>";
+  }
+  return `<pre style="white-space:pre-wrap;font-size:12px">${JSON.stringify(snapshot, null, 2)}</pre>`;
+}
+
+/* Rebuilds a full-page snapshot for the CMS-schema pages (Home, About,
+   etc.) so previewTemplate() — the same function that powers the live
+   editor preview — can render "what it looked like" for a log entry too.
+   Fields this entry didn't touch fall back to the current live value. */
+function buildPreviewSnapshot(pageKey, changes, useAfter) {
+  const snap = cmsGetPage(pageKey);
+  changes.forEach(c => {
+    if (c.isRaw || !c.revertable) return;
+    snap[c.field] = useAfter ? c.rawNew : c.rawOld;
+  });
+  return snap;
+}
+
+function initLog() {
+  requireLogin();
+  const root = document.querySelector("#log-root");
+  const log = loadJSON("sabc_audit_log", []);
+
+  if (!log.length) {
+    root.innerHTML = "<p class='field-hint'>No changes logged yet. Every time someone applies changes in the admin area, it'll show up here.</p>";
+  } else {
+    root.innerHTML = log.map((entry, idx) => {
+      const isRaw = entry.changes[0] && entry.changes[0].isRaw;
+      const canRevert = entry.changes.some(c => c.revertable);
+      return `
+      <div class="log-entry">
+        <time>${new Date(entry.ts).toLocaleString()}</time>
+        <span class="log-page">${entry.page}</span>
+        ${entry.changes.map(c => isRaw ? "" : `<p class="log-change"><b>${c.field}</b>: "${c.old}" → "${c.new}"</p>`).join("")}
+        <div class="log-actions">
+          <button type="button" class="text-btn" data-toggle-preview="${idx}" data-allow-view-only>👁 Preview before/after</button>
+          ${canRevert ? `<button type="button" class="text-btn" data-revert="${idx}" style="color:#a62929">↩ Revert to before</button>` : ""}
+        </div>
+        <div class="log-preview" id="preview-${idx}" style="display:none"></div>
+      </div>`;
+    }).join("");
+
+    root.querySelectorAll("[data-toggle-preview]").forEach(btn => btn.addEventListener("click", () => {
+      const idx = btn.dataset.togglePreview;
+      const entry = log[idx];
+      const box = document.querySelector(`#preview-${idx}`);
+      if (box.style.display === "none") {
+        const isRaw = entry.changes[0] && entry.changes[0].isRaw;
+        let beforeHtml, afterHtml;
+        if (isRaw) {
+          const c = entry.changes[0];
+          beforeHtml = renderRawSnapshot(c.revertKey, c.rawOld);
+          afterHtml = renderRawSnapshot(c.revertKey, c.rawNew);
+        } else if (typeof previewTemplate === "function" && CMS_SCHEMA[entry.page]) {
+          beforeHtml = previewTemplate(entry.page, buildPreviewSnapshot(entry.page, entry.changes, false));
+          afterHtml = previewTemplate(entry.page, buildPreviewSnapshot(entry.page, entry.changes, true));
+        } else {
+          beforeHtml = afterHtml = "<p class='field-hint'>Preview not available for this entry.</p>";
+        }
+        box.innerHTML = `<div class="preview-before-after">
+          <div><h4>Before</h4><div class="preview-frame">${beforeHtml}</div></div>
+          <div><h4>After</h4><div class="preview-frame">${afterHtml}</div></div>
+        </div>`;
+        box.style.display = "block";
+        btn.textContent = "🙈 Hide preview";
+      } else {
+        box.style.display = "none";
+        btn.textContent = "👁 Preview before/after";
+      }
+    }));
+
+    root.querySelectorAll("[data-revert]").forEach(btn => btn.addEventListener("click", () => {
+      const idx = btn.dataset.revert;
+      const entry = log[idx];
+      if (!confirm("Revert this change? This restores the previous version (text/lists only — photos aren't auto-reverted, re-upload if one was part of this change).")) return;
+      const isRaw = entry.changes[0] && entry.changes[0].isRaw;
+      const result = isRaw ? cmsRevertRawEntry(entry) : cmsRevertLogEntry(entry);
+      if (result.ok) {
+        cmsLogChange(entry.page + " (reverted)", [{ field: "Revert", old: "(the change above)", new: "(restored to before)" }]);
+        alert("Reverted. The live page will show this the next time it loads.");
+        initLog();
+      } else {
+        alert("Couldn't revert this one — nothing revertable was recorded for it (usually means it was a photo-only change).");
+      }
+    }));
+    if (!cmsCanEdit()) root.querySelectorAll("[data-revert]").forEach(b => b.disabled = true);
+  }
+
+  document.querySelector("#download-log").addEventListener("click", () => {
+    const text = log.map(e => `${e.ts} — ${e.page}\n` + e.changes.map(c => `  ${c.field}: "${c.old}" → "${c.new}"`).join("\n")).join("\n\n");
+    const blob = new Blob([text || "No changes logged yet."], { type: "text/plain" });
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = "sabc-change-log.txt";
+    a.click();
+  });
+}
+
+/* ============================= SERMON ARCHIVE ============================= */
+function extractYoutubeId(raw) {
+  if (!raw) return "";
+  const match = String(raw).match(/(?:v=|youtu\.be\/|embed\/)?([a-zA-Z0-9_-]{11})(?:[?&]|$)/);
+  return match ? match[1] : raw;
+}
+
+function initSermonArchiveAdmin() {
+  requireLogin();
+  const root = document.querySelector("#sermon-archive-admin-root");
+
+  function render() {
+    const sermons = loadJSON("sabc_sermon_archive", []);
+    const byYear = {};
+    sermons.forEach(s => { const y = (s.date || "").slice(0, 4) || s.year || "Undated"; (byYear[y] = byYear[y] || []).push(s); });
+    const years = Object.keys(byYear).sort((a, b) => b - a);
+
+    let html = `
+      <div class="role-panel" style="margin-top:0">
+        <h3>Add a Sermon</h3>
+        <div class="role-row" style="grid-template-columns:160px 1fr 1fr">
+          <input type="date" id="new-sermon-date" value="${new Date().toISOString().slice(0, 10)}">
+          <input type="text" id="new-sermon-title" placeholder="Sermon title">
+          <input type="text" id="new-sermon-speaker" placeholder="Speaker">
+        </div>
+        <div class="role-row" style="grid-template-columns:1fr 1fr;margin-top:10px">
+          <input type="text" id="new-sermon-passage" placeholder="Bible passage">
+          <input type="text" id="new-sermon-youtube" placeholder="YouTube link or video ID (optional)">
+        </div>
+        <div class="edit-actions"><span></span><button class="button" id="add-sermon-btn" type="button">+ Add Sermon</button></div>
+      </div>
+      <div id="sermon-list" style="margin-top:20px">`;
+
+    if (!years.length) {
+      html += `<p class="field-hint">No sermons added yet.</p>`;
+    }
+    years.forEach(year => {
+      html += `<h3>${year}</h3>`;
+      byYear[year].sort((a, b) => (b.date || "").localeCompare(a.date || "")).forEach(s => {
+        html += `
+          <div class="manage-row" data-id="${s.id}" style="grid-template-columns:150px 1fr 1fr 1fr 1fr auto">
+            <input type="date" data-sf="date" value="${s.date || ""}">
+            <input type="text" data-sf="title" value="${s.title || ""}" placeholder="Title">
+            <input type="text" data-sf="speaker" value="${s.speaker || ""}" placeholder="Speaker">
+            <input type="text" data-sf="passage" value="${s.passage || ""}" placeholder="Passage">
+            <input type="text" data-sf="youtube_id" value="${s.youtube_id || ""}" placeholder="YouTube link/ID">
+            <button type="button" data-remove-sermon="${s.id}">Remove</button>
+          </div>`;
+      });
+    });
+    html += `</div>
+      <div class="edit-actions"><span></span><button class="button" id="save-sermons" type="button">Apply Changes</button></div>
+      <p id="sermon-toast" class="toast"></p>`;
+
+    root.innerHTML = html;
+    cmsApplyViewOnlyLock(root);
+
+    document.querySelector("#add-sermon-btn").addEventListener("click", () => {
+      const date = document.querySelector("#new-sermon-date").value;
+      const title = document.querySelector("#new-sermon-title").value.trim();
+      if (!date || !title) { alert("At least a date and title are needed."); return; }
+      const sermons = loadJSON("sabc_sermon_archive", []);
+      sermons.push({
+        id: uid(), date,
+        title,
+        speaker: document.querySelector("#new-sermon-speaker").value.trim(),
+        passage: document.querySelector("#new-sermon-passage").value.trim(),
+        youtube_id: extractYoutubeId(document.querySelector("#new-sermon-youtube").value.trim())
+      });
+      saveJSON("sabc_sermon_archive", sermons);
+      cmsLogRawChange("Sermon Archive", "sabc_sermon_archive", null, loadJSON("sabc_sermon_archive", []).slice(0, -1), sermons);
+      render();
+    });
+
+    root.querySelectorAll("[data-remove-sermon]").forEach(btn => btn.addEventListener("click", () => {
+      const sermons = loadJSON("sabc_sermon_archive", []).filter(s => s.id !== btn.dataset.removeSermon);
+      saveJSON("sabc_sermon_archive", sermons);
+      render();
+    }));
+
+    document.querySelector("#save-sermons").addEventListener("click", () => {
+      const before = loadJSON("sabc_sermon_archive", []);
+      const rows = root.querySelectorAll("#sermon-list .manage-row");
+      const updated = [...rows].map(row => ({
+        id: row.dataset.id,
+        date: row.querySelector('[data-sf="date"]').value,
+        title: row.querySelector('[data-sf="title"]').value,
+        speaker: row.querySelector('[data-sf="speaker"]').value,
+        passage: row.querySelector('[data-sf="passage"]').value,
+        youtube_id: extractYoutubeId(row.querySelector('[data-sf="youtube_id"]').value)
+      }));
+      saveJSON("sabc_sermon_archive", updated);
+      cmsLogRawChange("Sermon Archive", "sabc_sermon_archive", null, before, updated);
+      const toast = document.querySelector("#sermon-toast");
+      toast.textContent = "✓ Sermon archive updated.";
+      toast.classList.add("show");
+    });
+  }
+  render();
+}
+
+function renderSermonArchivePublic() {
+  const root = document.querySelector("#sermon-archive-root");
+  const sermons = loadJSON("sabc_sermon_archive", []);
+  const byYear = {};
+  sermons.forEach(s => { const y = (s.date || "").slice(0, 4) || "Undated"; (byYear[y] = byYear[y] || []).push(s); });
+  const years = Object.keys(byYear).sort((a, b) => b - a);
+  const thisYear = String(new Date().getFullYear());
+  if (!years.includes(thisYear)) years.unshift(thisYear);
+
+  root.innerHTML = `<div class="archive-list">` +
+    years.map(y => `<button type="button" data-archive-year="${y}">${y} <span>›</span></button><div class="archive-year-panel" id="archive-panel-${y}" style="display:none"></div>`).join("") +
+    `</div>`;
+
+  root.querySelectorAll("[data-archive-year]").forEach(btn => btn.addEventListener("click", () => {
+    const y = btn.dataset.archiveYear;
+    const panel = document.querySelector(`#archive-panel-${y}`);
+    const open = panel.style.display !== "none";
+    root.querySelectorAll(".archive-year-panel").forEach(p => p.style.display = "none");
+    if (open) return;
+    const list = (byYear[y] || []).slice().sort((a, b) => (b.date || "").localeCompare(a.date || ""));
+    panel.innerHTML = list.length
+      ? list.map(s => `
+          <div class="event-row">
+            <div>
+              <h3>${s.title}</h3>
+              <p>${[s.date ? new Date(s.date + "T00:00:00").toLocaleDateString(undefined, { month: "long", day: "numeric" }) : "", s.speaker, s.passage].filter(Boolean).join(" · ")}</p>
+              ${s.youtube_id ? `<a class="text-link" target="_blank" rel="noopener" href="https://www.youtube.com/watch?v=${s.youtube_id}">Watch on YouTube →</a>` : ""}
+            </div>
+          </div>`).join("")
+      : `<p class="field-hint">No sermons added for ${y} yet.</p>`;
+    panel.style.display = "block";
+  }));
+}
+
+/* ============================= HOME PAGE PHOTO ROTATION ============================= */
+function initHeroRotation() {
+  const photos = loadJSON("sabc_hero_photos", []);
+  if (!photos.length) return; // none set — keep the default light gradient background
+  const bgA = document.querySelector("#hero-bg-a");
+  const bgB = document.querySelector("#hero-bg-b");
+  const overlay = document.querySelector(".hero-overlay");
+  const inner = document.querySelector(".hero-inner");
+  overlay.classList.add("on");
+  if (inner) inner.classList.add("on-photo");
+
+  let idx = 0, useA = true;
+  bgA.style.backgroundImage = `url(${photos[0]})`;
+  bgA.classList.add("active");
+  if (photos.length < 2) return; // only one photo — nothing to rotate to
+  setInterval(() => {
+    idx = (idx + 1) % photos.length;
+    const nextEl = useA ? bgB : bgA;
+    const curEl = useA ? bgA : bgB;
+    nextEl.style.backgroundImage = `url(${photos[idx]})`;
+    nextEl.classList.add("active");
+    curEl.classList.remove("active");
+    useA = !useA;
+  }, 6000);
+}
+
+function initHeroPhotosAdmin() {
+  requireLogin();
+  const root = document.querySelector("#hero-photos-admin-root");
+
+  function render() {
+    const photos = loadJSON("sabc_hero_photos", []);
+    let html = `<p class="field-hint">These rotate behind the homepage welcome text. Add a few, or leave empty to keep the plain background.</p>
+      <div class="person-grid" style="margin-bottom:20px">`;
+    photos.forEach((p, i) => {
+      html += `<div class="person-card" style="text-align:center;padding:10px">
+        <div class="person-photo" style="height:120px"><img src="${p}" style="width:100%;height:100%;object-fit:cover"></div>
+        <button type="button" class="button button-light" data-remove-hero-photo="${i}" style="margin:10px auto;display:block">Remove</button>
+      </div>`;
+    });
+    html += `</div>
+      <label class="image-upload-slot" for="hero-photo-input" style="height:100px;max-width:300px">+ Add a photo</label>
+      <input type="file" accept="image/*" id="hero-photo-input" style="display:none">
+      <p id="hero-photos-toast" class="toast"></p>`;
+    root.innerHTML = html;
+    cmsApplyViewOnlyLock(root);
+
+    document.querySelector("#hero-photo-input").addEventListener("change", e => {
+      const file = e.target.files[0];
+      if (!file) return;
+      compressImage(file, 1400, 0.75).then(dataUrl => {
+        const photos = loadJSON("sabc_hero_photos", []);
+        photos.push(dataUrl);
+        saveJSON("sabc_hero_photos", photos);
+        cmsLogRawChange("Homepage Photos", "sabc_hero_photos", null, photos.slice(0, -1), photos);
+        render();
+        const toast = document.querySelector("#hero-photos-toast");
+        if (toast) { toast.textContent = "✓ Photo added."; toast.classList.add("show"); }
+      }).catch(err => alert("Couldn't process that photo: " + err.message));
+    });
+
+    root.querySelectorAll("[data-remove-hero-photo]").forEach(btn => btn.addEventListener("click", () => {
+      const photos = loadJSON("sabc_hero_photos", []);
+      photos.splice(Number(btn.dataset.removeHeroPhoto), 1);
+      saveJSON("sabc_hero_photos", photos);
+      render();
+    }));
+  }
+  render();
+}
+
+/* ============================= GALLERY ============================= */
+function initGalleryAdmin() {
+  requireLogin();
+  const root = document.querySelector("#gallery-admin-root");
+
+  function render() {
+    const photos = loadJSON("sabc_gallery", []);
+    let html = `<div class="person-grid" style="margin-bottom:20px">`;
+    photos.forEach(p => {
+      html += `<div class="person-card" style="text-align:center;padding:10px">
+        <div class="person-photo" style="height:140px"><img src="${p.photo}" style="width:100%;height:100%;object-fit:cover"></div>
+        <input type="text" data-gf="label" data-id="${p.id}" value="${p.label || ""}" placeholder="Label (e.g. Christmas 2026)" style="margin:10px 0;width:100%;padding:6px;border:1px solid #b9c5d3;border-radius:6px">
+        <button type="button" class="button button-light" data-remove-gallery="${p.id}">Remove</button>
+      </div>`;
+    });
+    html += `</div>
+      <label class="image-upload-slot" for="gallery-photo-input" style="height:100px;max-width:300px">+ Add a photo</label>
+      <input type="file" accept="image/*" id="gallery-photo-input" style="display:none">
+      <div class="edit-actions"><span></span><button class="button" id="save-gallery-labels" type="button">Save Labels</button></div>
+      <p id="gallery-toast" class="toast"></p>`;
+    root.innerHTML = html;
+    cmsApplyViewOnlyLock(root);
+
+    document.querySelector("#gallery-photo-input").addEventListener("change", e => {
+      const file = e.target.files[0];
+      if (!file) return;
+      compressImage(file, 1600, 0.8).then(dataUrl => {
+        const photos = loadJSON("sabc_gallery", []);
+        photos.push({ id: uid(), photo: dataUrl, label: "" });
+        saveJSON("sabc_gallery", photos);
+        cmsLogRawChange("Gallery", "sabc_gallery", null, photos.slice(0, -1), photos);
+        render();
+      }).catch(err => alert("Couldn't process that photo: " + err.message));
+    });
+
+    root.querySelectorAll("[data-remove-gallery]").forEach(btn => btn.addEventListener("click", () => {
+      const photos = loadJSON("sabc_gallery", []).filter(p => p.id !== btn.dataset.removeGallery);
+      saveJSON("sabc_gallery", photos);
+      render();
+    }));
+
+    document.querySelector("#save-gallery-labels").addEventListener("click", () => {
+      const photos = loadJSON("sabc_gallery", []);
+      root.querySelectorAll('[data-gf="label"]').forEach(input => {
+        const p = photos.find(x => x.id === input.dataset.id);
+        if (p) p.label = input.value;
+      });
+      saveJSON("sabc_gallery", photos);
+      const toast = document.querySelector("#gallery-toast");
+      toast.textContent = "✓ Labels saved.";
+      toast.classList.add("show");
+    });
+  }
+  render();
+}
+
+function renderGalleryPublic() {
+  const root = document.querySelector("#gallery-public-root");
+  // This page needs to be logged in — it's not meant for random visitors,
+  // just admins pulling photos for slides/bulletins. Since this page lives
+  // outside /admin/, it can't reuse requireLogin() directly (that redirects
+  // to a relative "login.html", which only works from inside /admin/).
+  if (!window.__adminSession || !window.__adminSession.loggedIn) {
+    localStorage.setItem("sabc_return_to", "../gallery.html");
+    window.location.href = "admin/login.html";
+    return;
+  }
+  const photos = loadJSON("sabc_gallery", []);
+  if (!photos.length) {
+    root.innerHTML = `<p class="placeholder-lines center">No photos here yet — add some from the admin Gallery page.</p>`;
+    return;
+  }
+  root.innerHTML = `<div class="person-grid">` + photos.map(p => `
+    <div class="person-card" style="text-align:center;padding:14px">
+      <div class="person-photo" style="height:180px"><img src="${p.photo}" style="width:100%;height:100%;object-fit:cover"></div>
+      <p style="margin:10px 0 6px;font-weight:700;color:var(--navy)">${p.label || ""}</p>
+      <a class="button button-light" download="church-photo.jpg" href="${p.photo}">Download</a>
+    </div>`).join("") + `</div>`;
+}
+
+/* ============================= PRAYER REQUESTS (admin) ============================= */
+function initPrayerRequestsAdmin() {
+  requireLogin();
+  const root = document.querySelector("#prayer-requests-admin-root");
+
+  async function render() {
+    let items;
+    try {
+      const res = await fetch("/api/prayer-requests", { credentials: "same-origin" });
+      if (res.status === 401) { requireLogin(); return; }
+      items = await res.json();
+    } catch {
+      root.innerHTML = "<p class='field-hint'>Couldn't reach the server — is the backend running?</p>";
+      return;
+    }
+
+    if (!items.length) {
+      root.innerHTML = "<p class='field-hint'>No prayer requests yet.</p>";
+      return;
+    }
+
+    root.innerHTML = items.map(item => `
+      <div class="log-entry" data-id="${item.id}" style="${item.status === "archived" ? "opacity:.6" : ""}">
+        <time>${item.submitted}${item.status === "unread" ? " · <b style='color:var(--blue)'>UNREAD</b>" : item.status === "archived" ? " · archived" : " · read"}</time>
+        <p class="log-change"><b>${item.name || "(anonymous)"}</b>${item.email ? " · " + item.email : ""}${item.pray_aloud ? " · wants this said aloud in the prayer meeting" : ""}</p>
+        <p style="white-space:pre-wrap;margin:10px 0">${item.request}</p>
+        <div class="log-actions">
+          ${item.status !== "read" ? `<button type="button" class="text-btn" data-mark-read="${item.id}">Mark read</button>` : ""}
+          ${item.status !== "archived" ? `<button type="button" class="text-btn" data-archive="${item.id}">Archive</button>` : `<button type="button" class="text-btn" data-unarchive="${item.id}">Unarchive</button>`}
+          <button type="button" class="text-btn" data-delete="${item.id}" style="color:#a62929">Delete</button>
+        </div>
+      </div>`).join("");
+
+    async function setStatus(id, status) {
+      await fetch(`/api/prayer-requests/${id}`, {
+        method: "POST", headers: { "Content-Type": "application/json" }, credentials: "same-origin",
+        body: JSON.stringify({ status })
+      });
+      render();
+    }
+    root.querySelectorAll("[data-mark-read]").forEach(b => b.addEventListener("click", () => setStatus(b.dataset.markRead, "read")));
+    root.querySelectorAll("[data-archive]").forEach(b => b.addEventListener("click", () => setStatus(b.dataset.archive, "archived")));
+    root.querySelectorAll("[data-unarchive]").forEach(b => b.addEventListener("click", () => setStatus(b.dataset.unarchive, "read")));
+    root.querySelectorAll("[data-delete]").forEach(b => b.addEventListener("click", async () => {
+      if (!confirm("Delete this request permanently? This can't be undone.")) return;
+      await fetch(`/api/prayer-requests/${b.dataset.delete}`, { method: "DELETE", credentials: "same-origin" });
+      render();
+    }));
+  }
+  render();
+}
+
+</script>
+</body></html>

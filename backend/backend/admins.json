@@ -1,0 +1,14 @@
+[
+  {
+    "id": "dante-permanent",
+    "name": "Dante McLaughlin",
+    "email": "danteeugenemclaughlin@gmail.com",
+    "access": "Full Admin"
+  },
+  {
+    "id": "x",
+    "name": "Someone Else",
+    "email": "other@example.com",
+    "access": "View Only"
+  }
+]

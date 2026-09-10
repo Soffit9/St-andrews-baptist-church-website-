@@ -1,0 +1,15 @@
+# This replaces /etc/caddy/Caddyfile on the Pi (see README.md "Backend
+# setup" for the exact command). Adds one new block: any request to
+# /api/... gets handed to the Flask backend instead of looked up as a
+# file. Everything else (the actual HTML/CSS/JS) is served exactly like
+# before — nothing about the static site changes.
+
+:80 {
+    handle /api/* {
+        reverse_proxy 127.0.0.1:5000
+    }
+    handle {
+        root * /home/church/st-andrews-baptist-church-website-
+        file_server
+    }
+}
