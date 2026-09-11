@@ -41,9 +41,9 @@ function previewTemplate(pageKey, c) {
   switch (pageKey) {
     case "global":
       return `<div style="display:flex;align-items:center;gap:10px">
-        <div class="logo-placeholder" data-preview-image="logo" style="${c.logo ? `height:${c.logo_h||44}px;width:${Math.round((c.logo_h||44)*(58/44))}px` : ""}">${c.logo ? `<img src="${c.logo}" style="width:100%;height:100%;object-fit:contain;object-position:50% ${c.logo_pos??50}%">` : "LOGO"}</div>
+        <div class="logo-placeholder" data-preview-image="logo" style="${c.logo ? `height:${c.logo_h||44}px;width:auto` : ""}">${c.logo ? `<img src="${c.logo}" style="height:100%;width:auto;display:block;object-fit:contain">` : "LOGO"}</div>
         <strong>St. Andrews Baptist Church</strong></div>
-        <p class="field-hint" style="margin-top:14px">The logo appears at this size in the header on every page.</p>`;
+        <p class="field-hint" style="margin-top:14px">The logo appears at this height in the header — width follows the photo's real shape, so nothing gets squished.</p>`;
     case "home":
       return `<p class="eyebrow">ST. ANDREWS BAPTIST CHURCH</p>
         <h1 data-preview="hero_heading">${c.hero_heading}</h1>
@@ -144,7 +144,7 @@ document.addEventListener("sabc:session-ready", () => {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           credentials: "same-origin",
-          body: JSON.stringify({ password: currentPassword, email })
+          body: JSON.stringify({ password: currentPassword, email, method: chosenMethod })
         });
         const data = await res.json();
         if (!res.ok || !data.ok) {
@@ -234,6 +234,18 @@ document.addEventListener("sabc:session-ready", () => {
         window.location.href = "edit.html?page=" + btn.getAttribute("data-goto-page");
       });
     });
+
+    // Hide dashboard tiles the current admin shouldn't have access to.
+    // Full Admin sees everything. Can Edit sees everything except Admin
+    // Users and Prayer Requests (so an editor can't grant themselves
+    // Full Admin). View Only sees only Church Calendar and Gallery
+    // (those two tiles are simply left with no data-min-access at all).
+    const RANK = { "View Only": 0, "Can Edit": 1, "Full Admin": 2 };
+    const myRank = RANK[(me && me.access) || "Full Admin"] ?? 2;
+    document.querySelectorAll(".quick-grid button[data-min-access]").forEach(btn => {
+      const required = RANK[btn.dataset.minAccess] ?? 0;
+      if (myRank < required) btn.style.display = "none";
+    });
   }
   const logoutBtn = document.querySelector("#logout");
   if (logoutBtn) logoutBtn.addEventListener("click", async () => {
@@ -317,10 +329,9 @@ document.addEventListener("sabc:session-ready", () => {
       function refreshPreviewImage(id, dataUrl, height, pos) {
         document.querySelectorAll(`#preview-frame [data-preview-image="${id}"]`).forEach(el => {
           if (id === "logo") {
-            const w = Math.round(height * (58 / 44));
             el.style.height = height + "px";
-            el.style.width = w + "px";
-            el.innerHTML = `<img src="${dataUrl}" alt="" style="width:100%;height:100%;object-fit:contain;object-position:50% ${pos ?? 50}%">`;
+            el.style.width = "auto";
+            el.innerHTML = `<img src="${dataUrl}" alt="" style="height:100%;width:auto;display:block;object-fit:contain">`;
           } else {
             el.style.height = (height || 300) + "px";
             el.innerHTML = `<img src="${dataUrl}" alt="" style="width:100%;height:100%;object-fit:cover;object-position:50% ${pos ?? 50}%">`;
@@ -398,7 +409,7 @@ document.addEventListener("sabc:session-ready", () => {
         document.querySelector("#confirm-modal").classList.add("open");
       });
 
-      document.querySelector("#confirm-yes").addEventListener("click", () => {
+      document.querySelector("#confirm-yes").addEventListener("click", async () => {
         const data = {};
         editRoot.querySelectorAll("[data-field-id]").forEach(el => { data[el.dataset.fieldId] = el.value; });
         editRoot.querySelectorAll("[data-image-id]").forEach(el => {
@@ -407,8 +418,13 @@ document.addEventListener("sabc:session-ready", () => {
         });
         editRoot.querySelectorAll("[data-size-id]").forEach(el => { data[el.dataset.sizeId + "_h"] = el.value; });
         editRoot.querySelectorAll("[data-pos-id]").forEach(el => { data[el.dataset.posId + "_pos"] = el.value; });
-        const result = cmsSavePage(pageKey, data);
+        const confirmYesBtn = document.querySelector("#confirm-yes");
+        confirmYesBtn.disabled = true;
+        confirmYesBtn.textContent = "Saving…";
+        const result = await cmsSavePage(pageKey, data);
         document.querySelector("#confirm-modal").classList.remove("open");
+        confirmYesBtn.disabled = false;
+        confirmYesBtn.textContent = "Yes, Apply Changes";
         if (!result.ok) {
           alert("This didn't save — the browser's storage is full (usually from too many/too-large photos). Try a smaller photo, or remove an existing one first, then try again.");
           return;

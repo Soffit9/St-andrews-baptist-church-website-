@@ -141,6 +141,14 @@ def create_app():
         if not email:
             return jsonify(ok=False, error="Email is required."), 400
 
+        method = (data.get("method") or "email").strip().lower()
+
+        # If they chose the authenticator app and one's actually set up, don't
+        # bother sending an email code at all — they don't need it, and it
+        # was confusing to get an unrelated email after picking "use my app".
+        if method == "totp" and cfg.get("totp_secret"):
+            return jsonify(ok=True, emailed=False, totpAvailable=True, usingTotp=True)
+
         code = str(random.randint(100000, 999999))
         PENDING_CODES[email] = {"code": code, "expires": time.time() + CODE_LIFETIME_SECONDS}
 
@@ -209,6 +217,8 @@ def create_app():
     # ---- Admin roster (needed by the login screen + the Admin Users page) ----
     @app.get("/api/admins")
     def get_admins():
+        if session.get("access") != "Full Admin":
+            return jsonify(error="Full Admin access required."), 403
         return jsonify(load_admins())
 
     @app.post("/api/admins")
@@ -237,6 +247,14 @@ def create_app():
     @app.post("/api/prayer-requests")
     def submit_prayer_request():
         data = request.get_json(silent=True) or {}
+
+        # Honeypot: a hidden field real visitors never see or fill in — bots
+        # that blindly auto-fill every field on a page usually fill it,
+        # giving away that the submission isn't from a real person. Silently
+        # pretend success so the bot doesn't learn to avoid this field.
+        if (data.get("website") or "").strip():
+            return jsonify(ok=True)
+
         text = (data.get("request") or "").strip()
         if not text:
             return jsonify(ok=False, error="A prayer request is required."), 400
@@ -259,14 +277,14 @@ def create_app():
 
     @app.get("/api/prayer-requests")
     def get_prayer_requests():
-        if "email" not in session:
-            return jsonify(ok=False, error="Login required."), 401
+        if session.get("access") != "Full Admin":
+            return jsonify(ok=False, error="Full Admin access required."), 403
         return jsonify(load_prayer_requests())
 
     @app.post("/api/prayer-requests/<req_id>")
     def update_prayer_request(req_id):
-        if "email" not in session:
-            return jsonify(ok=False, error="Login required."), 401
+        if session.get("access") != "Full Admin":
+            return jsonify(ok=False, error="Full Admin access required."), 403
         data = request.get_json(silent=True) or {}
         items = load_prayer_requests()
         for item in items:
@@ -277,8 +295,8 @@ def create_app():
 
     @app.delete("/api/prayer-requests/<req_id>")
     def delete_prayer_request(req_id):
-        if "email" not in session:
-            return jsonify(ok=False, error="Login required."), 401
+        if session.get("access") != "Full Admin":
+            return jsonify(ok=False, error="Full Admin access required."), 403
         items = [i for i in load_prayer_requests() if i["id"] != req_id]
         save_prayer_requests(items)
         return jsonify(ok=True)
@@ -287,10 +305,17 @@ def create_app():
     # Calendar / Sermon Archive / page content used to keep in each
     # browser's local storage now lives here instead, so it's the same
     # for every admin, on every device. ----
+    # The audit log is the one shared-storage key that isn't meant to be
+    # publicly readable — everything else here (Who's Who, Events, etc.)
+    # needs to be, since public pages display it without anyone logging in.
+    PRIVATE_READ_KEYS = {"sabc_audit_log"}
+
     @app.get("/api/store/<key>")
     def get_store(key):
         if key not in ALLOWED_STORE_KEYS:
             return jsonify(error="Unknown key."), 404
+        if key in PRIVATE_READ_KEYS and session.get("access") not in ("Full Admin", "Can Edit"):
+            return jsonify(error="Login required."), 401
         path = DATA_DIR / f"{key}.json"
         if not path.exists():
             return jsonify(None)

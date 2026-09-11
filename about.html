@@ -350,7 +350,7 @@ const CMS_SCHEMA = {
     label: "Site-wide",
     fields: [],
     images: [
-      { id: "logo", label: "Church Logo", hint: "Shows in the header on every page.", sizable: true, positionable: true, sizeMin: 32, sizeMax: 90, sizeDefault: 44 }
+      { id: "logo", label: "Church Logo", hint: "Shows in the header on every page. Sizes to whatever height you set, keeping its real width/shape — no more squishing into a fixed box.", sizable: true, positionable: false, sizeMin: 32, sizeMax: 90, sizeDefault: 44 }
     ]
   },
   home: {
@@ -441,7 +441,7 @@ function cmsLoadAll() {
    The in-memory cache is already updated by the caller before this runs,
    so the page feels instant even though the network call happens after. */
 function serverStoreSave(key, value) {
-  fetch(`/api/store/${key}`, {
+  return fetch(`/api/store/${key}`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     credentials: "same-origin",
@@ -449,7 +449,7 @@ function serverStoreSave(key, value) {
   }).catch(err => console.error("Save to server failed for", key, err));
 }
 
-function cmsSavePage(pageKey, data) {
+async function cmsSavePage(pageKey, data) {
   const all = cmsLoadAll();
   const before = all[pageKey] || {};
   const changes = [];
@@ -464,7 +464,9 @@ function cmsSavePage(pageKey, data) {
   });
   all[pageKey] = { ...before, ...data };
   window.__serverStore[CMS_KEY] = all;
-  serverStoreSave(CMS_KEY, all);
+  await serverStoreSave(CMS_KEY, all); // MUST finish before the caller is allowed to navigate away —
+  // otherwise the browser cancels this request mid-flight the instant the page changes, and the
+  // "save" silently never actually reaches the server. This was the "logo/sermons page doesn't save" bug.
   cmsLogChange(pageKey, changes);
   return { ok: true };
 }
@@ -472,14 +474,14 @@ function cmsSavePage(pageKey, data) {
 /* Reverts every revertable field in a log entry back to its recorded
    "old" value. Photos can't be auto-reverted (their old data isn't kept
    in the log, to avoid bloating storage) — those need a manual re-upload. */
-function cmsRevertLogEntry(entry) {
+async function cmsRevertLogEntry(entry) {
   const revertData = {};
   let any = false;
   (entry.changes || []).forEach(c => {
     if (c.revertable) { revertData[c.field] = c.rawOld; any = true; }
   });
   if (!any) return { ok: false, reason: "nothing revertable" };
-  return cmsSavePage(entry.page, revertData);
+  return await cmsSavePage(entry.page, revertData);
 }
 
 /* Same idea as above, but for the non-schema features (Calendar, Who's
@@ -502,17 +504,17 @@ function cmsLogRawChange(label, revertKey, revertPath, before, after) {
     revertKey, revertPath, rawOld: cmsStripImages(before), rawNew: cmsStripImages(after)
   }]);
 }
-function cmsRevertRawEntry(entry) {
+async function cmsRevertRawEntry(entry) {
   const c = (entry.changes || [])[0];
   if (!c || !c.revertable || !c.isRaw) return { ok: false };
   if (c.revertPath) {
     const data = window.__serverStore[c.revertKey] || {};
     data[c.revertPath] = c.rawOld;
     window.__serverStore[c.revertKey] = data;
-    serverStoreSave(c.revertKey, data);
+    await serverStoreSave(c.revertKey, data);
   } else {
     window.__serverStore[c.revertKey] = c.rawOld;
-    serverStoreSave(c.revertKey, c.rawOld);
+    await serverStoreSave(c.revertKey, c.rawOld);
   }
   return { ok: true };
 }
@@ -600,12 +602,10 @@ function cmsApplyToPage(pageKey) {
   const global = cmsGetPage("global");
   if (global.logo) {
     const logoH = global.logo_h || 44;
-    const logoW = Math.round(logoH * (58 / 44)); // keep the original box's proportions
-    const logoPos = global.logo_pos ?? 50;
     document.querySelectorAll("[data-image='logo']").forEach(el => {
       el.style.height = logoH + "px";
-      el.style.width = logoW + "px";
-      el.innerHTML = `<img src="${global.logo}" alt="Church logo" style="width:100%;height:100%;object-fit:contain;object-position:50% ${logoPos}%;border-radius:7px">`;
+      el.style.width = "auto";
+      el.innerHTML = `<img src="${global.logo}" alt="Church logo" style="height:100%;width:auto;display:block;object-fit:contain;border-radius:7px">`;
     });
   }
 
@@ -704,7 +704,8 @@ document.addEventListener("DOMContentLoaded", () => {
         name: formData.get("name") || "",
         email: formData.get("email") || "",
         request: formData.get("request") || "",
-        pray_aloud: formData.get("pray_aloud") === "yes"
+        pray_aloud: formData.get("pray_aloud") === "yes",
+        website: formData.get("website") || "" // honeypot — real people never touch this field
       };
       const msgEl = document.querySelector("#form-message");
       try {

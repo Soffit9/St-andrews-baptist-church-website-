@@ -14,13 +14,13 @@ function getScheduleRoles() { return loadJSON("sabc_schedule_roles", DEFAULT_SCH
 
 function loadJSON(key, fallback) {
   const v = window.__serverStore ? window.__serverStore[key] : undefined;
+  if (v && typeof v === "object" && !Array.isArray(v) && "error" in v) return fallback; // access denied for this key — treat as empty rather than crash a page
   return v ?? fallback;
 }
 function saveJSON(key, value) {
-  if (!window.__serverStore) return false;
+  if (!window.__serverStore) return Promise.resolve(false);
   window.__serverStore[key] = value;
-  serverStoreSave(key, value);
-  return true;
+  return serverStoreSave(key, value).then(() => true);
 }
 // Local calendar date (not UTC) — matches the fix in app.js. Using
 // toISOString() here was quietly excluding "today's" events from the
@@ -667,12 +667,12 @@ function initLog() {
       }
     }));
 
-    root.querySelectorAll("[data-revert]").forEach(btn => btn.addEventListener("click", () => {
+    root.querySelectorAll("[data-revert]").forEach(btn => btn.addEventListener("click", async () => {
       const idx = btn.dataset.revert;
       const entry = log[idx];
       if (!confirm("Revert this change? This restores the previous version (text/lists only — photos aren't auto-reverted, re-upload if one was part of this change).")) return;
       const isRaw = entry.changes[0] && entry.changes[0].isRaw;
-      const result = isRaw ? cmsRevertRawEntry(entry) : cmsRevertLogEntry(entry);
+      const result = isRaw ? await cmsRevertRawEntry(entry) : await cmsRevertLogEntry(entry);
       if (result.ok) {
         cmsLogChange(entry.page + " (reverted)", [{ field: "Revert", old: "(the change above)", new: "(restored to before)" }]);
         alert("Reverted. The live page will show this the next time it loads.");
@@ -840,15 +840,22 @@ function initHeroRotation() {
   overlay.classList.add("on");
   if (inner) inner.classList.add("on-photo");
 
+  function setBg(el, p) {
+    const photo = typeof p === "string" ? p : p.photo;
+    const pos = typeof p === "string" ? 50 : (p.pos ?? 50);
+    el.style.backgroundImage = `url(${photo})`;
+    el.style.backgroundPosition = `50% ${pos}%`;
+  }
+
   let idx = 0, useA = true;
-  bgA.style.backgroundImage = `url(${photos[0]})`;
+  setBg(bgA, photos[0]);
   bgA.classList.add("active");
   if (photos.length < 2) return; // only one photo — nothing to rotate to
   setInterval(() => {
     idx = (idx + 1) % photos.length;
     const nextEl = useA ? bgB : bgA;
     const curEl = useA ? bgA : bgB;
-    nextEl.style.backgroundImage = `url(${photos[idx]})`;
+    setBg(nextEl, photos[idx]);
     nextEl.classList.add("active");
     curEl.classList.remove("active");
     useA = !useA;
@@ -860,12 +867,13 @@ function initHeroPhotosAdmin() {
   const root = document.querySelector("#hero-photos-admin-root");
 
   function render() {
-    const photos = loadJSON("sabc_hero_photos", []);
-    let html = `<p class="field-hint">These rotate behind the homepage welcome text. Add a few, or leave empty to keep the plain background.</p>
+    const photos = loadJSON("sabc_hero_photos", []).map(p => typeof p === "string" ? { photo: p, pos: 50 } : p);
+    let html = `<p class="field-hint">These rotate behind the homepage welcome text. Add a few, or leave empty to keep the plain background. The focus slider shifts which part shows — it never stretches or distorts the photo.</p>
       <div class="person-grid" style="margin-bottom:20px">`;
     photos.forEach((p, i) => {
       html += `<div class="person-card" style="text-align:center;padding:10px">
-        <div class="person-photo" style="height:120px"><img src="${p}" style="width:100%;height:100%;object-fit:cover"></div>
+        <div class="person-photo" style="height:120px"><img src="${p.photo}" style="width:100%;height:100%;object-fit:cover;object-position:50% ${p.pos}%"></div>
+        <input type="range" min="0" max="100" data-hero-pos="${i}" value="${p.pos}" title="Focus point (top/bottom)" style="width:100%;margin-top:8px">
         <button type="button" class="button button-light" data-remove-hero-photo="${i}" style="margin:10px auto;display:block">Remove</button>
       </div>`;
     });
@@ -880,8 +888,8 @@ function initHeroPhotosAdmin() {
       const file = e.target.files[0];
       if (!file) return;
       compressImage(file, 1400, 0.75).then(dataUrl => {
-        const photos = loadJSON("sabc_hero_photos", []);
-        photos.push(dataUrl);
+        const photos = loadJSON("sabc_hero_photos", []).map(p => typeof p === "string" ? { photo: p, pos: 50 } : p);
+        photos.push({ photo: dataUrl, pos: 50 });
         saveJSON("sabc_hero_photos", photos);
         cmsLogRawChange("Homepage Photos", "sabc_hero_photos", null, photos.slice(0, -1), photos);
         render();
@@ -890,8 +898,17 @@ function initHeroPhotosAdmin() {
       }).catch(err => alert("Couldn't process that photo: " + err.message));
     });
 
+    root.querySelectorAll("[data-hero-pos]").forEach(range => range.addEventListener("input", () => {
+      const photos = loadJSON("sabc_hero_photos", []).map(p => typeof p === "string" ? { photo: p, pos: 50 } : p);
+      const i = Number(range.dataset.heroPos);
+      photos[i].pos = Number(range.value);
+      const img = range.previousElementSibling.querySelector("img");
+      if (img) img.style.objectPosition = `50% ${range.value}%`;
+      saveJSON("sabc_hero_photos", photos);
+    }));
+
     root.querySelectorAll("[data-remove-hero-photo]").forEach(btn => btn.addEventListener("click", () => {
-      const photos = loadJSON("sabc_hero_photos", []);
+      const photos = loadJSON("sabc_hero_photos", []).map(p => typeof p === "string" ? { photo: p, pos: 50 } : p);
       photos.splice(Number(btn.dataset.removeHeroPhoto), 1);
       saveJSON("sabc_hero_photos", photos);
       render();
@@ -967,17 +984,49 @@ function renderGalleryPublic() {
     window.location.href = "admin/login.html";
     return;
   }
-  const photos = loadJSON("sabc_gallery", []);
-  if (!photos.length) {
-    root.innerHTML = `<p class="placeholder-lines center">No photos here yet — add some from the admin Gallery page.</p>`;
-    return;
+
+  function render() {
+    const photos = loadJSON("sabc_gallery", []);
+    if (!photos.length) {
+      root.innerHTML = `<p class="placeholder-lines center">No photos here yet — add some from the admin Gallery page.</p>`;
+      return;
+    }
+    root.innerHTML = `<div class="person-grid">` + photos.map(p => `
+      <div class="person-card" style="text-align:center;padding:14px">
+        <div class="person-photo" style="height:180px;cursor:pointer" data-open-lightbox="${p.id}"><img src="${p.photo}" style="width:100%;height:100%;object-fit:cover"></div>
+        <p style="margin:10px 0 6px;font-weight:700;color:var(--navy)">${p.label || ""}</p>
+        <div class="button-row" style="gap:8px">
+          <a class="button button-light" download="church-photo.jpg" href="${p.photo}">Download</a>
+          <button type="button" class="button button-light" data-delete-gallery-photo="${p.id}" style="color:#a62929">Delete</button>
+        </div>
+      </div>`).join("") + `</div>
+      <div id="gallery-lightbox" class="modal-overlay">
+        <div style="max-width:90vw;max-height:85vh;position:relative">
+          <button type="button" id="gallery-lightbox-close" class="button button-light" style="position:absolute;top:-44px;right:0">✕ Close</button>
+          <img id="gallery-lightbox-img" src="" style="max-width:90vw;max-height:85vh;border-radius:10px;display:block">
+        </div>
+      </div>`;
+
+    root.querySelectorAll("[data-open-lightbox]").forEach(el => el.addEventListener("click", () => {
+      const p = photos.find(x => x.id === el.dataset.openLightbox);
+      document.querySelector("#gallery-lightbox-img").src = p.photo;
+      document.querySelector("#gallery-lightbox").classList.add("open");
+    }));
+    document.querySelector("#gallery-lightbox-close").addEventListener("click", () => {
+      document.querySelector("#gallery-lightbox").classList.remove("open");
+    });
+    document.querySelector("#gallery-lightbox").addEventListener("click", e => {
+      if (e.target.id === "gallery-lightbox") e.currentTarget.classList.remove("open");
+    });
+
+    root.querySelectorAll("[data-delete-gallery-photo]").forEach(btn => btn.addEventListener("click", async () => {
+      if (!confirm("Delete this photo? This can't be undone.")) return;
+      const updated = loadJSON("sabc_gallery", []).filter(p => p.id !== btn.dataset.deleteGalleryPhoto);
+      await saveJSON("sabc_gallery", updated);
+      render();
+    }));
   }
-  root.innerHTML = `<div class="person-grid">` + photos.map(p => `
-    <div class="person-card" style="text-align:center;padding:14px">
-      <div class="person-photo" style="height:180px"><img src="${p.photo}" style="width:100%;height:100%;object-fit:cover"></div>
-      <p style="margin:10px 0 6px;font-weight:700;color:var(--navy)">${p.label || ""}</p>
-      <a class="button button-light" download="church-photo.jpg" href="${p.photo}">Download</a>
-    </div>`).join("") + `</div>`;
+  render();
 }
 
 /* ============================= PRAYER REQUESTS (admin) ============================= */
