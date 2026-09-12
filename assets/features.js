@@ -430,7 +430,8 @@ function initWhoswhoAdmin() {
             <div class="photo-col">
               <label class="image-upload-slot" style="height:90px" for="photo_${p.id}">${p.photo ? `<img src="${p.photo}" style="object-position:50% ${p.photo_pos ?? 50}%">` : "Photo"}</label>
               <input type="file" accept="image/*" id="photo_${p.id}" data-photo-for="${p.id}" style="display:none">
-              <input type="range" min="0" max="100" data-pos-for="${p.id}" value="${p.photo_pos ?? 50}" title="Focus point (top/bottom)" style="width:100%;margin-top:4px">
+              <label style="display:block;font-size:12px;color:var(--muted);margin-top:4px">Focus point <span id="pos-readout-${p.id}" style="font-weight:700;color:var(--navy)">${(p.photo_pos ?? 50) < 34 ? "top" : (p.photo_pos ?? 50) > 66 ? "bottom" : "center"}</span> — drag to isolate a face or crop out black bars</label>
+              <input type="range" min="0" max="100" data-pos-for="${p.id}" value="${p.photo_pos ?? 50}" style="width:100%">
               ${p.photo ? `<button type="button" class="text-btn" data-clear-photo="${p.id}" data-allow-view-only style="font-size:12px;margin-top:2px">Remove photo</button>` : ""}
             </div>
             <div class="fields-col">
@@ -482,6 +483,8 @@ function initWhoswhoAdmin() {
     root.querySelectorAll("[data-pos-for]").forEach(range => range.addEventListener("input", () => {
       const img = root.querySelector(`#photo_${range.dataset.posFor}`).previousElementSibling.querySelector("img");
       if (img) img.style.objectPosition = `50% ${range.value}%`;
+      const readout = document.querySelector(`#pos-readout-${range.dataset.posFor}`);
+      if (readout) readout.textContent = range.value < 34 ? "top" : range.value > 66 ? "bottom" : "center";
     }));
     document.querySelector("#add-person").addEventListener("click", () => {
       const people = loadJSON("sabc_whoswho", []);

@@ -324,6 +324,7 @@ document.addEventListener("sabc:session-ready", () => {
           formHtml += `
             <div class="size-field">
               <label for="size_${img.id}">Photo height <span class="size-readout" id="size_readout_${img.id}">${defH}px</span></label>
+              <p class="field-hint">This box above stays the same size for easy cropping — the slider changes the *actual* size shown on the real page. Watch the Live Preview on the right to see the true result.</p>
               <input type="range" min="${minH}" max="${maxH}" step="2" id="size_${img.id}" data-size-id="${img.id}" value="${defH}">
             </div>`;
           if (img.positionable !== false) {
