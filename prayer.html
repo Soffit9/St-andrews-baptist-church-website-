@@ -129,7 +129,7 @@ a,button{transition:box-shadow .15s ease,transform .15s ease,filter .15s ease,ba
 /* ---------- Who's Who ---------- */
 .person-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
 .person-card{border:1px solid var(--line);border-radius:var(--radius);background:#fff;box-shadow:var(--shadow);overflow:hidden;text-align:center;padding-bottom:18px}
-.person-photo{height:170px;background:linear-gradient(135deg,#dcecfd,#c3ddf6);display:grid;place-items:center;color:var(--blue);font-weight:700;overflow:hidden}
+.person-photo{aspect-ratio:1/1;background:linear-gradient(135deg,#dcecfd,#c3ddf6);display:grid;place-items:center;color:var(--blue);font-weight:700;overflow:hidden}
 .person-photo img{display:block;width:100%;height:100%;object-fit:cover}
 .person-card h3{margin:16px 0 2px;padding-top:2px;color:var(--navy);border-top:1px solid var(--line)}
 .person-role{color:var(--blue);font-weight:700;font-size:13px;margin-bottom:8px}
@@ -276,6 +276,29 @@ document.addEventListener("DOMContentLoaded", async () => {
       }
     });
   }
+
+  // Add a show/hide toggle to every password field on the page, so typos
+  // are easy to catch. Wraps each input in a small relative container and
+  // drops a plain-text eye button on top of it — no layout changes needed
+  // elsewhere since the wrapper takes over the input's original spot.
+  document.querySelectorAll('input[type="password"]').forEach(input => {
+    const wrap = document.createElement("span");
+    wrap.style.cssText = "position:relative;display:block";
+    input.parentNode.insertBefore(wrap, input);
+    wrap.appendChild(input);
+    input.style.paddingRight = "38px";
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.textContent = "👁";
+    btn.setAttribute("aria-label", "Show password");
+    btn.style.cssText = "position:absolute;right:6px;top:50%;transform:translateY(-50%);background:none;border:0;cursor:pointer;font-size:16px;opacity:.7";
+    btn.addEventListener("click", () => {
+      const showing = input.type === "text";
+      input.type = showing ? "password" : "text";
+      btn.style.opacity = showing ? ".7" : "1";
+    });
+    wrap.appendChild(btn);
+  });
 });
 
 /* ---------------- Real shared storage — Who's Who, Gallery, Events,

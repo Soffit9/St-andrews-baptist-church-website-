@@ -128,7 +128,7 @@ a,button{transition:box-shadow .15s ease,transform .15s ease,filter .15s ease,ba
 /* ---------- Who's Who ---------- */
 .person-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
 .person-card{border:1px solid var(--line);border-radius:var(--radius);background:#fff;box-shadow:var(--shadow);overflow:hidden;text-align:center;padding-bottom:18px}
-.person-photo{height:170px;background:linear-gradient(135deg,#dcecfd,#c3ddf6);display:grid;place-items:center;color:var(--blue);font-weight:700;overflow:hidden}
+.person-photo{aspect-ratio:1/1;background:linear-gradient(135deg,#dcecfd,#c3ddf6);display:grid;place-items:center;color:var(--blue);font-weight:700;overflow:hidden}
 .person-photo img{display:block;width:100%;height:100%;object-fit:cover}
 .person-card h3{margin:16px 0 2px;padding-top:2px;color:var(--navy);border-top:1px solid var(--line)}
 .person-role{color:var(--blue);font-weight:700;font-size:13px;margin-bottom:8px}

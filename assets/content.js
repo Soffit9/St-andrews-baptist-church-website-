@@ -46,6 +46,29 @@ document.addEventListener("DOMContentLoaded", async () => {
       }
     });
   }
+
+  // Add a show/hide toggle to every password field on the page, so typos
+  // are easy to catch. Wraps each input in a small relative container and
+  // drops a plain-text eye button on top of it — no layout changes needed
+  // elsewhere since the wrapper takes over the input's original spot.
+  document.querySelectorAll('input[type="password"]').forEach(input => {
+    const wrap = document.createElement("span");
+    wrap.style.cssText = "position:relative;display:block";
+    input.parentNode.insertBefore(wrap, input);
+    wrap.appendChild(input);
+    input.style.paddingRight = "38px";
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.textContent = "👁";
+    btn.setAttribute("aria-label", "Show password");
+    btn.style.cssText = "position:absolute;right:6px;top:50%;transform:translateY(-50%);background:none;border:0;cursor:pointer;font-size:16px;opacity:.7";
+    btn.addEventListener("click", () => {
+      const showing = input.type === "text";
+      input.type = showing ? "password" : "text";
+      btn.style.opacity = showing ? ".7" : "1";
+    });
+    wrap.appendChild(btn);
+  });
 });
 
 /* ---------------- Real shared storage — Who's Who, Gallery, Events,

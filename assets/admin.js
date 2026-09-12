@@ -144,6 +144,8 @@ document.addEventListener("sabc:session-ready", () => {
     });
 
     document.querySelector("#back-to-password").addEventListener("click", () => { sessionStorage.removeItem("sabc_login_progress"); showOnly(step1); });
+    const backFromCode = document.querySelector("#back-to-password-2");
+    if (backFromCode) backFromCode.addEventListener("click", () => { sessionStorage.removeItem("sabc_login_progress"); showOnly(step1); });
 
     document.querySelector("#method-email").addEventListener("click", () => {
       chosenMethod = "email";
@@ -286,8 +288,9 @@ document.addEventListener("sabc:session-ready", () => {
     });
   }
   const logoutBtn = document.querySelector("#logout");
-  if (logoutBtn) logoutBtn.addEventListener("click", async () => {
-    try { await fetch("/api/auth/logout", { method: "POST", credentials: "same-origin" }); } catch {}
+  if (logoutBtn) logoutBtn.addEventListener("click", e => {
+    e.preventDefault();
+    fetch("/api/auth/logout", { method: "POST", credentials: "same-origin" }).catch(() => {});
     window.location.href = "login.html";
   });
 

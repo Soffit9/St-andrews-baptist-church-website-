@@ -381,7 +381,7 @@ function renderUpcomingEvents(targetSelector, max) {
       lastMonth = month;
     }
     const badge = `${d.toLocaleDateString(undefined, { month: "short" }).toUpperCase()}<br><b>${d.getDate()}</b>`;
-    const posterLink = ev.file ? `<a class="text-link" href="${ev.file}" target="_blank" rel="noopener" download="${ev.fileName || "event-flyer"}">📎 View/Download Flyer</a>` : "";
+    const posterLink = ev.file ? `<a class="text-link" href="${ev.file}" download="${ev.fileName || "event-flyer"}">📎 View/Download Flyer</a>` : "";
     if (el.dataset.grouped === "true") {
       html += `<article class="event-row"><span class="date-badge">${badge}</span><div><h3>${ev.title || "Untitled Event"}</h3><p>${ev.time ? `<strong>${ev.time}</strong> · ` : ""}${ev.description || ""}</p>${posterLink}</div></article>`;
     } else {
