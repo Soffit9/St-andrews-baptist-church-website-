@@ -166,7 +166,7 @@ a,button{transition:box-shadow .15s ease,transform .15s ease,filter .15s ease,ba
 [data-theme="dark"] .person-card,[data-theme="dark"] .log-entry,[data-theme="dark"] .role-row,
 [data-theme="dark"] .cal-day,[data-theme="dark"] .event-row,[data-theme="dark"] .info-grid article,
 [data-theme="dark"] .service-card,[data-theme="dark"] .verse-box,[data-theme="dark"] .video-box,
-[data-theme="dark"] .form-card,[data-theme="dark"] .login-card,[data-theme="dark"] .preview-frame,
+[data-theme="dark"] .form-card,[data-theme="dark"] .login-card,[data-theme="dark"] .preview-frame,[data-theme="dark"] #preview-frame,
 [data-theme="dark"] .modal-box,[data-theme="dark"] .code-box,[data-theme="dark"] .roster-chip,
 [data-theme="dark"] .archive-list button,[data-theme="dark"] .image-upload-slot,
 [data-theme="dark"] .person-edit-card{
@@ -580,7 +580,9 @@ function cmsApplyToPage(pageKey) {
     document.querySelectorAll("[data-image='logo']").forEach(el => {
       el.style.height = logoH + "px";
       el.style.width = "auto";
-      el.innerHTML = `<img src="${global.logo}" alt="Church logo" style="height:100%;width:auto;display:block;object-fit:contain;border-radius:7px">`;
+      el.style.border = "none";
+      el.style.background = "none";
+      el.innerHTML = `<img src="${global.logo}" alt="Church logo" style="height:100%;width:auto;display:block;object-fit:contain">`;
     });
   }
 
@@ -866,6 +868,7 @@ document.addEventListener("sabc:session-ready", () => {
   if (document.querySelector("#gallery-admin-root")) initGalleryAdmin();
   if (document.querySelector("#gallery-public-root")) renderGalleryPublic();
   if (document.querySelector("#prayer-requests-admin-root")) initPrayerRequestsAdmin();
+  if (document.querySelector("#settings-admin-root")) initSettingsAdmin();
 });
 
 /* ============================= CALENDAR ============================= */
@@ -1148,10 +1151,17 @@ function renderUpcomingEvents(targetSelector, max) {
   const el = document.querySelector(targetSelector);
   if (!el) return;
   const events = loadJSON("sabc_events", {});
-  const today = isoDate(new Date());
+  const now = new Date();
+  const today = isoDate(now);
+  // Public view only shows through the end of NEXT month — "this month and
+  // next month, always" — so it doesn't fill up with things a year out.
+  // Nothing is ever deleted from the admin's actual data; this only limits
+  // what's DISPLAYED here.
+  const windowEnd = new Date(now.getFullYear(), now.getMonth() + 2, 0); // last day of next month
+  const windowEndIso = isoDate(windowEnd);
   const flat = [];
   Object.keys(events).sort().forEach(dateKey => {
-    if (dateKey >= today) events[dateKey].forEach(ev => flat.push({ ...ev, date: dateKey }));
+    if (dateKey >= today && dateKey <= windowEndIso) events[dateKey].forEach(ev => flat.push({ ...ev, date: dateKey }));
   });
   if (!flat.length) {
     el.innerHTML = `<p class="placeholder-lines center">No upcoming events posted yet. Add some from the admin Events calendar.</p>`;
@@ -1692,7 +1702,8 @@ function initHeroPhotosAdmin() {
     photos.forEach((p, i) => {
       html += `<div class="person-card" style="text-align:center;padding:10px">
         <div class="person-photo" style="height:120px"><img src="${p.photo}" style="width:100%;height:100%;object-fit:cover;object-position:50% ${p.pos}%"></div>
-        <input type="range" min="0" max="100" data-hero-pos="${i}" value="${p.pos}" title="Focus point (top/bottom)" style="width:100%;margin-top:8px">
+        <label style="display:block;font-size:12px;color:var(--muted);margin-top:8px">Focus point <span id="hero-pos-readout-${i}" style="font-weight:700;color:var(--navy)">${p.pos < 34 ? "top" : p.pos > 66 ? "bottom" : "center"}</span></label>
+        <input type="range" min="0" max="100" data-hero-pos="${i}" value="${p.pos}" style="width:100%">
         <button type="button" class="button button-light" data-remove-hero-photo="${i}" style="margin:10px auto;display:block">Remove</button>
       </div>`;
     });
@@ -1721,8 +1732,11 @@ function initHeroPhotosAdmin() {
       const photos = loadJSON("sabc_hero_photos", []).map(p => typeof p === "string" ? { photo: p, pos: 50 } : p);
       const i = Number(range.dataset.heroPos);
       photos[i].pos = Number(range.value);
-      const img = range.previousElementSibling.querySelector("img");
+      const card = range.closest(".person-card");
+      const img = card ? card.querySelector(".person-photo img") : null;
       if (img) img.style.objectPosition = `50% ${range.value}%`;
+      const readout = document.querySelector(`#hero-pos-readout-${i}`);
+      if (readout) readout.textContent = range.value < 34 ? "top" : range.value > 66 ? "bottom" : "center";
       saveJSON("sabc_hero_photos", photos);
     }));
 
@@ -1746,7 +1760,7 @@ function initGalleryAdmin() {
     let html = `<div class="person-grid" style="margin-bottom:20px">`;
     photos.forEach(p => {
       html += `<div class="person-card" style="text-align:center;padding:10px">
-        <div class="person-photo" style="height:140px"><img src="${p.photo}" style="width:100%;height:100%;object-fit:cover"></div>
+        <div class="person-photo" style="height:140px;cursor:pointer" data-open-lightbox="${p.id}"><img src="${p.photo}" style="width:100%;height:100%;object-fit:cover"></div>
         <input type="text" data-gf="label" data-id="${p.id}" value="${p.label || ""}" placeholder="Label (e.g. Christmas 2026)" style="margin:10px 0;width:100%;padding:6px;border:1px solid #b9c5d3;border-radius:6px">
         <button type="button" class="button button-light" data-remove-gallery="${p.id}">Remove</button>
       </div>`;
@@ -1755,9 +1769,27 @@ function initGalleryAdmin() {
       <label class="image-upload-slot" for="gallery-photo-input" style="height:100px;max-width:300px">+ Add a photo</label>
       <input type="file" accept="image/*" id="gallery-photo-input" style="display:none">
       <div class="edit-actions"><span></span><button class="button" id="save-gallery-labels" type="button">Save Labels</button></div>
-      <p id="gallery-toast" class="toast"></p>`;
+      <p id="gallery-toast" class="toast"></p>
+      <div id="gallery-lightbox" class="modal-overlay">
+        <div style="max-width:90vw;max-height:85vh;position:relative">
+          <button type="button" id="gallery-lightbox-close" class="button button-light" style="position:absolute;top:-44px;right:0">✕ Close</button>
+          <img id="gallery-lightbox-img" src="" style="max-width:90vw;max-height:85vh;border-radius:10px;display:block">
+        </div>
+      </div>`;
     root.innerHTML = html;
     cmsApplyViewOnlyLock(root);
+
+    root.querySelectorAll("[data-open-lightbox]").forEach(el => el.addEventListener("click", () => {
+      const p = photos.find(x => x.id === el.dataset.openLightbox);
+      document.querySelector("#gallery-lightbox-img").src = p.photo;
+      document.querySelector("#gallery-lightbox").classList.add("open");
+    }));
+    document.querySelector("#gallery-lightbox-close").addEventListener("click", () => {
+      document.querySelector("#gallery-lightbox").classList.remove("open");
+    });
+    document.querySelector("#gallery-lightbox").addEventListener("click", e => {
+      if (e.target.id === "gallery-lightbox") e.currentTarget.classList.remove("open");
+    });
 
     document.querySelector("#gallery-photo-input").addEventListener("change", e => {
       const file = e.target.files[0];
@@ -1896,6 +1928,111 @@ function initPrayerRequestsAdmin() {
       await fetch(`/api/prayer-requests/${b.dataset.delete}`, { method: "DELETE", credentials: "same-origin" });
       render();
     }));
+  }
+  render();
+}
+
+/* ============================= SETTINGS (admin) ============================= */
+function initSettingsAdmin() {
+  requireLogin();
+  const root = document.querySelector("#settings-admin-root");
+  const me = cmsGetCurrentAdmin();
+  const isFullAdmin = me && me.access === "Full Admin";
+
+  async function render() {
+    let status = { hasTotp: false, hasEmail: false };
+    if (isFullAdmin) {
+      try {
+        const res = await fetch("/api/auth/totp-status", { credentials: "same-origin" });
+        if (res.ok) status = await res.json();
+      } catch {}
+    }
+
+    let html = `<div class="role-panel"><h3>Your Account</h3>
+      <p class="field-hint">Logged in as <b>${me ? (me.name || me.email) : "—"}</b> (${me ? me.access : "—"})</p>
+      </div>`;
+
+    if (!isFullAdmin) {
+      html += `<p class="field-hint" style="margin-top:20px">The rest of Settings (password, authenticator app) is Full Admin only.</p>`;
+      root.innerHTML = html;
+      return;
+    }
+
+    html += `
+      <div class="role-panel">
+        <h3>Change Shared Password</h3>
+        <p class="field-hint">This is the one password everyone uses for the first login step.</p>
+        <div class="role-row" style="grid-template-columns:1fr 1fr">
+          <input type="password" id="new-password" placeholder="New password">
+          <input type="password" id="new-password-confirm" placeholder="Confirm new password">
+        </div>
+        <div class="edit-actions"><span></span><button class="button" id="save-password" type="button">Update Password</button></div>
+        <p id="password-settings-message" class="error"></p>
+      </div>
+
+      <div class="role-panel">
+        <h3>Authenticator App</h3>
+        <p class="field-hint">${status.hasTotp ? "Currently set up — anyone with the code from the app can use it to log in." : "Not set up yet — logging in falls back to email codes only."}</p>
+        <div class="edit-actions"><span></span>
+          <button class="button" id="setup-totp-btn" type="button">${status.hasTotp ? "Generate a New QR Code" : "Set Up Authenticator App"}</button>
+          ${status.hasTotp ? `<button class="button button-light" id="remove-totp-btn" type="button" style="color:#a62929">Turn Off</button>` : ""}
+        </div>
+        <div id="totp-qr-area" style="margin-top:16px"></div>
+        <p id="totp-message" class="error"></p>
+      </div>`;
+
+    root.innerHTML = html;
+
+    document.querySelector("#save-password").addEventListener("click", async () => {
+      const pw1 = document.querySelector("#new-password").value;
+      const pw2 = document.querySelector("#new-password-confirm").value;
+      const msg = document.querySelector("#password-settings-message");
+      if (pw1 !== pw2) { msg.className = "error"; msg.textContent = "Those don't match."; return; }
+      if (pw1.length < 6) { msg.className = "error"; msg.textContent = "Use at least 6 characters."; return; }
+      try {
+        const res = await fetch("/api/auth/change-password", {
+          method: "POST", headers: { "Content-Type": "application/json" }, credentials: "same-origin",
+          body: JSON.stringify({ password: pw1 })
+        });
+        const data = await res.json();
+        msg.className = data.ok ? "success" : "error";
+        msg.textContent = data.ok ? "✓ Password updated." : (data.error || "Something went wrong.");
+        if (data.ok) { document.querySelector("#new-password").value = ""; document.querySelector("#new-password-confirm").value = ""; }
+      } catch {
+        msg.className = "error";
+        msg.textContent = "Couldn't reach the server.";
+      }
+    });
+
+    document.querySelector("#setup-totp-btn").addEventListener("click", async () => {
+      const msg = document.querySelector("#totp-message");
+      const qrArea = document.querySelector("#totp-qr-area");
+      msg.textContent = "";
+      try {
+        const res = await fetch("/api/auth/setup-totp", { method: "POST", credentials: "same-origin" });
+        const data = await res.json();
+        if (!data.ok) { msg.className = "error"; msg.textContent = data.error || "Couldn't set this up."; return; }
+        qrArea.innerHTML = `
+          <p>Scan this with your authenticator app:</p>
+          <img src="${data.qrCodePng}" alt="QR code" style="max-width:220px;border-radius:8px">
+          <p class="field-hint">Can't scan? Add manually with this key: <code>${data.secret}</code></p>
+          <p class="field-hint">This replaces any previous QR code — old ones stop working the moment you generate a new one.</p>`;
+      } catch {
+        msg.className = "error";
+        msg.textContent = "Couldn't reach the server.";
+      }
+    });
+
+    const removeBtn = document.querySelector("#remove-totp-btn");
+    if (removeBtn) removeBtn.addEventListener("click", async () => {
+      if (!confirm("Turn off the authenticator app option? Anyone using it will need to use email instead.")) return;
+      try {
+        await fetch("/api/auth/remove-totp", { method: "POST", credentials: "same-origin" });
+        render();
+      } catch {
+        document.querySelector("#totp-message").textContent = "Couldn't reach the server.";
+      }
+    });
   }
   render();
 }

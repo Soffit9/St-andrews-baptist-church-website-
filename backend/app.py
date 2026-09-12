@@ -13,6 +13,8 @@ Events, the change log — from each browser's local storage into this
 same backend, so it's finally shared across every device instead of
 locked to whichever browser typed it in.
 """
+import base64
+import io
 import json
 import random
 import secrets
@@ -23,8 +25,9 @@ from email.mime.text import MIMEText
 from pathlib import Path
 
 import pyotp
+import qrcode
 from flask import Flask, jsonify, request, session
-from werkzeug.security import check_password_hash
+from werkzeug.security import check_password_hash, generate_password_hash
 
 BASE_DIR = Path(__file__).parent
 CONFIG_PATH = BASE_DIR / "config.json"
@@ -212,6 +215,56 @@ def create_app():
     @app.post("/api/auth/logout")
     def logout():
         session.clear()
+        return jsonify(ok=True)
+
+    # ---- Self-service authenticator app setup (Settings page) — no more
+    # needing SSH/terminal access just to turn this on or reset it. ----
+    @app.post("/api/auth/setup-totp")
+    def setup_totp():
+        if session.get("access") != "Full Admin":
+            return jsonify(ok=False, error="Full Admin access required."), 403
+        cfg = load_config()
+        secret = pyotp.random_base32()
+        cfg["totp_secret"] = secret
+        CONFIG_PATH.write_text(json.dumps(cfg, indent=2))
+        CONFIG_PATH.chmod(0o600)
+
+        uri = pyotp.totp.TOTP(secret).provisioning_uri(name="admin@standrewsbaptistchurch.ca", issuer_name="St. Andrews Baptist Church")
+        img = qrcode.make(uri)
+        buf = io.BytesIO()
+        img.save(buf, format="PNG")
+        qr_base64 = base64.b64encode(buf.getvalue()).decode("ascii")
+        return jsonify(ok=True, secret=secret, qrCodePng=f"data:image/png;base64,{qr_base64}")
+
+    @app.post("/api/auth/remove-totp")
+    def remove_totp():
+        if session.get("access") != "Full Admin":
+            return jsonify(ok=False, error="Full Admin access required."), 403
+        cfg = load_config()
+        cfg.pop("totp_secret", None)
+        CONFIG_PATH.write_text(json.dumps(cfg, indent=2))
+        CONFIG_PATH.chmod(0o600)
+        return jsonify(ok=True)
+
+    @app.get("/api/auth/totp-status")
+    def totp_status():
+        if session.get("access") != "Full Admin":
+            return jsonify(ok=False, error="Full Admin access required."), 403
+        cfg = load_config()
+        return jsonify(ok=True, hasTotp=bool(cfg.get("totp_secret")), hasEmail=bool(cfg.get("gmail_user")))
+
+    @app.post("/api/auth/change-password")
+    def change_password():
+        if session.get("access") != "Full Admin":
+            return jsonify(ok=False, error="Full Admin access required."), 403
+        data = request.get_json(silent=True) or {}
+        new_password = (data.get("password") or "").strip()
+        if len(new_password) < 6:
+            return jsonify(ok=False, error="Use at least 6 characters."), 400
+        cfg = load_config()
+        cfg["password_hash"] = generate_password_hash(new_password)
+        CONFIG_PATH.write_text(json.dumps(cfg, indent=2))
+        CONFIG_PATH.chmod(0o600)
         return jsonify(ok=True)
 
     # ---- Admin roster (needed by the login screen + the Admin Users page) ----

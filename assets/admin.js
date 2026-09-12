@@ -135,10 +135,17 @@ document.addEventListener("sabc:session-ready", () => {
       document.querySelector("#who-email").focus();
     });
 
+    let requestInFlight = false;
     async function requestCode() {
+      if (requestInFlight) return false; // already sending one — ignore a second trigger instead of sending two
+      requestInFlight = true;
       const email = document.querySelector("#who-email").value.trim();
       const emailMsg = document.querySelector("#email-message");
       emailMsg.textContent = "";
+      const stepEmailBtn = stepEmail.querySelector("button[type=submit]");
+      const resendBtn = document.querySelector("#resend-code");
+      if (stepEmailBtn) stepEmailBtn.disabled = true;
+      if (resendBtn) resendBtn.disabled = true;
       try {
         const res = await fetch("/api/auth/password", {
           method: "POST",
@@ -159,7 +166,7 @@ document.addEventListener("sabc:session-ready", () => {
           codeBox.innerHTML = "Enter the current code from your authenticator app.";
           resendWrap.style.display = "none";
         } else if (data.emailed) {
-          codeBox.innerHTML = `A code was just emailed to <b>${email}</b>.`;
+          codeBox.innerHTML = `A code was just emailed to <b>${email}</b>. (Requesting a new one invalidates this one — only the newest code works.)`;
           resendWrap.style.display = "";
         } else {
           codeBox.innerHTML = `Email isn't set up yet, so here's the code directly: <strong>${data.demo_code}</strong>`;
@@ -170,6 +177,10 @@ document.addEventListener("sabc:session-ready", () => {
         emailMsg.className = "error";
         emailMsg.textContent = "Couldn't reach the server — is the backend running?";
         return false;
+      } finally {
+        requestInFlight = false;
+        if (stepEmailBtn) stepEmailBtn.disabled = false;
+        if (resendBtn) resendBtn.disabled = false;
       }
     }
 

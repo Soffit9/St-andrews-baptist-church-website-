@@ -372,7 +372,9 @@ function cmsApplyToPage(pageKey) {
     document.querySelectorAll("[data-image='logo']").forEach(el => {
       el.style.height = logoH + "px";
       el.style.width = "auto";
-      el.innerHTML = `<img src="${global.logo}" alt="Church logo" style="height:100%;width:auto;display:block;object-fit:contain;border-radius:7px">`;
+      el.style.border = "none";
+      el.style.background = "none";
+      el.innerHTML = `<img src="${global.logo}" alt="Church logo" style="height:100%;width:auto;display:block;object-fit:contain">`;
     });
   }
 

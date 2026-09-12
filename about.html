@@ -166,7 +166,7 @@ a,button{transition:box-shadow .15s ease,transform .15s ease,filter .15s ease,ba
 [data-theme="dark"] .person-card,[data-theme="dark"] .log-entry,[data-theme="dark"] .role-row,
 [data-theme="dark"] .cal-day,[data-theme="dark"] .event-row,[data-theme="dark"] .info-grid article,
 [data-theme="dark"] .service-card,[data-theme="dark"] .verse-box,[data-theme="dark"] .video-box,
-[data-theme="dark"] .form-card,[data-theme="dark"] .login-card,[data-theme="dark"] .preview-frame,
+[data-theme="dark"] .form-card,[data-theme="dark"] .login-card,[data-theme="dark"] .preview-frame,[data-theme="dark"] #preview-frame,
 [data-theme="dark"] .modal-box,[data-theme="dark"] .code-box,[data-theme="dark"] .roster-chip,
 [data-theme="dark"] .archive-list button,[data-theme="dark"] .image-upload-slot,
 [data-theme="dark"] .person-edit-card{
@@ -605,7 +605,9 @@ function cmsApplyToPage(pageKey) {
     document.querySelectorAll("[data-image='logo']").forEach(el => {
       el.style.height = logoH + "px";
       el.style.width = "auto";
-      el.innerHTML = `<img src="${global.logo}" alt="Church logo" style="height:100%;width:auto;display:block;object-fit:contain;border-radius:7px">`;
+      el.style.border = "none";
+      el.style.background = "none";
+      el.innerHTML = `<img src="${global.logo}" alt="Church logo" style="height:100%;width:auto;display:block;object-fit:contain">`;
     });
   }
 

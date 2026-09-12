@@ -166,7 +166,7 @@ a,button{transition:box-shadow .15s ease,transform .15s ease,filter .15s ease,ba
 [data-theme="dark"] .person-card,[data-theme="dark"] .log-entry,[data-theme="dark"] .role-row,
 [data-theme="dark"] .cal-day,[data-theme="dark"] .event-row,[data-theme="dark"] .info-grid article,
 [data-theme="dark"] .service-card,[data-theme="dark"] .verse-box,[data-theme="dark"] .video-box,
-[data-theme="dark"] .form-card,[data-theme="dark"] .login-card,[data-theme="dark"] .preview-frame,
+[data-theme="dark"] .form-card,[data-theme="dark"] .login-card,[data-theme="dark"] .preview-frame,[data-theme="dark"] #preview-frame,
 [data-theme="dark"] .modal-box,[data-theme="dark"] .code-box,[data-theme="dark"] .roster-chip,
 [data-theme="dark"] .archive-list button,[data-theme="dark"] .image-upload-slot,
 [data-theme="dark"] .person-edit-card{
@@ -225,7 +225,7 @@ a,button{transition:box-shadow .15s ease,transform .15s ease,filter .15s ease,ba
     <button data-min-access="Can Edit" onclick="window.location.href='whoswho.html'"><b>👥</b><strong>Who's Who</strong><span>Add or edit church members and their roles</span></button>
     <button data-min-access="Full Admin" onclick="window.location.href='admins.html'"><b>🔑</b><strong>Admin Users</strong><span>Manage who's on the admin team</span></button>
     <button data-min-access="Can Edit" onclick="window.location.href='log.html'"><b>📜</b><strong>Change Log</strong><span>See every change made, and download a copy</span></button>
-    <button disabled style="opacity:.55;cursor:default"><b>⚙</b><strong>Settings</strong><span>Backups, security, preferences — coming later</span></button>
+    <button onclick="window.location.href='settings.html'"><b>⚙</b><strong>Settings</strong><span>Change password, set up the authenticator app</span></button>
   </div>
 </main>
 </div>
@@ -604,7 +604,9 @@ function cmsApplyToPage(pageKey) {
     document.querySelectorAll("[data-image='logo']").forEach(el => {
       el.style.height = logoH + "px";
       el.style.width = "auto";
-      el.innerHTML = `<img src="${global.logo}" alt="Church logo" style="height:100%;width:auto;display:block;object-fit:contain;border-radius:7px">`;
+      el.style.border = "none";
+      el.style.background = "none";
+      el.innerHTML = `<img src="${global.logo}" alt="Church logo" style="height:100%;width:auto;display:block;object-fit:contain">`;
     });
   }
 
@@ -802,10 +804,17 @@ document.addEventListener("sabc:session-ready", () => {
       document.querySelector("#who-email").focus();
     });
 
+    let requestInFlight = false;
     async function requestCode() {
+      if (requestInFlight) return false; // already sending one — ignore a second trigger instead of sending two
+      requestInFlight = true;
       const email = document.querySelector("#who-email").value.trim();
       const emailMsg = document.querySelector("#email-message");
       emailMsg.textContent = "";
+      const stepEmailBtn = stepEmail.querySelector("button[type=submit]");
+      const resendBtn = document.querySelector("#resend-code");
+      if (stepEmailBtn) stepEmailBtn.disabled = true;
+      if (resendBtn) resendBtn.disabled = true;
       try {
         const res = await fetch("/api/auth/password", {
           method: "POST",
@@ -826,7 +835,7 @@ document.addEventListener("sabc:session-ready", () => {
           codeBox.innerHTML = "Enter the current code from your authenticator app.";
           resendWrap.style.display = "none";
         } else if (data.emailed) {
-          codeBox.innerHTML = `A code was just emailed to <b>${email}</b>.`;
+          codeBox.innerHTML = `A code was just emailed to <b>${email}</b>. (Requesting a new one invalidates this one — only the newest code works.)`;
           resendWrap.style.display = "";
         } else {
           codeBox.innerHTML = `Email isn't set up yet, so here's the code directly: <strong>${data.demo_code}</strong>`;
@@ -837,6 +846,10 @@ document.addEventListener("sabc:session-ready", () => {
         emailMsg.className = "error";
         emailMsg.textContent = "Couldn't reach the server — is the backend running?";
         return false;
+      } finally {
+        requestInFlight = false;
+        if (stepEmailBtn) stepEmailBtn.disabled = false;
+        if (resendBtn) resendBtn.disabled = false;
       }
     }
 
