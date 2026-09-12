@@ -56,6 +56,9 @@ a,button{transition:box-shadow .15s ease,transform .15s ease,filter .15s ease,ba
 [data-theme="dark"] .hero{background:linear-gradient(135deg,#16222f,#0f1620)}
 [data-theme="dark"] .archive-list button{background:#141d29}
 [data-theme="dark"] input,[data-theme="dark"] textarea,[data-theme="dark"] select{background:#1b2531;color:#e9edf2;border-color:#2b3646}
+[data-theme="dark"] .menu-toggle{color:#e9edf2}
+[data-theme="dark"] .nav{background:#0f1620;border-color:#2b3646}
+[data-theme="dark"] .nav a{color:#e9edf2}
 
 /* ---------- Admin: page picker / dashboard ---------- */
 .dash-topbar{display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap}
@@ -258,6 +261,19 @@ document.addEventListener("DOMContentLoaded", async () => {
   await fetchSession();
   await fetchAllStoredData();
   document.dispatchEvent(new CustomEvent("sabc:session-ready"));
+
+  // On mobile, the on-screen keyboard often covers whatever you just
+  // tapped — scroll the focused field into clear view above it, on any
+  // admin page. A short delay lets the keyboard actually finish opening
+  // first; scrolling too early undercounts how much space the keyboard
+  // will take.
+  if (document.body.classList.contains("admin-page")) {
+    document.addEventListener("focusin", e => {
+      if (e.target.matches("input, textarea, select")) {
+        setTimeout(() => e.target.scrollIntoView({ block: "center", behavior: "smooth" }), 300);
+      }
+    });
+  }
 });
 
 /* ---------------- Real shared storage — Who's Who, Gallery, Events,

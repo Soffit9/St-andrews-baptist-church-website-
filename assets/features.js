@@ -274,6 +274,8 @@ function initEventsAdmin() {
             <input type="text" data-ev="time" value="${ev.time || ""}" placeholder="e.g. 6:30 PM">
             <label style="margin-top:8px">Description</label>
             <input type="text" data-ev="description" value="${ev.description || ""}" placeholder="Short description">
+            <label style="margin-top:8px">Poster / Flyer <span style="font-weight:400;color:var(--muted)">(optional — image or PDF)</span></label>
+            ${ev.file ? `<p class="field-hint">📎 ${ev.fileName || "Attached file"} — <button type="button" class="text-btn" data-remove-file="${ev.id}">remove</button></p>` : `<input type="file" accept="image/*,application/pdf" data-event-file="${ev.id}">`}
           </div>
           <button type="button" class="text-btn" data-remove-event="${ev.id}" style="color:#a62929;align-self:start">Remove</button>
         </div>`;
@@ -298,17 +300,39 @@ function initEventsAdmin() {
       saveJSON("sabc_events", events);
       renderGrid(); renderPanel();
     }));
+    panel.querySelectorAll("[data-event-file]").forEach(input => input.addEventListener("change", () => {
+      const file = input.files[0];
+      if (!file) return;
+      if (file.size > 8 * 1024 * 1024) { alert("That file's a bit large — try one under 8MB."); return; }
+      const reader = new FileReader();
+      reader.onload = () => {
+        const events = loadJSON("sabc_events", {});
+        const ev = (events[selected] || []).find(e => e.id === input.dataset.eventFile);
+        if (ev) { ev.file = reader.result; ev.fileName = file.name; saveJSON("sabc_events", events); renderPanel(); }
+      };
+      reader.readAsDataURL(file);
+    }));
+    panel.querySelectorAll("[data-remove-file]").forEach(btn => btn.addEventListener("click", () => {
+      const events = loadJSON("sabc_events", {});
+      const ev = (events[selected] || []).find(e => e.id === btn.dataset.removeFile);
+      if (ev) { delete ev.file; delete ev.fileName; saveJSON("sabc_events", events); renderPanel(); }
+    }));
     const saveBtn = panel.querySelector("#save-events");
     if (saveBtn) saveBtn.addEventListener("click", () => {
       const events = loadJSON("sabc_events", {});
       const before = events[selected] || [];
       const rows = panel.querySelectorAll("[data-event-id]");
-      const updated = [...rows].map(row => ({
-        id: row.dataset.eventId,
-        title: row.querySelector('[data-ev="title"]').value,
-        time: row.querySelector('[data-ev="time"]').value,
-        description: row.querySelector('[data-ev="description"]').value
-      }));
+      const updated = [...rows].map(row => {
+        const existing = before.find(e => e.id === row.dataset.eventId) || {};
+        return {
+          id: row.dataset.eventId,
+          title: row.querySelector('[data-ev="title"]').value,
+          time: row.querySelector('[data-ev="time"]').value,
+          description: row.querySelector('[data-ev="description"]').value,
+          file: existing.file,
+          fileName: existing.fileName
+        };
+      });
       if (updated.length) events[selected] = updated; else delete events[selected];
       saveJSON("sabc_events", events);
       cmsLogRawChange("Events — " + niceDate, "sabc_events", selected, before, updated);
@@ -357,10 +381,11 @@ function renderUpcomingEvents(targetSelector, max) {
       lastMonth = month;
     }
     const badge = `${d.toLocaleDateString(undefined, { month: "short" }).toUpperCase()}<br><b>${d.getDate()}</b>`;
+    const posterLink = ev.file ? `<a class="text-link" href="${ev.file}" target="_blank" rel="noopener" download="${ev.fileName || "event-flyer"}">📎 View/Download Flyer</a>` : "";
     if (el.dataset.grouped === "true") {
-      html += `<article class="event-row"><span class="date-badge">${badge}</span><div><h3>${ev.title || "Untitled Event"}</h3><p>${ev.time ? `<strong>${ev.time}</strong> · ` : ""}${ev.description || ""}</p></div></article>`;
+      html += `<article class="event-row"><span class="date-badge">${badge}</span><div><h3>${ev.title || "Untitled Event"}</h3><p>${ev.time ? `<strong>${ev.time}</strong> · ` : ""}${ev.description || ""}</p>${posterLink}</div></article>`;
     } else {
-      html += `<article class="card"><span class="date-badge">${badge}</span><div><h3>${ev.title || "Untitled Event"}</h3><p>${ev.time ? ev.time + " · " : ""}${ev.description || ""}</p></div></article>`;
+      html += `<article class="card"><span class="date-badge">${badge}</span><div><h3>${ev.title || "Untitled Event"}</h3><p>${ev.time ? ev.time + " · " : ""}${ev.description || ""}</p>${posterLink}</div></article>`;
     }
   });
   el.innerHTML = html;
@@ -942,6 +967,7 @@ function initGalleryAdmin() {
         <div class="person-photo" style="height:140px;cursor:pointer" data-open-lightbox="${p.id}"><img src="${p.photo}" style="width:100%;height:100%;object-fit:cover"></div>
         <input type="text" data-gf="label" data-id="${p.id}" value="${p.label || ""}" placeholder="Label (e.g. Christmas 2026)" style="margin:10px 0;width:100%;padding:6px;border:1px solid #b9c5d3;border-radius:6px">
         <button type="button" class="button button-light" data-remove-gallery="${p.id}">Remove</button>
+        <a class="button button-light" download="church-photo.jpg" href="${p.photo}" style="margin-top:6px">Download</a>
       </div>`;
     });
     html += `</div>

@@ -115,6 +115,27 @@ document.addEventListener("sabc:session-ready", () => {
       el.classList.remove("hidden-step");
     }
 
+    // Restore progress if the phone reloaded this tab while you were off
+    // checking your email — skips straight to "enter your code" instead of
+    // making you type your password again. Expires after 9 minutes to stay
+    // just under the server's 10-minute code lifetime.
+    (function restoreProgress() {
+      try {
+        const saved = JSON.parse(sessionStorage.getItem("sabc_login_progress") || "null");
+        if (!saved || Date.now() - saved.ts > 9 * 60 * 1000) { sessionStorage.removeItem("sabc_login_progress"); return; }
+        chosenMethod = saved.chosenMethod;
+        document.querySelector("#who-email").value = saved.email;
+        const codeBox = document.querySelector("#code-box");
+        const resendWrap = document.querySelector("#resend-wrap");
+        codeBox.innerHTML = chosenMethod === "totp"
+          ? "Enter the current code from your authenticator app."
+          : `A code was sent to <b>${saved.email}</b> a moment ago — enter it below, or request a new one if it's expired.`;
+        resendWrap.style.display = chosenMethod === "totp" ? "none" : "";
+        showOnly(step2);
+        document.querySelector("#code-input").focus();
+      } catch { sessionStorage.removeItem("sabc_login_progress"); }
+    })();
+
     step1.addEventListener("submit", e => {
       e.preventDefault();
       currentPassword = document.querySelector("#password").value;
@@ -122,7 +143,7 @@ document.addEventListener("sabc:session-ready", () => {
       showOnly(stepMethod);
     });
 
-    document.querySelector("#back-to-password").addEventListener("click", () => showOnly(step1));
+    document.querySelector("#back-to-password").addEventListener("click", () => { sessionStorage.removeItem("sabc_login_progress"); showOnly(step1); });
 
     document.querySelector("#method-email").addEventListener("click", () => {
       chosenMethod = "email";
@@ -172,6 +193,11 @@ document.addEventListener("sabc:session-ready", () => {
           codeBox.innerHTML = `Email isn't set up yet, so here's the code directly: <strong>${data.demo_code}</strong>`;
           resendWrap.style.display = "";
         }
+        // Remember where we are — if the phone's browser reloads this tab
+        // while you're off checking email (very common on mobile), coming
+        // back should land on "enter your code," not force you to start
+        // over. The code itself stays valid server-side either way.
+        sessionStorage.setItem("sabc_login_progress", JSON.stringify({ email, chosenMethod, ts: Date.now() }));
         return true;
       } catch {
         emailMsg.className = "error";
@@ -213,6 +239,7 @@ document.addEventListener("sabc:session-ready", () => {
           msg.textContent = data.error || "That code doesn't match. Double check and try again.";
           return;
         }
+        sessionStorage.removeItem("sabc_login_progress");
         window.__adminSession = { loggedIn: true, name: data.name, email: data.email, access: data.access };
         const returnTo = localStorage.getItem("sabc_return_to");
         if (returnTo) { localStorage.removeItem("sabc_return_to"); window.location.href = returnTo; }

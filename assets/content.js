@@ -33,6 +33,19 @@ document.addEventListener("DOMContentLoaded", async () => {
   await fetchSession();
   await fetchAllStoredData();
   document.dispatchEvent(new CustomEvent("sabc:session-ready"));
+
+  // On mobile, the on-screen keyboard often covers whatever you just
+  // tapped — scroll the focused field into clear view above it, on any
+  // admin page. A short delay lets the keyboard actually finish opening
+  // first; scrolling too early undercounts how much space the keyboard
+  // will take.
+  if (document.body.classList.contains("admin-page")) {
+    document.addEventListener("focusin", e => {
+      if (e.target.matches("input, textarea, select")) {
+        setTimeout(() => e.target.scrollIntoView({ block: "center", behavior: "smooth" }), 300);
+      }
+    });
+  }
 });
 
 /* ---------------- Real shared storage — Who's Who, Gallery, Events,
