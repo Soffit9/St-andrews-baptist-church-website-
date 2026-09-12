@@ -590,7 +590,8 @@ const CMS_LOG_KEY = "sabc_audit_log";
 function cmsLogChange(page, changes) {
   if (!changes || !changes.length) return;
   const log = window.__serverStore[CMS_LOG_KEY] || [];
-  log.unshift({ ts: new Date().toISOString(), page, changes });
+  const who = cmsGetCurrentAdmin();
+  log.unshift({ ts: new Date().toISOString(), page, changes, by: who ? { name: who.name, email: who.email, access: who.access } : null });
   if (log.length > 500) log.length = 500;
   window.__serverStore[CMS_LOG_KEY] = log;
   serverStoreSave(CMS_LOG_KEY, log);

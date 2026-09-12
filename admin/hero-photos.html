@@ -570,7 +570,8 @@ const CMS_LOG_KEY = "sabc_audit_log";
 function cmsLogChange(page, changes) {
   if (!changes || !changes.length) return;
   const log = window.__serverStore[CMS_LOG_KEY] || [];
-  log.unshift({ ts: new Date().toISOString(), page, changes });
+  const who = cmsGetCurrentAdmin();
+  log.unshift({ ts: new Date().toISOString(), page, changes, by: who ? { name: who.name, email: who.email, access: who.access } : null });
   if (log.length > 500) log.length = 500;
   window.__serverStore[CMS_LOG_KEY] = log;
   serverStoreSave(CMS_LOG_KEY, log);
@@ -1546,7 +1547,7 @@ function initWhoswhoAdmin() {
 
   function personCardHtml(p) {
     return `<div class="person-card">
-      <div class="person-photo">${p.photo ? `<img src="${p.photo}" style="display:block;width:100%;height:100%;object-fit:cover;object-position:50% ${p.photo_pos ?? 50}%">` : "PHOTO"}</div>
+      <div class="person-photo">${p.photo ? `<img src="${p.photo}" style="display:block;width:100%;height:100%;object-fit:cover;object-position:${p.photo_pos_x ?? 50}% ${p.photo_pos ?? 50}%">` : "PHOTO"}</div>
       <h3>${p.name || "(no name yet)"}</h3>
       <p class="person-role">${p.role || ""}</p>
       <p class="person-contact">${p.phone ? "☎ " + p.phone : ""}${p.phone && p.email ? "<br>" : ""}${p.email ? "✉ " + p.email : ""}</p>
@@ -1563,7 +1564,8 @@ function initWhoswhoAdmin() {
       phone: row.querySelector('[data-field="phone"]').value,
       email: row.querySelector('[data-field="email"]').value,
       photo: row.querySelector("[data-photo-for]").dataset.value || row.querySelector("[data-photo-for]").previousElementSibling.querySelector("img")?.src || null,
-      photo_pos: row.querySelector("[data-pos-for]").value
+      photo_pos: row.querySelector("[data-pos-for]").value,
+      photo_pos_x: row.querySelector("[data-pos-x-for]").value
     })).filter(p => p.name || p.photo);
     previewEl.innerHTML = people.length
       ? `<div class="person-grid">${people.map(personCardHtml).join("")}</div>`
@@ -1578,9 +1580,11 @@ function initWhoswhoAdmin() {
         <div class="person-edit-card" data-id="${p.id}">
           <div class="person-edit-top">
             <div class="photo-col">
-              <label class="image-upload-slot" style="height:90px" for="photo_${p.id}">${p.photo ? `<img src="${p.photo}" style="object-position:50% ${p.photo_pos ?? 50}%">` : "Photo"}</label>
+              <label class="image-upload-slot" style="height:90px" for="photo_${p.id}">${p.photo ? `<img src="${p.photo}" style="width:100%;height:100%;object-fit:cover;object-position:${p.photo_pos_x ?? 50}% ${p.photo_pos ?? 50}%">` : "Photo"}</label>
               <input type="file" accept="image/*" id="photo_${p.id}" data-photo-for="${p.id}" style="display:none">
-              <label style="display:block;font-size:12px;color:var(--muted);margin-top:4px">Focus point <span id="pos-readout-${p.id}" style="font-weight:700;color:var(--navy)">${(p.photo_pos ?? 50) < 34 ? "top" : (p.photo_pos ?? 50) > 66 ? "bottom" : "center"}</span> — drag to isolate a face or crop out black bars</label>
+              <label style="display:block;font-size:12px;color:var(--muted);margin-top:8px">Horizontal focus <span id="pos-x-readout-${p.id}" style="font-weight:700;color:var(--navy)">${(p.photo_pos_x ?? 50) < 34 ? "left" : (p.photo_pos_x ?? 50) > 66 ? "right" : "center"}</span> — use this if the crop is cutting the sides instead of top/bottom</label>
+              <input type="range" min="0" max="100" data-pos-x-for="${p.id}" value="${p.photo_pos_x ?? 50}" style="width:100%">
+              <label style="display:block;font-size:12px;color:var(--muted);margin-top:8px">Vertical focus <span id="pos-readout-${p.id}" style="font-weight:700;color:var(--navy)">${(p.photo_pos ?? 50) < 34 ? "top" : (p.photo_pos ?? 50) > 66 ? "bottom" : "center"}</span> — drag to isolate a face or crop out black bars</label>
               <input type="range" min="0" max="100" data-pos-for="${p.id}" value="${p.photo_pos ?? 50}" style="width:100%">
               ${p.photo ? `<button type="button" class="text-btn" data-clear-photo="${p.id}" data-allow-view-only style="font-size:12px;margin-top:2px">Remove photo</button>` : ""}
             </div>
@@ -1607,7 +1611,7 @@ function initWhoswhoAdmin() {
     cmsApplyViewOnlyLock(root);
     refreshPreview();
 
-    root.querySelectorAll('[data-field], [data-pos-for]').forEach(el => el.addEventListener("input", refreshPreview));
+    root.querySelectorAll('[data-field], [data-pos-for], [data-pos-x-for]').forEach(el => el.addEventListener("input", refreshPreview));
 
     root.querySelectorAll("[data-clear-photo]").forEach(btn => btn.addEventListener("click", () => {
       const people = loadJSON("sabc_whoswho", []);
@@ -1630,9 +1634,17 @@ function initWhoswhoAdmin() {
         refreshPreview();
       }).catch(err => alert("Couldn't process that photo: " + err.message));
     }));
+    root.querySelectorAll("[data-pos-x-for]").forEach(range => range.addEventListener("input", () => {
+      const img = root.querySelector(`#photo_${range.dataset.posXFor}`).previousElementSibling.querySelector("img");
+      const posY = root.querySelector(`[data-pos-for="${range.dataset.posXFor}"]`);
+      if (img) img.style.objectPosition = `${range.value}% ${posY ? posY.value : 50}%`;
+      const readout = document.querySelector(`#pos-x-readout-${range.dataset.posXFor}`);
+      if (readout) readout.textContent = range.value < 34 ? "left" : range.value > 66 ? "right" : "center";
+    }));
     root.querySelectorAll("[data-pos-for]").forEach(range => range.addEventListener("input", () => {
       const img = root.querySelector(`#photo_${range.dataset.posFor}`).previousElementSibling.querySelector("img");
-      if (img) img.style.objectPosition = `50% ${range.value}%`;
+      const posX = root.querySelector(`[data-pos-x-for="${range.dataset.posFor}"]`);
+      if (img) img.style.objectPosition = `${posX ? posX.value : 50}% ${range.value}%`;
       const readout = document.querySelector(`#pos-readout-${range.dataset.posFor}`);
       if (readout) readout.textContent = range.value < 34 ? "top" : range.value > 66 ? "bottom" : "center";
     }));
@@ -1652,7 +1664,8 @@ function initWhoswhoAdmin() {
         phone: row.querySelector('[data-field="phone"]').value,
         email: row.querySelector('[data-field="email"]').value,
         photo: row.querySelector("[data-photo-for]").dataset.value || (before.find(p => p.id === row.dataset.id) || {}).photo || null,
-        photo_pos: row.querySelector("[data-pos-for]").value
+        photo_pos: row.querySelector("[data-pos-for]").value,
+      photo_pos_x: row.querySelector("[data-pos-x-for]").value
       }));
       saveJSON("sabc_whoswho", people);
       cmsLogRawChange("Who's Who", "sabc_whoswho", null, before, people);
@@ -1674,7 +1687,7 @@ function initWhoswhoPublic() {
   }
   root.innerHTML = `<div class="person-grid">` + people.map(p => `
     <div class="person-card">
-      <div class="person-photo">${p.photo ? `<img src="${p.photo}" style="display:block;width:100%;height:100%;object-fit:cover;object-position:50% ${p.photo_pos ?? 50}%">` : "PHOTO"}</div>
+      <div class="person-photo">${p.photo ? `<img src="${p.photo}" style="display:block;width:100%;height:100%;object-fit:cover;object-position:${p.photo_pos_x ?? 50}% ${p.photo_pos ?? 50}%">` : "PHOTO"}</div>
       <h3>${p.name}</h3>
       <p class="person-role">${p.role || ""}</p>
       <p class="person-contact">${p.phone ? "☎ " + p.phone : ""}${p.phone && p.email ? "<br>" : ""}${p.email ? "✉ " + p.email : ""}</p>
@@ -1815,6 +1828,7 @@ function initLog() {
       <div class="log-entry">
         <time>${new Date(entry.ts).toLocaleString()}</time>
         <span class="log-page">${entry.page}</span>
+        ${entry.by ? `<p class="field-hint" style="margin:2px 0 6px">by <b>${entry.by.name || entry.by.email}</b> (${entry.by.access})</p>` : ""}
         ${entry.changes.map(c => isRaw ? "" : `<p class="log-change"><b>${c.field}</b>: "${c.old}" → "${c.new}"</p>`).join("")}
         <div class="log-actions">
           <button type="button" class="text-btn" data-toggle-preview="${idx}" data-allow-view-only>👁 Preview before/after</button>
