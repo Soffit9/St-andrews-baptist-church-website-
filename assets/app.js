@@ -63,20 +63,6 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  /* ---------- Admin login (prototype) ---------- */
-  const loginForm = document.querySelector("#login-form");
-  if (loginForm) loginForm.addEventListener("submit", e => {
-    e.preventDefault();
-    document.querySelector("#login-message").className = "success";
-    document.querySelector("#login-message").textContent =
-      "Prototype login — real password checking and the email/app verification code will be added before this goes live.";
-  });
-
-  const apply = document.querySelector("#apply-demo");
-  if (apply) apply.addEventListener("click", () => {
-    alert("Prototype: this button will back up the current site, save your changes, and publish them once the admin system is built.");
-  });
-
   /* ---------- Daily Bible verse ----------
      Pulled from bible-api.com — free, no key required, and its default
      translations (KJV / WEB / etc.) are public domain, so there's no

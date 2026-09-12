@@ -111,6 +111,28 @@ def find_admin_by_email(email):
     return None
 
 
+def set_admin_totp_secret(email, secret):
+    """Give one specific admin their own authenticator secret — nobody
+    else's login is affected, unlike the old single-shared-secret design."""
+    email_l = (email or "").strip().lower()
+    admins = load_admins()
+    admin = next((a for a in admins if a.get("email", "").lower() == email_l), None)
+    if admin:
+        if secret is None:
+            admin.pop("totp_secret", None)
+        else:
+            admin["totp_secret"] = secret
+    else:
+        # Not on the roster yet — create a minimal entry so their own
+        # authenticator setup has somewhere to live.
+        guess = email_l.split("@")[0]
+        new_admin = {"id": str(uuid.uuid4())[:8], "name": guess, "email": email_l, "access": "Can Edit"}
+        if secret is not None:
+            new_admin["totp_secret"] = secret
+        admins.append(new_admin)
+    save_admins(admins)
+
+
 def send_code_email(to_email, code, cfg):
     gmail_user = cfg.get("gmail_user")
     gmail_pw = cfg.get("gmail_app_password")
@@ -145,12 +167,20 @@ def create_app():
             return jsonify(ok=False, error="Email is required."), 400
 
         method = (data.get("method") or "email").strip().lower()
+        admin = find_admin_by_email(email)
+        has_own_totp = bool(admin and admin.get("totp_secret"))
 
-        # If they chose the authenticator app and one's actually set up, don't
-        # bother sending an email code at all — they don't need it, and it
-        # was confusing to get an unrelated email after picking "use my app".
-        if method == "totp" and cfg.get("totp_secret"):
-            return jsonify(ok=True, emailed=False, totpAvailable=True, usingTotp=True)
+        if method == "totp":
+            if has_own_totp:
+                # Don't bother sending an email code too — they don't need
+                # it, and it was confusing to get an unrelated email after
+                # picking "use my app".
+                return jsonify(ok=True, emailed=False, usingTotp=True)
+            # They picked "authenticator app" but haven't set one up for
+            # THIS email yet — let the frontend offer to set it up right
+            # now, using the password they just correctly typed as proof
+            # they're allowed to do this for this specific account.
+            return jsonify(ok=True, needsTotpSetup=True)
 
         code = str(random.randint(100000, 999999))
         PENDING_CODES[email] = {"code": code, "expires": time.time() + CODE_LIFETIME_SECONDS}
@@ -161,34 +191,60 @@ def create_app():
         except Exception:
             emailed = False
 
-        resp = {"ok": True, "emailed": emailed, "totpAvailable": bool(cfg.get("totp_secret"))}
+        resp = {"ok": True, "emailed": emailed}
         if not emailed:
             # Email isn't set up yet — same graceful fallback as the old
             # prototype: show the code directly so testing still works.
             resp["demo_code"] = code
         return jsonify(resp)
 
+    @app.post("/api/auth/setup-totp-for-login")
+    def setup_totp_for_login():
+        # Lets someone set up THEIR OWN authenticator code, right in the
+        # middle of logging in, the first time they pick that option. The
+        # password check here is the actual security gate — knowing it is
+        # what proves they're allowed to do this for the email they typed,
+        # same proof the rest of login relies on.
+        data = request.get_json(silent=True) or {}
+        password = data.get("password", "")
+        cfg = load_config()
+        if not check_password_hash(cfg["password_hash"], password):
+            return jsonify(ok=False, error="Incorrect password."), 401
+        email = (data.get("email") or "").strip().lower()
+        if not email:
+            return jsonify(ok=False, error="Email is required."), 400
+
+        secret = pyotp.random_base32()
+        set_admin_totp_secret(email, secret)
+        uri = pyotp.totp.TOTP(secret).provisioning_uri(name=email, issuer_name="St. Andrews Baptist Church")
+        img = qrcode.make(uri)
+        buf = io.BytesIO()
+        img.save(buf, format="PNG")
+        qr_base64 = base64.b64encode(buf.getvalue()).decode("ascii")
+        return jsonify(ok=True, secret=secret, qrCodePng=f"data:image/png;base64,{qr_base64}")
+
     @app.post("/api/auth/verify")
     def verify_code():
         data = request.get_json(silent=True) or {}
         email = (data.get("email") or "").strip().lower()
         code = (data.get("code") or "").strip()
-        cfg = load_config()
 
-        # Accept EITHER a valid emailed/on-screen code OR a valid
-        # authenticator-app code — whichever the person actually has handy.
+        admin = find_admin_by_email(email)
+        own_secret = admin.get("totp_secret") if admin else None
+
+        # Accept EITHER a valid emailed/on-screen code OR a valid code from
+        # THIS PERSON'S OWN authenticator app — whichever they actually used.
         valid = False
         pending = PENDING_CODES.get(email)
         if pending and time.time() <= pending["expires"] and code == pending["code"]:
             valid = True
             del PENDING_CODES[email]
-        elif cfg.get("totp_secret") and pyotp.TOTP(cfg["totp_secret"]).verify(code, valid_window=1):
+        elif own_secret and pyotp.TOTP(own_secret).verify(code, valid_window=1):
             valid = True
 
         if not valid:
             return jsonify(ok=False, error="That code doesn't match or has expired."), 401
 
-        admin = find_admin_by_email(email)
         if admin:
             name, access = admin["name"], admin["access"]
         else:
@@ -217,19 +273,15 @@ def create_app():
         session.clear()
         return jsonify(ok=True)
 
-    # ---- Self-service authenticator app setup (Settings page) — no more
-    # needing SSH/terminal access just to turn this on or reset it. ----
+    # ---- Self-service authenticator app setup, once already logged in
+    # (Settings page) — everyone manages their OWN, nobody else's. ----
     @app.post("/api/auth/setup-totp")
     def setup_totp():
-        if session.get("access") != "Full Admin":
-            return jsonify(ok=False, error="Full Admin access required."), 403
-        cfg = load_config()
+        if "email" not in session:
+            return jsonify(ok=False, error="Login required."), 401
         secret = pyotp.random_base32()
-        cfg["totp_secret"] = secret
-        CONFIG_PATH.write_text(json.dumps(cfg, indent=2))
-        CONFIG_PATH.chmod(0o600)
-
-        uri = pyotp.totp.TOTP(secret).provisioning_uri(name="admin@standrewsbaptistchurch.ca", issuer_name="St. Andrews Baptist Church")
+        set_admin_totp_secret(session["email"], secret)
+        uri = pyotp.totp.TOTP(secret).provisioning_uri(name=session["email"], issuer_name="St. Andrews Baptist Church")
         img = qrcode.make(uri)
         buf = io.BytesIO()
         img.save(buf, format="PNG")
@@ -238,20 +290,18 @@ def create_app():
 
     @app.post("/api/auth/remove-totp")
     def remove_totp():
-        if session.get("access") != "Full Admin":
-            return jsonify(ok=False, error="Full Admin access required."), 403
-        cfg = load_config()
-        cfg.pop("totp_secret", None)
-        CONFIG_PATH.write_text(json.dumps(cfg, indent=2))
-        CONFIG_PATH.chmod(0o600)
+        if "email" not in session:
+            return jsonify(ok=False, error="Login required."), 401
+        set_admin_totp_secret(session["email"], None)
         return jsonify(ok=True)
 
     @app.get("/api/auth/totp-status")
     def totp_status():
-        if session.get("access") != "Full Admin":
-            return jsonify(ok=False, error="Full Admin access required."), 403
+        if "email" not in session:
+            return jsonify(ok=False, error="Login required."), 401
         cfg = load_config()
-        return jsonify(ok=True, hasTotp=bool(cfg.get("totp_secret")), hasEmail=bool(cfg.get("gmail_user")))
+        admin = find_admin_by_email(session["email"])
+        return jsonify(ok=True, hasTotp=bool(admin and admin.get("totp_secret")), hasEmail=bool(cfg.get("gmail_user")))
 
     @app.post("/api/auth/change-password")
     def change_password():
@@ -278,8 +328,17 @@ def create_app():
     def set_admins():
         if session.get("access") != "Full Admin":
             return jsonify(ok=False, error="Only Full Admin can edit the admin list."), 403
-        admins = request.get_json(silent=True) or []
-        save_admins(admins)
+        submitted = request.get_json(silent=True) or []
+        # The Admin Users page only knows about name/email/access — it has
+        # no idea totp_secret exists. Without this merge, saving ANY change
+        # here (even fixing a typo) would silently overwrite the whole file
+        # and wipe out everyone's authenticator app setup in the process.
+        existing_by_id = {a["id"]: a for a in load_admins() if "id" in a}
+        merged = []
+        for a in submitted:
+            prior = existing_by_id.get(a.get("id"), {})
+            merged.append({**prior, **a})
+        save_admins(merged)
         return jsonify(ok=True, admins=load_admins())
 
     # ---- Prayer requests: real, shared, server-side storage ----

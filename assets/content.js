@@ -411,7 +411,7 @@ function cmsApplyToPage(pageKey) {
       el.style.width = "auto";
       el.style.border = "none";
       el.style.background = "none";
-      el.innerHTML = `<img src="${global.logo}" alt="Church logo" style="height:100%;width:auto;display:block;object-fit:contain">`;
+      el.innerHTML = `<img src="${global.logo}" alt="Church logo" style="height:100%;width:auto;max-width:280px;display:block;object-fit:contain">`;
     });
   }
 

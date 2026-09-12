@@ -41,7 +41,7 @@ function previewTemplate(pageKey, c) {
   switch (pageKey) {
     case "global":
       return `<div style="display:flex;align-items:center;gap:10px">
-        <div class="logo-placeholder" data-preview-image="logo" style="${c.logo ? `height:${c.logo_h||44}px;width:auto` : ""}">${c.logo ? `<img src="${c.logo}" style="height:100%;width:auto;display:block;object-fit:contain">` : "LOGO"}</div>
+        <div class="logo-placeholder" data-preview-image="logo" style="${c.logo ? `height:${c.logo_h||44}px;width:auto` : ""}">${c.logo ? `<img src="${c.logo}" style="height:100%;width:auto;max-width:280px;display:block;object-fit:contain">` : "LOGO"}</div>
         <strong>St. Andrews Baptist Church</strong></div>
         <p class="field-hint" style="margin-top:14px">The logo appears at this height in the header — width follows the photo's real shape, so nothing gets squished.</p>`;
     case "home":
@@ -105,13 +105,14 @@ document.addEventListener("sabc:session-ready", () => {
   const step1 = document.querySelector("#login-step-1");
   const stepMethod = document.querySelector("#login-step-method");
   const stepEmail = document.querySelector("#login-step-email");
+  const stepTotpSetup = document.querySelector("#login-step-totp-setup");
   const step2 = document.querySelector("#login-step-2");
   if (step1 && stepMethod && stepEmail && step2) {
     let currentPassword = "";
     let chosenMethod = "email"; // "email" or "totp" — just changes the messaging, both call the same endpoints
 
     function showOnly(el) {
-      [step1, stepMethod, stepEmail, step2].forEach(s => s.classList.add("hidden-step"));
+      [step1, stepMethod, stepEmail, stepTotpSetup, step2].forEach(s => s && s.classList.add("hidden-step"));
       el.classList.remove("hidden-step");
     }
 
@@ -183,6 +184,10 @@ document.addEventListener("sabc:session-ready", () => {
           if ((data.error || "").toLowerCase().includes("password")) showOnly(step1);
           return false;
         }
+        if (data.needsTotpSetup) {
+          showOnly(stepTotpSetup);
+          return false; // don't proceed to the code screen — they need to set one up first
+        }
         const codeBox = document.querySelector("#code-box");
         const resendWrap = document.querySelector("#resend-wrap");
         if (chosenMethod === "totp") {
@@ -223,6 +228,49 @@ document.addEventListener("sabc:session-ready", () => {
     const resend = document.querySelector("#resend-code");
     if (resend) resend.addEventListener("click", requestCode);
 
+    const setupTotpBtn = document.querySelector("#setup-totp-now-btn");
+    if (setupTotpBtn) setupTotpBtn.addEventListener("click", async () => {
+      const msg = document.querySelector("#totp-setup-message");
+      const qrArea = document.querySelector("#login-totp-qr-area");
+      msg.textContent = "";
+      setupTotpBtn.disabled = true;
+      try {
+        const email = document.querySelector("#who-email").value.trim();
+        const res = await fetch("/api/auth/setup-totp-for-login", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          credentials: "same-origin",
+          body: JSON.stringify({ password: currentPassword, email })
+        });
+        const data = await res.json();
+        if (!data.ok) { msg.className = "error"; msg.textContent = data.error || "Couldn't set this up."; return; }
+        qrArea.innerHTML = `
+          <p>Scan this with your authenticator app, then come back and log in with the code it shows:</p>
+          <img src="${data.qrCodePng}" alt="QR code" style="max-width:220px;border-radius:8px">
+          <p class="field-hint">Can't scan? Add manually with this key: <code>${data.secret}</code></p>
+          <button type="button" class="button" id="totp-setup-done-btn" style="margin-top:14px">I've scanned it — enter my code</button>`;
+        document.querySelector("#totp-setup-done-btn").addEventListener("click", () => {
+          const codeBox = document.querySelector("#code-box");
+          const resendWrap = document.querySelector("#resend-wrap");
+          codeBox.innerHTML = "Enter the current code from your authenticator app.";
+          resendWrap.style.display = "none";
+          showOnly(step2);
+          document.querySelector("#code-input").focus();
+        });
+      } catch {
+        msg.className = "error";
+        msg.textContent = "Couldn't reach the server.";
+      } finally {
+        setupTotpBtn.disabled = false;
+      }
+    });
+
+    const backFromTotpSetup = document.querySelector("#back-from-totp-setup");
+    if (backFromTotpSetup) backFromTotpSetup.addEventListener("click", () => {
+      chosenMethod = "email";
+      requestCode().then(ok => { if (ok) showOnly(step2); });
+    });
+
     step2.addEventListener("submit", async e => {
       e.preventDefault();
       const entered = document.querySelector("#code-input").value.trim();
@@ -257,9 +305,9 @@ document.addEventListener("sabc:session-ready", () => {
   const pageButtons = document.querySelectorAll("[data-goto-page]");
   if (pageButtons.length) {
     requireLogin();
+    const me = cmsGetCurrentAdmin();
     const welcomeEl = document.querySelector("#welcome-heading");
     if (welcomeEl) {
-      const me = cmsGetCurrentAdmin();
       welcomeEl.textContent = (() => {
         const rawName = me ? (me.name || me.email || "Admin") : "Admin";
         const firstWord = rawName.trim().split(/\s+/)[0];
@@ -373,7 +421,7 @@ document.addEventListener("sabc:session-ready", () => {
           if (id === "logo") {
             el.style.height = height + "px";
             el.style.width = "auto";
-            el.innerHTML = `<img src="${dataUrl}" alt="" style="height:100%;width:auto;display:block;object-fit:contain">`;
+            el.innerHTML = `<img src="${dataUrl}" alt="" style="height:100%;width:auto;max-width:280px;display:block;object-fit:contain">`;
           } else {
             el.style.height = (height || 300) + "px";
             el.innerHTML = `<img src="${dataUrl}" alt="" style="width:100%;height:100%;object-fit:cover;object-position:50% ${pos ?? 50}%">`;

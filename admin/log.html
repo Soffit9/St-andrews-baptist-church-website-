@@ -1,6 +1,6 @@
 <!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Change Log | St. Andrews Baptist Church</title><style>
 :root{--navy:#0c315f;--blue:#1261b0;--sky:#eaf4ff;--ink:#17202b;--muted:#5e6a78;--line:#d9e0e8;--paper:#fff;--soft:#f5f8fb;--radius:12px;--shadow:0 8px 28px rgba(16,45,80,.08);--shadow-lg:0 16px 40px rgba(12,49,95,.14);--gold:#c69a3f}
-*{box-sizing:border-box}html{scroll-behavior:smooth;height:100%}body{margin:0;min-height:100vh;display:flex;flex-direction:column;font-family:Arial,Helvetica,sans-serif;color:var(--ink);background:var(--paper);line-height:1.55}main{flex:1 0 auto}a{color:inherit;text-decoration:none}.container{width:min(1120px,92%);margin:auto}.narrow{max-width:900px}.site-header{position:sticky;top:0;z-index:20;background:#fff;border-bottom:1px solid var(--line)}.nav-wrap{display:flex;align-items:center;justify-content:space-between;min-height:78px;gap:24px}.brand{display:flex;align-items:center;gap:10px;color:var(--navy);font-family:Georgia,serif;font-size:20px;line-height:1}.brand strong{font-family:Arial,sans-serif;font-size:20px}.logo-placeholder{width:58px;height:44px;border:1px solid #b9c5d3;border-radius:7px;display:flex;align-items:center;justify-content:center;flex-shrink:0;font:700 10px Arial;color:#6b7785;background:#f7f9fb;overflow:visible}.nav{display:flex;gap:18px;font-size:14px;font-weight:700}.nav a{padding:8px 2px;border-bottom:2px solid transparent}.nav a:hover,.nav a.active{color:var(--blue);border-color:var(--blue)}.menu-toggle{display:none;border:0;background:none;font-size:28px}.hero{background:linear-gradient(135deg,#e9f4ff,#fff);border-bottom:1px solid var(--line);padding:90px 0 78px;text-align:center;position:relative;overflow:hidden}
+*{box-sizing:border-box}html{scroll-behavior:smooth;height:100%}body{margin:0;min-height:100vh;display:flex;flex-direction:column;font-family:Arial,Helvetica,sans-serif;color:var(--ink);background:var(--paper);line-height:1.55}main{flex:1 0 auto}a{color:inherit;text-decoration:none}.container{width:min(1120px,92%);margin:auto}.narrow{max-width:900px}.site-header{position:sticky;top:0;z-index:20;background:#fff;border-bottom:1px solid var(--line)}.nav-wrap{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;min-height:78px;gap:16px 24px;padding:10px 0}.brand{display:flex;align-items:center;gap:10px;color:var(--navy);font-family:Georgia,serif;font-size:20px;line-height:1;flex-shrink:0}.brand strong{font-family:Arial,sans-serif;font-size:20px}.logo-placeholder{width:58px;height:44px;border:1px solid #b9c5d3;border-radius:7px;display:flex;align-items:center;justify-content:center;flex-shrink:0;max-width:280px;font:700 10px Arial;color:#6b7785;background:#f7f9fb;overflow:visible}.nav{display:flex;gap:18px;font-size:14px;font-weight:700}.nav a{padding:8px 2px;border-bottom:2px solid transparent}.nav a:hover,.nav a.active{color:var(--blue);border-color:var(--blue)}.menu-toggle{display:none;border:0;background:none;font-size:28px}.hero{background:linear-gradient(135deg,#e9f4ff,#fff);border-bottom:1px solid var(--line);padding:90px 0 78px;text-align:center;position:relative;overflow:hidden}
 .hero-bg{position:absolute;inset:0;background-size:cover;background-position:center;opacity:0;transition:opacity 1.8s ease;z-index:0}
 .hero-bg.active{opacity:1}
 .hero-overlay{position:absolute;inset:0;background:rgba(12,49,95,.6);z-index:1;opacity:0;transition:opacity 1.8s ease}
@@ -623,7 +623,7 @@ function cmsApplyToPage(pageKey) {
       el.style.width = "auto";
       el.style.border = "none";
       el.style.background = "none";
-      el.innerHTML = `<img src="${global.logo}" alt="Church logo" style="height:100%;width:auto;display:block;object-fit:contain">`;
+      el.innerHTML = `<img src="${global.logo}" alt="Church logo" style="height:100%;width:auto;max-width:280px;display:block;object-fit:contain">`;
     });
   }
 
@@ -727,7 +727,7 @@ function previewTemplate(pageKey, c) {
   switch (pageKey) {
     case "global":
       return `<div style="display:flex;align-items:center;gap:10px">
-        <div class="logo-placeholder" data-preview-image="logo" style="${c.logo ? `height:${c.logo_h||44}px;width:auto` : ""}">${c.logo ? `<img src="${c.logo}" style="height:100%;width:auto;display:block;object-fit:contain">` : "LOGO"}</div>
+        <div class="logo-placeholder" data-preview-image="logo" style="${c.logo ? `height:${c.logo_h||44}px;width:auto` : ""}">${c.logo ? `<img src="${c.logo}" style="height:100%;width:auto;max-width:280px;display:block;object-fit:contain">` : "LOGO"}</div>
         <strong>St. Andrews Baptist Church</strong></div>
         <p class="field-hint" style="margin-top:14px">The logo appears at this height in the header — width follows the photo's real shape, so nothing gets squished.</p>`;
     case "home":
@@ -791,13 +791,14 @@ document.addEventListener("sabc:session-ready", () => {
   const step1 = document.querySelector("#login-step-1");
   const stepMethod = document.querySelector("#login-step-method");
   const stepEmail = document.querySelector("#login-step-email");
+  const stepTotpSetup = document.querySelector("#login-step-totp-setup");
   const step2 = document.querySelector("#login-step-2");
   if (step1 && stepMethod && stepEmail && step2) {
     let currentPassword = "";
     let chosenMethod = "email"; // "email" or "totp" — just changes the messaging, both call the same endpoints
 
     function showOnly(el) {
-      [step1, stepMethod, stepEmail, step2].forEach(s => s.classList.add("hidden-step"));
+      [step1, stepMethod, stepEmail, stepTotpSetup, step2].forEach(s => s && s.classList.add("hidden-step"));
       el.classList.remove("hidden-step");
     }
 
@@ -869,6 +870,10 @@ document.addEventListener("sabc:session-ready", () => {
           if ((data.error || "").toLowerCase().includes("password")) showOnly(step1);
           return false;
         }
+        if (data.needsTotpSetup) {
+          showOnly(stepTotpSetup);
+          return false; // don't proceed to the code screen — they need to set one up first
+        }
         const codeBox = document.querySelector("#code-box");
         const resendWrap = document.querySelector("#resend-wrap");
         if (chosenMethod === "totp") {
@@ -909,6 +914,49 @@ document.addEventListener("sabc:session-ready", () => {
     const resend = document.querySelector("#resend-code");
     if (resend) resend.addEventListener("click", requestCode);
 
+    const setupTotpBtn = document.querySelector("#setup-totp-now-btn");
+    if (setupTotpBtn) setupTotpBtn.addEventListener("click", async () => {
+      const msg = document.querySelector("#totp-setup-message");
+      const qrArea = document.querySelector("#login-totp-qr-area");
+      msg.textContent = "";
+      setupTotpBtn.disabled = true;
+      try {
+        const email = document.querySelector("#who-email").value.trim();
+        const res = await fetch("/api/auth/setup-totp-for-login", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          credentials: "same-origin",
+          body: JSON.stringify({ password: currentPassword, email })
+        });
+        const data = await res.json();
+        if (!data.ok) { msg.className = "error"; msg.textContent = data.error || "Couldn't set this up."; return; }
+        qrArea.innerHTML = `
+          <p>Scan this with your authenticator app, then come back and log in with the code it shows:</p>
+          <img src="${data.qrCodePng}" alt="QR code" style="max-width:220px;border-radius:8px">
+          <p class="field-hint">Can't scan? Add manually with this key: <code>${data.secret}</code></p>
+          <button type="button" class="button" id="totp-setup-done-btn" style="margin-top:14px">I've scanned it — enter my code</button>`;
+        document.querySelector("#totp-setup-done-btn").addEventListener("click", () => {
+          const codeBox = document.querySelector("#code-box");
+          const resendWrap = document.querySelector("#resend-wrap");
+          codeBox.innerHTML = "Enter the current code from your authenticator app.";
+          resendWrap.style.display = "none";
+          showOnly(step2);
+          document.querySelector("#code-input").focus();
+        });
+      } catch {
+        msg.className = "error";
+        msg.textContent = "Couldn't reach the server.";
+      } finally {
+        setupTotpBtn.disabled = false;
+      }
+    });
+
+    const backFromTotpSetup = document.querySelector("#back-from-totp-setup");
+    if (backFromTotpSetup) backFromTotpSetup.addEventListener("click", () => {
+      chosenMethod = "email";
+      requestCode().then(ok => { if (ok) showOnly(step2); });
+    });
+
     step2.addEventListener("submit", async e => {
       e.preventDefault();
       const entered = document.querySelector("#code-input").value.trim();
@@ -943,9 +991,9 @@ document.addEventListener("sabc:session-ready", () => {
   const pageButtons = document.querySelectorAll("[data-goto-page]");
   if (pageButtons.length) {
     requireLogin();
+    const me = cmsGetCurrentAdmin();
     const welcomeEl = document.querySelector("#welcome-heading");
     if (welcomeEl) {
-      const me = cmsGetCurrentAdmin();
       welcomeEl.textContent = (() => {
         const rawName = me ? (me.name || me.email || "Admin") : "Admin";
         const firstWord = rawName.trim().split(/\s+/)[0];
@@ -1059,7 +1107,7 @@ document.addEventListener("sabc:session-ready", () => {
           if (id === "logo") {
             el.style.height = height + "px";
             el.style.width = "auto";
-            el.innerHTML = `<img src="${dataUrl}" alt="" style="height:100%;width:auto;display:block;object-fit:contain">`;
+            el.innerHTML = `<img src="${dataUrl}" alt="" style="height:100%;width:auto;max-width:280px;display:block;object-fit:contain">`;
           } else {
             el.style.height = (height || 300) + "px";
             el.innerHTML = `<img src="${dataUrl}" alt="" style="width:100%;height:100%;object-fit:cover;object-position:50% ${pos ?? 50}%">`;
@@ -1659,7 +1707,8 @@ function initWhoswhoAdmin() {
       const file = input.files[0]; if (!file) return;
       compressImage(file, 500, 0.75).then(dataUrl => {
         const posRange = root.querySelector(`[data-pos-for="${input.dataset.photoFor}"]`);
-        input.previousElementSibling.innerHTML = `<img src="${dataUrl}" style="object-position:50% ${posRange ? posRange.value : 50}%">`;
+        const posXRange = root.querySelector(`[data-pos-x-for="${input.dataset.photoFor}"]`);
+        input.previousElementSibling.innerHTML = `<img src="${dataUrl}" style="width:100%;height:100%;object-fit:cover;object-position:${posXRange ? posXRange.value : 50}% ${posRange ? posRange.value : 50}%">`;
         input.dataset.value = dataUrl;
         refreshPreview();
       }).catch(err => alert("Couldn't process that photo: " + err.message));
@@ -1759,15 +1808,18 @@ function initAdmins() {
       const current = await cmsGetAdminUsers();
       const updated = current.filter(u => u.id !== btn.dataset.remove);
       await saveAdmins(updated);
+      cmsLogRawChange("Admin Users", "sabc_admin_users", null, current, updated);
       render();
     }));
     document.querySelector("#add-admin").addEventListener("click", async () => {
       const current = await cmsGetAdminUsers();
-      current.push({ id: uid(), name: "", email: "", access: "Can Edit" });
-      await saveAdmins(current);
+      const updated = [...current, { id: uid(), name: "", email: "", access: "Can Edit" }];
+      await saveAdmins(updated);
+      cmsLogRawChange("Admin Users", "sabc_admin_users", null, current, updated);
       render();
     });
     document.querySelector("#save-admins").addEventListener("click", async () => {
+      const before = await cmsGetAdminUsers();
       const rows = root.querySelectorAll(".manage-row");
       const updated = [...rows].map(row => ({
         id: row.dataset.id,
@@ -1776,6 +1828,7 @@ function initAdmins() {
         access: row.querySelector('[data-field="access"]').value
       }));
       const result = await saveAdmins(updated);
+      if (result.ok) cmsLogRawChange("Admin Users", "sabc_admin_users", null, before, updated);
       const toast = document.querySelector("#admins-toast");
       if (result.ok) {
         toast.textContent = "✓ Admin list updated on the server.";
@@ -2174,7 +2227,7 @@ function initGalleryAdmin() {
       <p id="gallery-toast" class="toast"></p>
       <div id="gallery-lightbox" class="modal-overlay">
         <div style="max-width:90vw;max-height:85vh;position:relative">
-          <button type="button" id="gallery-lightbox-close" class="button button-light" style="position:absolute;top:-44px;right:0">✕ Close</button>
+          <button type="button" id="gallery-lightbox-close" class="button button-light" data-allow-view-only style="position:absolute;top:-44px;right:0">✕ Close</button>
           <img id="gallery-lightbox-img" src="" style="max-width:90vw;max-height:85vh;border-radius:10px;display:block">
         </div>
       </div>`;
@@ -2255,10 +2308,11 @@ function renderGalleryPublic() {
       </div>`).join("") + `</div>
       <div id="gallery-lightbox" class="modal-overlay">
         <div style="max-width:90vw;max-height:85vh;position:relative">
-          <button type="button" id="gallery-lightbox-close" class="button button-light" style="position:absolute;top:-44px;right:0">✕ Close</button>
+          <button type="button" id="gallery-lightbox-close" class="button button-light" data-allow-view-only style="position:absolute;top:-44px;right:0">✕ Close</button>
           <img id="gallery-lightbox-img" src="" style="max-width:90vw;max-height:85vh;border-radius:10px;display:block">
         </div>
       </div>`;
+    cmsApplyViewOnlyLock(root);
 
     root.querySelectorAll("[data-open-lightbox]").forEach(el => el.addEventListener("click", () => {
       const p = photos.find(x => x.id === el.dataset.openLightbox);
@@ -2342,39 +2396,20 @@ function initSettingsAdmin() {
   const isFullAdmin = me && me.access === "Full Admin";
 
   async function render() {
-    let status = { hasTotp: false, hasEmail: false };
-    if (isFullAdmin) {
-      try {
-        const res = await fetch("/api/auth/totp-status", { credentials: "same-origin" });
-        if (res.ok) status = await res.json();
-      } catch {}
-    }
+    let status = { hasTotp: false };
+    try {
+      const res = await fetch("/api/auth/totp-status", { credentials: "same-origin" });
+      if (res.ok) status = await res.json();
+    } catch {}
 
     let html = `<div class="role-panel"><h3>Your Account</h3>
       <p class="field-hint">Logged in as <b>${me ? (me.name || me.email) : "—"}</b> (${me ? me.access : "—"})</p>
-      </div>`;
-
-    if (!isFullAdmin) {
-      html += `<p class="field-hint" style="margin-top:20px">The rest of Settings (password, authenticator app) is Full Admin only.</p>`;
-      root.innerHTML = html;
-      return;
-    }
-
-    html += `
-      <div class="role-panel">
-        <h3>Change Shared Password</h3>
-        <p class="field-hint">This is the one password everyone uses for the first login step.</p>
-        <div class="role-row" style="grid-template-columns:1fr 1fr">
-          <input type="password" id="new-password" placeholder="New password">
-          <input type="password" id="new-password-confirm" placeholder="Confirm new password">
-        </div>
-        <div class="edit-actions"><span></span><button class="button" id="save-password" type="button">Update Password</button></div>
-        <p id="password-settings-message" class="error"></p>
       </div>
 
       <div class="role-panel">
-        <h3>Authenticator App</h3>
-        <p class="field-hint">${status.hasTotp ? "Currently set up — anyone with the code from the app can use it to log in." : "Not set up yet — logging in falls back to email codes only."}</p>
+        <h3>Your Authenticator App</h3>
+        <p class="field-hint">This is personal to your own login — setting it up or turning it off never affects anyone else's account.</p>
+        <p class="field-hint">${status.hasTotp ? "Currently set up for your account." : "Not set up yet — logging in falls back to email codes for you."}</p>
         <div class="edit-actions"><span></span>
           <button class="button" id="setup-totp-btn" type="button">${status.hasTotp ? "Generate a New QR Code" : "Set Up Authenticator App"}</button>
           ${status.hasTotp ? `<button class="button button-light" id="remove-totp-btn" type="button" style="color:#a62929">Turn Off</button>` : ""}
@@ -2383,28 +2418,44 @@ function initSettingsAdmin() {
         <p id="totp-message" class="error"></p>
       </div>`;
 
+    if (isFullAdmin) {
+      html += `
+      <div class="role-panel">
+        <h3>Change Shared Password</h3>
+        <p class="field-hint">This is the one password everyone uses for the first login step — changing it affects everyone, which is why only Full Admin can do it.</p>
+        <div class="role-row" style="grid-template-columns:1fr 1fr">
+          <input type="password" id="new-password" placeholder="New password">
+          <input type="password" id="new-password-confirm" placeholder="Confirm new password">
+        </div>
+        <div class="edit-actions"><span></span><button class="button" id="save-password" type="button">Update Password</button></div>
+        <p id="password-settings-message" class="error"></p>
+      </div>`;
+    }
+
     root.innerHTML = html;
 
-    document.querySelector("#save-password").addEventListener("click", async () => {
-      const pw1 = document.querySelector("#new-password").value;
-      const pw2 = document.querySelector("#new-password-confirm").value;
-      const msg = document.querySelector("#password-settings-message");
-      if (pw1 !== pw2) { msg.className = "error"; msg.textContent = "Those don't match."; return; }
-      if (pw1.length < 6) { msg.className = "error"; msg.textContent = "Use at least 6 characters."; return; }
-      try {
-        const res = await fetch("/api/auth/change-password", {
-          method: "POST", headers: { "Content-Type": "application/json" }, credentials: "same-origin",
-          body: JSON.stringify({ password: pw1 })
-        });
-        const data = await res.json();
-        msg.className = data.ok ? "success" : "error";
-        msg.textContent = data.ok ? "✓ Password updated." : (data.error || "Something went wrong.");
-        if (data.ok) { document.querySelector("#new-password").value = ""; document.querySelector("#new-password-confirm").value = ""; }
-      } catch {
-        msg.className = "error";
-        msg.textContent = "Couldn't reach the server.";
-      }
-    });
+    if (isFullAdmin) {
+      document.querySelector("#save-password").addEventListener("click", async () => {
+        const pw1 = document.querySelector("#new-password").value;
+        const pw2 = document.querySelector("#new-password-confirm").value;
+        const msg = document.querySelector("#password-settings-message");
+        if (pw1 !== pw2) { msg.className = "error"; msg.textContent = "Those don't match."; return; }
+        if (pw1.length < 6) { msg.className = "error"; msg.textContent = "Use at least 6 characters."; return; }
+        try {
+          const res = await fetch("/api/auth/change-password", {
+            method: "POST", headers: { "Content-Type": "application/json" }, credentials: "same-origin",
+            body: JSON.stringify({ password: pw1 })
+          });
+          const data = await res.json();
+          msg.className = data.ok ? "success" : "error";
+          msg.textContent = data.ok ? "✓ Password updated." : (data.error || "Something went wrong.");
+          if (data.ok) { document.querySelector("#new-password").value = ""; document.querySelector("#new-password-confirm").value = ""; }
+        } catch {
+          msg.className = "error";
+          msg.textContent = "Couldn't reach the server.";
+        }
+      });
+    }
 
     document.querySelector("#setup-totp-btn").addEventListener("click", async () => {
       const msg = document.querySelector("#totp-message");
@@ -2418,7 +2469,7 @@ function initSettingsAdmin() {
           <p>Scan this with your authenticator app:</p>
           <img src="${data.qrCodePng}" alt="QR code" style="max-width:220px;border-radius:8px">
           <p class="field-hint">Can't scan? Add manually with this key: <code>${data.secret}</code></p>
-          <p class="field-hint">This replaces any previous QR code — old ones stop working the moment you generate a new one.</p>`;
+          <p class="field-hint">This replaces your previous QR code, if you had one — the old one stops working the moment you generate a new one. Doesn't affect anyone else.</p>`;
       } catch {
         msg.className = "error";
         msg.textContent = "Couldn't reach the server.";
@@ -2427,7 +2478,7 @@ function initSettingsAdmin() {
 
     const removeBtn = document.querySelector("#remove-totp-btn");
     if (removeBtn) removeBtn.addEventListener("click", async () => {
-      if (!confirm("Turn off the authenticator app option? Anyone using it will need to use email instead.")) return;
+      if (!confirm("Turn off your authenticator app option? You'll fall back to email codes.")) return;
       try {
         await fetch("/api/auth/remove-totp", { method: "POST", credentials: "same-origin" });
         render();

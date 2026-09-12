@@ -52,11 +52,9 @@ def main():
     if "secret_key" not in cfg:
         cfg["secret_key"] = secrets.token_hex(32)
 
-    print("\n--- Second login step: how should codes work? ---")
-    print("You can set up EITHER or BOTH — whichever's on file gets accepted at login.")
-
-    print("\n1) Email — a code gets emailed to whoever's logging in.")
-    print("   Needs a Gmail account + an 'App Password' (not your normal Gmail password).")
+    print("\n--- Email codes for the second login step (optional) ---")
+    print("Needs a Gmail account + an 'App Password' (not your normal Gmail password).")
+    print("Leave blank to skip — the code will just show on-screen instead.")
     gmail_user = input("Gmail address to send codes from (blank to skip/remove): ").strip()
     if gmail_user:
         gmail_app_pw = getpass.getpass("Gmail App Password (16 characters, from Google Account > Security > App Passwords): ").strip()
@@ -66,38 +64,16 @@ def main():
         cfg.pop("gmail_user", None)
         cfg.pop("gmail_app_password", None)
 
-    print("\n2) Authenticator app (Google Authenticator, Authy, etc.) — works with no internet,")
-    print("   no email needed, just a phone with the app installed.")
-    setup_totp = input("Set this up now? (y/n): ").strip().lower()
-    if setup_totp == "y":
-        import pyotp
-        secret = pyotp.random_base32()
-        cfg["totp_secret"] = secret
-        uri = pyotp.totp.TOTP(secret).provisioning_uri(name="admin@standrewsbaptistchurch.ca", issuer_name="St. Andrews Baptist Church")
-        print("\nScan this with your authenticator app's camera:\n")
-        try:
-            import qrcode
-            qr = qrcode.QRCode(border=1)
-            qr.add_data(uri)
-            qr.make()
-            qr.print_ascii(invert=True)
-        except Exception:
-            print("(Couldn't draw a QR code here, but you can still add it manually.)")
-        print(f"\nIf scanning doesn't work, add manually with this key: {secret}")
-    else:
-        remove = input("Remove any existing authenticator app setup? (y/n): ").strip().lower()
-        if remove == "y":
-            cfg.pop("totp_secret", None)
-
     save_config(cfg)
     print("\nDone. Saved only to this Pi (config.json, not tracked by git).")
-    methods = []
-    if cfg.get("gmail_user"): methods.append("email")
-    if cfg.get("totp_secret"): methods.append("authenticator app")
-    if methods:
-        print("Second-step login methods active: " + " and ".join(methods) + ".")
+    if gmail_user:
+        print(f"Email codes will be sent from {gmail_user}.")
     else:
-        print("No second-step method configured yet — the code will just show on-screen for now.")
+        print("Email not set up — codes will show directly on the login screen for now, same as before.")
+    print("\nNote: authenticator app (QR code) setup is no longer done here — each")
+    print("admin sets up their own personal one right on the website now, either")
+    print("during login (first time they pick 'authenticator app') or any time")
+    print("after logging in via Admin → Settings. Nothing to configure here for that.")
 
 
 if __name__ == "__main__":

@@ -478,7 +478,8 @@ function initWhoswhoAdmin() {
       const file = input.files[0]; if (!file) return;
       compressImage(file, 500, 0.75).then(dataUrl => {
         const posRange = root.querySelector(`[data-pos-for="${input.dataset.photoFor}"]`);
-        input.previousElementSibling.innerHTML = `<img src="${dataUrl}" style="object-position:50% ${posRange ? posRange.value : 50}%">`;
+        const posXRange = root.querySelector(`[data-pos-x-for="${input.dataset.photoFor}"]`);
+        input.previousElementSibling.innerHTML = `<img src="${dataUrl}" style="width:100%;height:100%;object-fit:cover;object-position:${posXRange ? posXRange.value : 50}% ${posRange ? posRange.value : 50}%">`;
         input.dataset.value = dataUrl;
         refreshPreview();
       }).catch(err => alert("Couldn't process that photo: " + err.message));
@@ -578,15 +579,18 @@ function initAdmins() {
       const current = await cmsGetAdminUsers();
       const updated = current.filter(u => u.id !== btn.dataset.remove);
       await saveAdmins(updated);
+      cmsLogRawChange("Admin Users", "sabc_admin_users", null, current, updated);
       render();
     }));
     document.querySelector("#add-admin").addEventListener("click", async () => {
       const current = await cmsGetAdminUsers();
-      current.push({ id: uid(), name: "", email: "", access: "Can Edit" });
-      await saveAdmins(current);
+      const updated = [...current, { id: uid(), name: "", email: "", access: "Can Edit" }];
+      await saveAdmins(updated);
+      cmsLogRawChange("Admin Users", "sabc_admin_users", null, current, updated);
       render();
     });
     document.querySelector("#save-admins").addEventListener("click", async () => {
+      const before = await cmsGetAdminUsers();
       const rows = root.querySelectorAll(".manage-row");
       const updated = [...rows].map(row => ({
         id: row.dataset.id,
@@ -595,6 +599,7 @@ function initAdmins() {
         access: row.querySelector('[data-field="access"]').value
       }));
       const result = await saveAdmins(updated);
+      if (result.ok) cmsLogRawChange("Admin Users", "sabc_admin_users", null, before, updated);
       const toast = document.querySelector("#admins-toast");
       if (result.ok) {
         toast.textContent = "✓ Admin list updated on the server.";
@@ -993,7 +998,7 @@ function initGalleryAdmin() {
       <p id="gallery-toast" class="toast"></p>
       <div id="gallery-lightbox" class="modal-overlay">
         <div style="max-width:90vw;max-height:85vh;position:relative">
-          <button type="button" id="gallery-lightbox-close" class="button button-light" style="position:absolute;top:-44px;right:0">✕ Close</button>
+          <button type="button" id="gallery-lightbox-close" class="button button-light" data-allow-view-only style="position:absolute;top:-44px;right:0">✕ Close</button>
           <img id="gallery-lightbox-img" src="" style="max-width:90vw;max-height:85vh;border-radius:10px;display:block">
         </div>
       </div>`;
@@ -1074,10 +1079,11 @@ function renderGalleryPublic() {
       </div>`).join("") + `</div>
       <div id="gallery-lightbox" class="modal-overlay">
         <div style="max-width:90vw;max-height:85vh;position:relative">
-          <button type="button" id="gallery-lightbox-close" class="button button-light" style="position:absolute;top:-44px;right:0">✕ Close</button>
+          <button type="button" id="gallery-lightbox-close" class="button button-light" data-allow-view-only style="position:absolute;top:-44px;right:0">✕ Close</button>
           <img id="gallery-lightbox-img" src="" style="max-width:90vw;max-height:85vh;border-radius:10px;display:block">
         </div>
       </div>`;
+    cmsApplyViewOnlyLock(root);
 
     root.querySelectorAll("[data-open-lightbox]").forEach(el => el.addEventListener("click", () => {
       const p = photos.find(x => x.id === el.dataset.openLightbox);
@@ -1161,39 +1167,20 @@ function initSettingsAdmin() {
   const isFullAdmin = me && me.access === "Full Admin";
 
   async function render() {
-    let status = { hasTotp: false, hasEmail: false };
-    if (isFullAdmin) {
-      try {
-        const res = await fetch("/api/auth/totp-status", { credentials: "same-origin" });
-        if (res.ok) status = await res.json();
-      } catch {}
-    }
+    let status = { hasTotp: false };
+    try {
+      const res = await fetch("/api/auth/totp-status", { credentials: "same-origin" });
+      if (res.ok) status = await res.json();
+    } catch {}
 
     let html = `<div class="role-panel"><h3>Your Account</h3>
       <p class="field-hint">Logged in as <b>${me ? (me.name || me.email) : "—"}</b> (${me ? me.access : "—"})</p>
-      </div>`;
-
-    if (!isFullAdmin) {
-      html += `<p class="field-hint" style="margin-top:20px">The rest of Settings (password, authenticator app) is Full Admin only.</p>`;
-      root.innerHTML = html;
-      return;
-    }
-
-    html += `
-      <div class="role-panel">
-        <h3>Change Shared Password</h3>
-        <p class="field-hint">This is the one password everyone uses for the first login step.</p>
-        <div class="role-row" style="grid-template-columns:1fr 1fr">
-          <input type="password" id="new-password" placeholder="New password">
-          <input type="password" id="new-password-confirm" placeholder="Confirm new password">
-        </div>
-        <div class="edit-actions"><span></span><button class="button" id="save-password" type="button">Update Password</button></div>
-        <p id="password-settings-message" class="error"></p>
       </div>
 
       <div class="role-panel">
-        <h3>Authenticator App</h3>
-        <p class="field-hint">${status.hasTotp ? "Currently set up — anyone with the code from the app can use it to log in." : "Not set up yet — logging in falls back to email codes only."}</p>
+        <h3>Your Authenticator App</h3>
+        <p class="field-hint">This is personal to your own login — setting it up or turning it off never affects anyone else's account.</p>
+        <p class="field-hint">${status.hasTotp ? "Currently set up for your account." : "Not set up yet — logging in falls back to email codes for you."}</p>
         <div class="edit-actions"><span></span>
           <button class="button" id="setup-totp-btn" type="button">${status.hasTotp ? "Generate a New QR Code" : "Set Up Authenticator App"}</button>
           ${status.hasTotp ? `<button class="button button-light" id="remove-totp-btn" type="button" style="color:#a62929">Turn Off</button>` : ""}
@@ -1202,28 +1189,44 @@ function initSettingsAdmin() {
         <p id="totp-message" class="error"></p>
       </div>`;
 
+    if (isFullAdmin) {
+      html += `
+      <div class="role-panel">
+        <h3>Change Shared Password</h3>
+        <p class="field-hint">This is the one password everyone uses for the first login step — changing it affects everyone, which is why only Full Admin can do it.</p>
+        <div class="role-row" style="grid-template-columns:1fr 1fr">
+          <input type="password" id="new-password" placeholder="New password">
+          <input type="password" id="new-password-confirm" placeholder="Confirm new password">
+        </div>
+        <div class="edit-actions"><span></span><button class="button" id="save-password" type="button">Update Password</button></div>
+        <p id="password-settings-message" class="error"></p>
+      </div>`;
+    }
+
     root.innerHTML = html;
 
-    document.querySelector("#save-password").addEventListener("click", async () => {
-      const pw1 = document.querySelector("#new-password").value;
-      const pw2 = document.querySelector("#new-password-confirm").value;
-      const msg = document.querySelector("#password-settings-message");
-      if (pw1 !== pw2) { msg.className = "error"; msg.textContent = "Those don't match."; return; }
-      if (pw1.length < 6) { msg.className = "error"; msg.textContent = "Use at least 6 characters."; return; }
-      try {
-        const res = await fetch("/api/auth/change-password", {
-          method: "POST", headers: { "Content-Type": "application/json" }, credentials: "same-origin",
-          body: JSON.stringify({ password: pw1 })
-        });
-        const data = await res.json();
-        msg.className = data.ok ? "success" : "error";
-        msg.textContent = data.ok ? "✓ Password updated." : (data.error || "Something went wrong.");
-        if (data.ok) { document.querySelector("#new-password").value = ""; document.querySelector("#new-password-confirm").value = ""; }
-      } catch {
-        msg.className = "error";
-        msg.textContent = "Couldn't reach the server.";
-      }
-    });
+    if (isFullAdmin) {
+      document.querySelector("#save-password").addEventListener("click", async () => {
+        const pw1 = document.querySelector("#new-password").value;
+        const pw2 = document.querySelector("#new-password-confirm").value;
+        const msg = document.querySelector("#password-settings-message");
+        if (pw1 !== pw2) { msg.className = "error"; msg.textContent = "Those don't match."; return; }
+        if (pw1.length < 6) { msg.className = "error"; msg.textContent = "Use at least 6 characters."; return; }
+        try {
+          const res = await fetch("/api/auth/change-password", {
+            method: "POST", headers: { "Content-Type": "application/json" }, credentials: "same-origin",
+            body: JSON.stringify({ password: pw1 })
+          });
+          const data = await res.json();
+          msg.className = data.ok ? "success" : "error";
+          msg.textContent = data.ok ? "✓ Password updated." : (data.error || "Something went wrong.");
+          if (data.ok) { document.querySelector("#new-password").value = ""; document.querySelector("#new-password-confirm").value = ""; }
+        } catch {
+          msg.className = "error";
+          msg.textContent = "Couldn't reach the server.";
+        }
+      });
+    }
 
     document.querySelector("#setup-totp-btn").addEventListener("click", async () => {
       const msg = document.querySelector("#totp-message");
@@ -1237,7 +1240,7 @@ function initSettingsAdmin() {
           <p>Scan this with your authenticator app:</p>
           <img src="${data.qrCodePng}" alt="QR code" style="max-width:220px;border-radius:8px">
           <p class="field-hint">Can't scan? Add manually with this key: <code>${data.secret}</code></p>
-          <p class="field-hint">This replaces any previous QR code — old ones stop working the moment you generate a new one.</p>`;
+          <p class="field-hint">This replaces your previous QR code, if you had one — the old one stops working the moment you generate a new one. Doesn't affect anyone else.</p>`;
       } catch {
         msg.className = "error";
         msg.textContent = "Couldn't reach the server.";
@@ -1246,7 +1249,7 @@ function initSettingsAdmin() {
 
     const removeBtn = document.querySelector("#remove-totp-btn");
     if (removeBtn) removeBtn.addEventListener("click", async () => {
-      if (!confirm("Turn off the authenticator app option? Anyone using it will need to use email instead.")) return;
+      if (!confirm("Turn off your authenticator app option? You'll fall back to email codes.")) return;
       try {
         await fetch("/api/auth/remove-totp", { method: "POST", credentials: "same-origin" });
         render();
