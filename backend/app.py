@@ -50,6 +50,7 @@ ALLOWED_STORE_KEYS = {
     "sabc_sermon_archive", # Sermon Archive entries
     "sabc_gallery",        # Gallery photos
     "sabc_hero_photos",    # Homepage rotating background photos
+    "sabc_videos",         # Stashed video links (YouTube/Facebook), ready for whenever they're needed
     "sabc_audit_log",      # Change Log
 }
 

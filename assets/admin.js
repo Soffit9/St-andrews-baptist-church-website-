@@ -72,7 +72,7 @@ function previewTemplate(pageKey, c) {
           <h2 data-preview="latest_title">${c.latest_title}</h2>
           <p><span data-preview="latest_speaker">${c.latest_speaker}</span> · <span data-preview="latest_passage">${c.latest_passage}</span></p>
         </div>
-        <p class="field-hint">${c.youtube_id ? "A YouTube video is set — it'll replace the ▶ box above on the real page." : "No YouTube video set yet."}</p>`;
+        <p class="field-hint">${c.youtube_id ? "A video is set — it'll replace the ▶ box above on the real page." : "No video set yet."}</p>`;
     case "events":
       return `<h1>Upcoming Events</h1><p data-preview="events_note">${c.events_note}</p>`;
     case "prayer":

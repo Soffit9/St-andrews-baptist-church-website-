@@ -48,6 +48,7 @@ document.addEventListener("sabc:session-ready", () => {
   if (document.querySelector("#gallery-public-root")) renderGalleryPublic();
   if (document.querySelector("#prayer-requests-admin-root")) initPrayerRequestsAdmin();
   if (document.querySelector("#settings-admin-root")) initSettingsAdmin();
+  if (document.querySelector("#videos-admin-root")) initVideosAdmin();
 });
 
 /* ============================= CALENDAR ============================= */
@@ -751,7 +752,9 @@ function initLog() {
 /* ============================= SERMON ARCHIVE ============================= */
 function extractYoutubeId(raw) {
   if (!raw) return "";
-  const match = String(raw).match(/(?:v=|youtu\.be\/|embed\/)?([a-zA-Z0-9_-]{11})(?:[?&]|$)/);
+  const str = String(raw).trim();
+  if (/facebook\.com/i.test(str)) return str; // keep Facebook links exactly as pasted — don't run YouTube-ID extraction on them
+  const match = str.match(/(?:v=|youtu\.be\/|embed\/)?([a-zA-Z0-9_-]{11})(?:[?&]|$)/);
   return match ? match[1] : raw;
 }
 
@@ -775,7 +778,7 @@ function initSermonArchiveAdmin() {
         </div>
         <div class="role-row" style="grid-template-columns:1fr 1fr;margin-top:10px">
           <input type="text" id="new-sermon-passage" placeholder="Bible passage">
-          <input type="text" id="new-sermon-youtube" placeholder="YouTube link or video ID (optional)">
+          <input type="text" id="new-sermon-youtube" placeholder="YouTube or Facebook video link (optional)">
         </div>
         <div class="edit-actions"><span></span><button class="button" id="add-sermon-btn" type="button">+ Add Sermon</button></div>
       </div>
@@ -793,7 +796,7 @@ function initSermonArchiveAdmin() {
             <input type="text" data-sf="title" value="${s.title || ""}" placeholder="Title">
             <input type="text" data-sf="speaker" value="${s.speaker || ""}" placeholder="Speaker">
             <input type="text" data-sf="passage" value="${s.passage || ""}" placeholder="Passage">
-            <input type="text" data-sf="youtube_id" value="${s.youtube_id || ""}" placeholder="YouTube link/ID">
+            <input type="text" data-sf="youtube_id" value="${s.youtube_id || ""}" placeholder="YouTube or Facebook link">
             <button type="button" data-remove-sermon="${s.id}">Remove</button>
           </div>`;
       });
@@ -875,7 +878,9 @@ function renderSermonArchivePublic() {
             <div>
               <h3>${s.title}</h3>
               <p>${[s.date ? new Date(s.date + "T00:00:00").toLocaleDateString(undefined, { month: "long", day: "numeric" }) : "", s.speaker, s.passage].filter(Boolean).join(" · ")}</p>
-              ${s.youtube_id ? `<a class="text-link" target="_blank" rel="noopener" href="https://www.youtube.com/watch?v=${s.youtube_id}">Watch on YouTube →</a>` : ""}
+              ${s.youtube_id ? (/facebook\.com/i.test(s.youtube_id)
+                ? `<a class="text-link" target="_blank" rel="noopener" href="${s.youtube_id}">Watch on Facebook →</a>`
+                : `<a class="text-link" target="_blank" rel="noopener" href="https://www.youtube.com/watch?v=${s.youtube_id}">Watch on YouTube →</a>`) : ""}
             </div>
           </div>`).join("")
       : `<p class="field-hint">No sermons added for ${y} yet.</p>`;
@@ -1256,6 +1261,80 @@ function initSettingsAdmin() {
       } catch {
         document.querySelector("#totp-message").textContent = "Couldn't reach the server.";
       }
+    });
+  }
+  render();
+}
+
+/* ============================= VIDEOS (stash, admin-only) ============================= */
+function initVideosAdmin() {
+  requireLogin();
+  const root = document.querySelector("#videos-admin-root");
+
+  function render() {
+    const videos = loadJSON("sabc_videos", []);
+    let html = `
+      <div class="role-panel" style="margin-top:0">
+        <h3>Add a Video Link</h3>
+        <div class="role-row" style="grid-template-columns:1fr 1fr">
+          <input type="text" id="new-video-label" placeholder="Label (e.g. Sept 14 sermon)">
+          <input type="text" id="new-video-url" placeholder="Paste a YouTube or Facebook link">
+        </div>
+        <div class="edit-actions"><span></span><button class="button" id="add-video-btn" type="button">+ Add Video</button></div>
+      </div>
+      <div id="videos-list" style="margin-top:20px">`;
+
+    if (!videos.length) {
+      html += `<p class="field-hint">No videos stashed yet.</p>`;
+    }
+    videos.forEach(v => {
+      html += `
+        <div class="role-panel" data-video-id="${v.id}">
+          <div class="role-row" style="grid-template-columns:1fr 1fr">
+            <input type="text" data-vf="label" value="${v.label || ""}" placeholder="Label">
+            <input type="text" data-vf="url" value="${v.url || ""}" placeholder="Video link">
+          </div>
+          <div style="margin-top:12px;max-width:400px">${videoEmbedHtml(v.url, 220)}</div>
+          <div class="edit-actions"><span></span><button type="button" class="text-btn" data-remove-video="${v.id}" style="color:#a62929">Remove</button></div>
+        </div>`;
+    });
+    html += `</div>
+      <div class="edit-actions"><span></span><button class="button" id="save-videos" type="button">Apply Changes</button></div>
+      <p id="videos-toast" class="toast"></p>`;
+
+    root.innerHTML = html;
+    cmsApplyViewOnlyLock(root);
+
+    document.querySelector("#add-video-btn").addEventListener("click", () => {
+      const label = document.querySelector("#new-video-label").value.trim();
+      const url = document.querySelector("#new-video-url").value.trim();
+      if (!url) { alert("Paste a video link first."); return; }
+      const videos = loadJSON("sabc_videos", []);
+      videos.push({ id: uid(), label, url });
+      saveJSON("sabc_videos", videos);
+      cmsLogRawChange("Videos", "sabc_videos", null, videos.slice(0, -1), videos);
+      render();
+    });
+
+    root.querySelectorAll("[data-remove-video]").forEach(btn => btn.addEventListener("click", () => {
+      const videos = loadJSON("sabc_videos", []).filter(v => v.id !== btn.dataset.removeVideo);
+      saveJSON("sabc_videos", videos);
+      render();
+    }));
+
+    document.querySelector("#save-videos").addEventListener("click", () => {
+      const before = loadJSON("sabc_videos", []);
+      const rows = root.querySelectorAll("[data-video-id]");
+      const updated = [...rows].map(row => ({
+        id: row.dataset.videoId,
+        label: row.querySelector('[data-vf="label"]').value,
+        url: row.querySelector('[data-vf="url"]').value
+      }));
+      saveJSON("sabc_videos", updated);
+      cmsLogRawChange("Videos", "sabc_videos", null, before, updated);
+      const toast = document.querySelector("#videos-toast");
+      toast.textContent = "✓ Videos updated.";
+      toast.classList.add("show");
     });
   }
   render();

@@ -219,13 +219,14 @@ a,button{transition:box-shadow .15s ease,transform .15s ease,filter .15s ease,ba
     <button data-min-access="Can Edit" data-goto-page="about"><b>👤</b><strong>About / Pastor</strong><span>Update the pastor note, history, and photo</span></button>
     <button data-min-access="Can Edit" data-goto-page="sermons"><b>▶</b><strong>Sermons</strong><span>Update the latest sermon's title, speaker, and passage</span></button>
     <button data-min-access="Can Edit" onclick="window.location.href='sermon-archive.html'"><b>🗄</b><strong>Sermon Archive</strong><span>Add past sermons, grouped by year</span></button>
+    <button data-min-access="Can Edit" onclick="window.location.href='videos.html'"><b>🎬</b><strong>Videos</strong><span>Stash video links until they're ready to use</span></button>
     <button data-min-access="Can Edit" onclick="window.location.href='events.html'"><b>📅</b><strong>Events</strong><span>Click a day on the calendar to add or edit events</span></button>
     <button data-min-access="Can Edit" data-goto-page="prayer"><b>🙏</b><strong>Prayer Page</strong><span>Update the intro text</span></button>
     <button data-min-access="Full Admin" onclick="window.location.href='prayer-requests.html'"><b>📨</b><strong>Prayer Requests</strong><span>Read what people have submitted</span></button>
     <button data-min-access="Can Edit" data-goto-page="contact"><b>☎</b><strong>Contact Info</strong><span>Update address, phone, email</span></button>
     <button data-min-access="Can Edit" data-goto-page="giving"><b>$</b><strong>Giving Info</strong><span>Update e-transfer and tax receipt notes</span></button>
     <button onclick="window.location.href='calendar.html'"><b>🗓</b><strong>Church Calendar</strong><span>Click any day to fill in who's doing what</span></button>
-    <button data-min-access="Can Edit" onclick="window.location.href='whoswho.html'"><b>👥</b><strong>Who's Who</strong><span>Add or edit church members and their roles</span></button>
+    <button data-min-access="Can Edit" onclick="window.location.href='whoswho.html'"><b>👤</b><strong>Who's Who</strong><span>Add or edit church members and their roles</span></button>
     <button data-min-access="Full Admin" onclick="window.location.href='admins.html'"><b>🔑</b><strong>Admin Users</strong><span>Manage who's on the admin team</span></button>
     <button data-min-access="Can Edit" onclick="window.location.href='log.html'"><b>📜</b><strong>Change Log</strong><span>See every change made, and download a copy</span></button>
     <button onclick="window.location.href='settings.html'"><b>⚙</b><strong>Settings</strong><span>Change password, set up the authenticator app</span></button>
@@ -318,7 +319,7 @@ window.__serverStore = {};
 const STORE_KEYS = [
   "sabc_content", "sabc_roster", "sabc_schedule_roles", "sabc_schedule",
   "sabc_events", "sabc_whoswho", "sabc_sermon_archive", "sabc_gallery",
-  "sabc_hero_photos", "sabc_audit_log"
+  "sabc_hero_photos", "sabc_videos", "sabc_audit_log"
 ];
 
 async function fetchAllStoredData() {
@@ -432,7 +433,7 @@ const CMS_SCHEMA = {
       { id: "latest_title", label: "Latest Sermon Title", type: "text", default: "Sermon title" },
       { id: "latest_speaker", label: "Speaker", type: "text", default: "Speaker" },
       { id: "latest_passage", label: "Bible Passage", type: "text", default: "Bible passage" },
-      { id: "youtube_id", label: "YouTube Video (paste the video ID or the full link)", type: "text", default: "" }
+      { id: "youtube_id", label: "Video Link (paste a YouTube or Facebook video link)", type: "text", default: "" }
     ],
     images: []
   },
@@ -560,6 +561,23 @@ async function cmsRevertRawEntry(entry) {
 /* Shrinks a photo before it's stored, so a phone photo (often several MB)
    doesn't blow past the browser's ~5-10MB localStorage limit. Without this,
    uploading a couple of full-size photos can silently fail to save. */
+/* Turns a pasted video link (YouTube OR Facebook) into the right embed
+   iframe. The church posts sermons to both — Facebook historically,
+   YouTube going forward — so this needs to handle whichever one was
+   pasted rather than assuming YouTube like the old version did. */
+function videoEmbedHtml(url, heightPx) {
+  if (!url) return "";
+  const str = String(url).trim();
+  if (/facebook\.com/i.test(str)) {
+    const encoded = encodeURIComponent(str);
+    return `<iframe src="https://www.facebook.com/plugins/video.php?href=${encoded}&show_text=false" width="100%" height="${heightPx || 315}" style="border:0;overflow:hidden;max-width:100%" scrolling="no" frameborder="0" allowfullscreen allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share"></iframe>`;
+  }
+  // Otherwise assume YouTube — accepts a full link or just the bare video ID.
+  const match = str.match(/(?:v=|youtu\.be\/|embed\/)?([a-zA-Z0-9_-]{11})(?:[?&]|$)/);
+  const vid = match ? match[1] : str;
+  return `<iframe width="100%" height="${heightPx || "100%"}" style="${heightPx ? "" : "position:absolute;inset:0;"}border:0" src="https://www.youtube.com/embed/${vid}" title="Video" allowfullscreen></iframe>`;
+}
+
 function compressImage(file, maxDimension = 1000, quality = 0.75) {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
@@ -672,13 +690,11 @@ function cmsApplyToPage(pageKey) {
     }
   });
 
-  // Sermons: swap in a YouTube embed if a video has been set
+  // Sermons: swap in a video embed if one's been set (YouTube or Facebook)
   if (pageKey === "sermons" && content.youtube_id) {
     const slot = document.querySelector("#sermon-video");
     if (slot) {
-      const match = String(content.youtube_id).match(/(?:v=|youtu\.be\/|embed\/)?([a-zA-Z0-9_-]{11})(?:[?&]|$)/);
-      const vid = match ? match[1] : content.youtube_id;
-      slot.innerHTML = `<iframe width="100%" height="100%" style="position:absolute;inset:0;border:0" src="https://www.youtube.com/embed/${vid}" title="Latest sermon" allowfullscreen></iframe>`;
+      slot.innerHTML = videoEmbedHtml(content.youtube_id);
       slot.style.position = "relative";
       slot.style.paddingBottom = "56.25%";
       slot.style.height = "0";
@@ -693,9 +709,7 @@ function cmsApplyToPage(pageKey) {
     const titleEl = document.querySelector("#home-sermon-title");
     if (titleEl && sermonContent.latest_title) titleEl.textContent = sermonContent.latest_title;
     if (sermonContent.youtube_id) {
-      const match = String(sermonContent.youtube_id).match(/(?:v=|youtu\.be\/|embed\/)?([a-zA-Z0-9_-]{11})(?:[?&]|$)/);
-      const vid = match ? match[1] : sermonContent.youtube_id;
-      homeVideoSlot.innerHTML = `<iframe width="100%" height="100%" style="position:absolute;inset:0;border:0" src="https://www.youtube.com/embed/${vid}" title="Latest sermon" allowfullscreen></iframe>`;
+      homeVideoSlot.innerHTML = videoEmbedHtml(sermonContent.youtube_id);
       homeVideoSlot.style.position = "relative";
       homeVideoSlot.style.paddingBottom = "56.25%";
       homeVideoSlot.style.height = "0";
@@ -781,7 +795,7 @@ function previewTemplate(pageKey, c) {
           <h2 data-preview="latest_title">${c.latest_title}</h2>
           <p><span data-preview="latest_speaker">${c.latest_speaker}</span> · <span data-preview="latest_passage">${c.latest_passage}</span></p>
         </div>
-        <p class="field-hint">${c.youtube_id ? "A YouTube video is set — it'll replace the ▶ box above on the real page." : "No YouTube video set yet."}</p>`;
+        <p class="field-hint">${c.youtube_id ? "A video is set — it'll replace the ▶ box above on the real page." : "No video set yet."}</p>`;
     case "events":
       return `<h1>Upcoming Events</h1><p data-preview="events_note">${c.events_note}</p>`;
     case "prayer":

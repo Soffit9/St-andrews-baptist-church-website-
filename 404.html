@@ -298,7 +298,7 @@ window.__serverStore = {};
 const STORE_KEYS = [
   "sabc_content", "sabc_roster", "sabc_schedule_roles", "sabc_schedule",
   "sabc_events", "sabc_whoswho", "sabc_sermon_archive", "sabc_gallery",
-  "sabc_hero_photos", "sabc_audit_log"
+  "sabc_hero_photos", "sabc_videos", "sabc_audit_log"
 ];
 
 async function fetchAllStoredData() {
@@ -412,7 +412,7 @@ const CMS_SCHEMA = {
       { id: "latest_title", label: "Latest Sermon Title", type: "text", default: "Sermon title" },
       { id: "latest_speaker", label: "Speaker", type: "text", default: "Speaker" },
       { id: "latest_passage", label: "Bible Passage", type: "text", default: "Bible passage" },
-      { id: "youtube_id", label: "YouTube Video (paste the video ID or the full link)", type: "text", default: "" }
+      { id: "youtube_id", label: "Video Link (paste a YouTube or Facebook video link)", type: "text", default: "" }
     ],
     images: []
   },
@@ -540,6 +540,23 @@ async function cmsRevertRawEntry(entry) {
 /* Shrinks a photo before it's stored, so a phone photo (often several MB)
    doesn't blow past the browser's ~5-10MB localStorage limit. Without this,
    uploading a couple of full-size photos can silently fail to save. */
+/* Turns a pasted video link (YouTube OR Facebook) into the right embed
+   iframe. The church posts sermons to both — Facebook historically,
+   YouTube going forward — so this needs to handle whichever one was
+   pasted rather than assuming YouTube like the old version did. */
+function videoEmbedHtml(url, heightPx) {
+  if (!url) return "";
+  const str = String(url).trim();
+  if (/facebook\.com/i.test(str)) {
+    const encoded = encodeURIComponent(str);
+    return `<iframe src="https://www.facebook.com/plugins/video.php?href=${encoded}&show_text=false" width="100%" height="${heightPx || 315}" style="border:0;overflow:hidden;max-width:100%" scrolling="no" frameborder="0" allowfullscreen allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share"></iframe>`;
+  }
+  // Otherwise assume YouTube — accepts a full link or just the bare video ID.
+  const match = str.match(/(?:v=|youtu\.be\/|embed\/)?([a-zA-Z0-9_-]{11})(?:[?&]|$)/);
+  const vid = match ? match[1] : str;
+  return `<iframe width="100%" height="${heightPx || "100%"}" style="${heightPx ? "" : "position:absolute;inset:0;"}border:0" src="https://www.youtube.com/embed/${vid}" title="Video" allowfullscreen></iframe>`;
+}
+
 function compressImage(file, maxDimension = 1000, quality = 0.75) {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
@@ -652,13 +669,11 @@ function cmsApplyToPage(pageKey) {
     }
   });
 
-  // Sermons: swap in a YouTube embed if a video has been set
+  // Sermons: swap in a video embed if one's been set (YouTube or Facebook)
   if (pageKey === "sermons" && content.youtube_id) {
     const slot = document.querySelector("#sermon-video");
     if (slot) {
-      const match = String(content.youtube_id).match(/(?:v=|youtu\.be\/|embed\/)?([a-zA-Z0-9_-]{11})(?:[?&]|$)/);
-      const vid = match ? match[1] : content.youtube_id;
-      slot.innerHTML = `<iframe width="100%" height="100%" style="position:absolute;inset:0;border:0" src="https://www.youtube.com/embed/${vid}" title="Latest sermon" allowfullscreen></iframe>`;
+      slot.innerHTML = videoEmbedHtml(content.youtube_id);
       slot.style.position = "relative";
       slot.style.paddingBottom = "56.25%";
       slot.style.height = "0";
@@ -673,9 +688,7 @@ function cmsApplyToPage(pageKey) {
     const titleEl = document.querySelector("#home-sermon-title");
     if (titleEl && sermonContent.latest_title) titleEl.textContent = sermonContent.latest_title;
     if (sermonContent.youtube_id) {
-      const match = String(sermonContent.youtube_id).match(/(?:v=|youtu\.be\/|embed\/)?([a-zA-Z0-9_-]{11})(?:[?&]|$)/);
-      const vid = match ? match[1] : sermonContent.youtube_id;
-      homeVideoSlot.innerHTML = `<iframe width="100%" height="100%" style="position:absolute;inset:0;border:0" src="https://www.youtube.com/embed/${vid}" title="Latest sermon" allowfullscreen></iframe>`;
+      homeVideoSlot.innerHTML = videoEmbedHtml(sermonContent.youtube_id);
       homeVideoSlot.style.position = "relative";
       homeVideoSlot.style.paddingBottom = "56.25%";
       homeVideoSlot.style.height = "0";
