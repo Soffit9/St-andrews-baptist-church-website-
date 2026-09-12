@@ -540,13 +540,23 @@ async function cmsRevertRawEntry(entry) {
 /* Turns a pasted video link (YouTube OR Facebook) into the right embed
    iframe. The church posts sermons to both — Facebook historically,
    YouTube going forward — so this needs to handle whichever one was
-   pasted rather than assuming YouTube like the old version did. */
+   pasted rather than assuming YouTube like the old version did.
+   Facebook's embed plugin is considerably less reliable than YouTube's —
+   it often can't resolve "share/v/" style short-links (common when
+   sharing from the mobile app), and can fail silently depending on the
+   video's privacy setting. Rather than risk a dead end, Facebook links
+   always get a "Watch on Facebook" fallback link alongside the embed
+   attempt, so there's always a working way to actually see the video. */
 function videoEmbedHtml(url, heightPx) {
   if (!url) return "";
   const str = String(url).trim();
   if (/facebook\.com/i.test(str)) {
     const encoded = encodeURIComponent(str);
-    return `<iframe src="https://www.facebook.com/plugins/video.php?href=${encoded}&show_text=false" width="100%" height="${heightPx || 315}" style="border:0;overflow:hidden;max-width:100%" scrolling="no" frameborder="0" allowfullscreen allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share"></iframe>`;
+    const h = heightPx || 315;
+    return `<div>
+      <iframe src="https://www.facebook.com/plugins/video.php?href=${encoded}&show_text=false" width="100%" height="${h}" style="border:0;overflow:hidden;max-width:100%;display:block" scrolling="no" frameborder="0" allowfullscreen allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share"></iframe>
+      <p style="margin-top:8px"><a class="text-link" target="_blank" rel="noopener" href="${str}">▶ Watch on Facebook →</a> <span style="font-size:12px;color:var(--muted)">(use this if the box above says "unavailable")</span></p>
+    </div>`;
   }
   // Otherwise assume YouTube — accepts a full link or just the bare video ID.
   const match = str.match(/(?:v=|youtu\.be\/|embed\/)?([a-zA-Z0-9_-]{11})(?:[?&]|$)/);
@@ -670,10 +680,20 @@ function cmsApplyToPage(pageKey) {
   if (pageKey === "sermons" && content.youtube_id) {
     const slot = document.querySelector("#sermon-video");
     if (slot) {
+      const isFacebook = /facebook\.com/i.test(content.youtube_id);
       slot.innerHTML = videoEmbedHtml(content.youtube_id);
-      slot.style.position = "relative";
-      slot.style.paddingBottom = "56.25%";
-      slot.style.height = "0";
+      if (isFacebook) {
+        // Facebook's embed isn't absolutely-positioned like YouTube's, so
+        // the usual "fill the padded box" trick collapses it to zero
+        // height instead of showing anything — let it size normally instead.
+        slot.style.position = "static";
+        slot.style.paddingBottom = "0";
+        slot.style.height = "auto";
+      } else {
+        slot.style.position = "relative";
+        slot.style.paddingBottom = "56.25%";
+        slot.style.height = "0";
+      }
     }
   }
 
@@ -685,10 +705,17 @@ function cmsApplyToPage(pageKey) {
     const titleEl = document.querySelector("#home-sermon-title");
     if (titleEl && sermonContent.latest_title) titleEl.textContent = sermonContent.latest_title;
     if (sermonContent.youtube_id) {
+      const isFacebook = /facebook\.com/i.test(sermonContent.youtube_id);
       homeVideoSlot.innerHTML = videoEmbedHtml(sermonContent.youtube_id);
-      homeVideoSlot.style.position = "relative";
-      homeVideoSlot.style.paddingBottom = "56.25%";
-      homeVideoSlot.style.height = "0";
+      if (isFacebook) {
+        homeVideoSlot.style.position = "static";
+        homeVideoSlot.style.paddingBottom = "0";
+        homeVideoSlot.style.height = "auto";
+      } else {
+        homeVideoSlot.style.position = "relative";
+        homeVideoSlot.style.paddingBottom = "56.25%";
+        homeVideoSlot.style.height = "0";
+      }
       const fallback = document.querySelector("#home-sermon-fallback-text");
       if (fallback) fallback.style.display = "none";
     }
