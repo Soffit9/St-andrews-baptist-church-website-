@@ -214,7 +214,7 @@ a,button{transition:box-shadow .15s ease,transform .15s ease,filter .15s ease,ba
   <div class="quick-grid">
     <button data-min-access="Can Edit" data-goto-page="global"><b>🏷</b><strong>Site Logo</strong><span>Update the logo shown on every page</span></button>
     <button data-min-access="Can Edit" data-goto-page="home"><b>⌂</b><strong>Homepage</strong><span>Edit welcome text and service time</span></button>
-    <button data-min-access="Can Edit" onclick="window.location.href='hero-photos.html'"><b>🖼</b><strong>Homepage Photos</strong><span>Add rotating background photos</span></button>
+    <button data-min-access="Can Edit" onclick="window.location.href='hero-photos.html'"><b>🌄</b><strong>Homepage Photos</strong><span>Add rotating background photos</span></button>
     <button onclick="window.location.href='gallery.html'"><b>📷</b><strong>Gallery</strong><span>Add photos people can grab & download</span></button>
     <button data-min-access="Can Edit" data-goto-page="about"><b>👤</b><strong>About / Pastor</strong><span>Update the pastor note, history, and photo</span></button>
     <button data-min-access="Can Edit" data-goto-page="sermons"><b>▶</b><strong>Sermons</strong><span>Update the latest sermon's title, speaker, and passage</span></button>
@@ -578,8 +578,9 @@ function videoEmbedHtml(url, heightPx) {
     const encoded = encodeURIComponent(str);
     const h = heightPx || 315;
     return `<div>
-      <iframe src="https://www.facebook.com/plugins/video.php?href=${encoded}&show_text=false" width="100%" height="${h}" style="border:0;overflow:hidden;max-width:100%;display:block" scrolling="no" frameborder="0" allowfullscreen allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share"></iframe>
-      <p style="margin-top:8px"><a class="text-link" target="_blank" rel="noopener" href="${str}">▶ Watch on Facebook →</a> <span style="font-size:12px;color:var(--muted)">(use this if the box above says "unavailable")</span></p>
+      <iframe src="https://www.facebook.com/plugins/video.php?href=${encoded}&show_text=false" width="100%" height="${h}" style="border:0;overflow:hidden;max-width:100%;display:block;border-radius:8px" scrolling="no" frameborder="0" allowfullscreen allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share"></iframe>
+      <a class="button button-light" target="_blank" rel="noopener" href="${str}" style="display:inline-block;margin-top:10px">▶ Watch on Facebook</a>
+      <span style="font-size:12px;color:var(--muted);margin-left:8px">Use this if the box above says "unavailable"</span>
     </div>`;
   }
   // Otherwise assume YouTube — accepts a full link or just the bare video ID.
