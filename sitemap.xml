@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Tells Google every page worth indexing. Admin pages and the
+     login-protected gallery are deliberately left out. -->
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url><loc>https://standrewsbaptistchurch.com/</loc><priority>1.0</priority><changefreq>weekly</changefreq></url>
+  <url><loc>https://standrewsbaptistchurch.com/about.html</loc><priority>0.9</priority><changefreq>monthly</changefreq></url>
+  <url><loc>https://standrewsbaptistchurch.com/sermons.html</loc><priority>0.9</priority><changefreq>weekly</changefreq></url>
+  <url><loc>https://standrewsbaptistchurch.com/events.html</loc><priority>0.8</priority><changefreq>weekly</changefreq></url>
+  <url><loc>https://standrewsbaptistchurch.com/newsletter.html</loc><priority>0.8</priority><changefreq>monthly</changefreq></url>
+  <url><loc>https://standrewsbaptistchurch.com/prayer.html</loc><priority>0.7</priority><changefreq>monthly</changefreq></url>
+  <url><loc>https://standrewsbaptistchurch.com/whoswho.html</loc><priority>0.6</priority><changefreq>monthly</changefreq></url>
+  <url><loc>https://standrewsbaptistchurch.com/contact.html</loc><priority>0.9</priority><changefreq>monthly</changefreq></url>
+  <url><loc>https://standrewsbaptistchurch.com/giving.html</loc><priority>0.6</priority><changefreq>monthly</changefreq></url>
+</urlset>

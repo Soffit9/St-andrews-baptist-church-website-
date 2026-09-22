@@ -36,6 +36,7 @@ document.addEventListener("DOMContentLoaded", () => {
         name: formData.get("name") || "",
         email: formData.get("email") || "",
         request: formData.get("request") || "",
+        category: formData.get("category") || "",
         pray_aloud: formData.get("pray_aloud") === "yes",
         website: formData.get("website") || "" // honeypot — real people never touch this field
       };

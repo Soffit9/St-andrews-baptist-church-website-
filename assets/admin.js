@@ -46,45 +46,45 @@ function previewTemplate(pageKey, c) {
         <p class="field-hint" style="margin-top:14px">The logo appears at this height in the header — width follows the photo's real shape, so nothing gets squished.</p>`;
     case "home":
       return `<p class="eyebrow">ST. ANDREWS BAPTIST CHURCH</p>
-        <h1 data-preview="hero_heading">${c.hero_heading}</h1>
-        <p class="lead" data-preview="hero_sub">${c.hero_sub}</p>
-        <div class="service-card"><strong>Sunday Worship</strong><span data-preview="service_time">${c.service_time}</span></div>`;
+        <h1 data-preview="hero_heading">${esc(c.hero_heading)}</h1>
+        <p class="lead" data-preview="hero_sub">${esc(c.hero_sub)}</p>
+        <div class="service-card"><strong>Sunday Worship</strong><span data-preview="service_time">${esc(c.service_time)}</span></div>`;
     case "about":
       return `${imgBox("church_photo", "CHURCH PHOTO")}
         <h2 style="margin-top:16px">Meet Our Pastor</h2>
-        <p data-preview="pastor_note">${c.pastor_note}</p>
+        <p data-preview="pastor_note">${esc(c.pastor_note)}</p>
         <h2>Our History</h2>
-        <p data-preview="history_note">${c.history_note}</p>
-        <p data-preview="history_note_more" style="white-space:pre-line">${c.history_note_more}</p>
+        <p data-preview="history_note">${esc(c.history_note)}</p>
+        <p data-preview="history_note_more" style="white-space:pre-line">${esc(c.history_note_more)}</p>
         <h2>Partner Ministries</h2>
-        <p><b>Canadian Baptists of Atlantic Canada</b><br><span data-preview="partner1_desc">${c.partner1_desc}</span></p>
-        <p><b>Canadian Baptist Ministries</b><br><span data-preview="partner2_desc">${c.partner2_desc}</span></p>
-        <p><b>Crandall University</b><br><span data-preview="partner3_desc">${c.partner3_desc}</span></p>
-        <p><b>Acadia Divinity College</b><br><span data-preview="partner4_desc">${c.partner4_desc}</span></p>
+        <p><b>Canadian Baptists of Atlantic Canada</b><br><span data-preview="partner1_desc">${esc(c.partner1_desc)}</span></p>
+        <p><b>Canadian Baptist Ministries</b><br><span data-preview="partner2_desc">${esc(c.partner2_desc)}</span></p>
+        <p><b>Crandall University</b><br><span data-preview="partner3_desc">${esc(c.partner3_desc)}</span></p>
+        <p><b>Acadia Divinity College</b><br><span data-preview="partner4_desc">${esc(c.partner4_desc)}</span></p>
         <h2>What We Believe</h2>
-        <p data-preview="what_we_believe">${c.what_we_believe}</p>
-        <h2>Leadership</h2><p data-preview="leadership_note">${c.leadership_note}</p>
-        <h2>Open Communion</h2><p data-preview="communion_note">${c.communion_note}</p>
-        <h2>Sunday School</h2><p data-preview="sunday_school_note">${c.sunday_school_note}</p>`;
+        <p data-preview="what_we_believe">${esc(c.what_we_believe)}</p>
+        <h2>Leadership</h2><p data-preview="leadership_note">${esc(c.leadership_note)}</p>
+        <h2>Open Communion</h2><p data-preview="communion_note">${esc(c.communion_note)}</p>
+        <h2>Sunday School</h2><p data-preview="sunday_school_note">${esc(c.sunday_school_note)}</p>`;
     case "sermons":
       return `<div class="video-placeholder featured" style="min-height:160px">▶</div>
         <div class="sermon-meta" style="margin-top:10px">
-          <h2 data-preview="latest_title">${c.latest_title}</h2>
-          <p><span data-preview="latest_speaker">${c.latest_speaker}</span> · <span data-preview="latest_passage">${c.latest_passage}</span></p>
+          <h2 data-preview="latest_title">${esc(c.latest_title)}</h2>
+          <p><span data-preview="latest_speaker">${esc(c.latest_speaker)}</span> · <span data-preview="latest_passage">${esc(c.latest_passage)}</span></p>
         </div>
         <p class="field-hint">${c.youtube_id ? "A video is set — it'll replace the ▶ box above on the real page." : "No video set yet."}</p>`;
     case "events":
-      return `<h1>Upcoming Events</h1><p data-preview="events_note">${c.events_note}</p>`;
+      return `<h1>Upcoming Events</h1><p data-preview="events_note">${esc(c.events_note)}</p>`;
     case "prayer":
-      return `<h1>Prayer Request</h1><p data-preview="prayer_intro">${c.prayer_intro}</p>`;
+      return `<h1>Prayer Request</h1><p data-preview="prayer_intro">${esc(c.prayer_intro)}</p>`;
     case "contact":
       return `<h2>Contact Us</h2>
-        <p>📍 <span data-preview="address">${c.address}</span></p>
-        <p>☎ <span data-preview="phone">${c.phone}</span></p>
-        <p>✉ <span data-preview="email">${c.email}</span></p>`;
+        <p>📍 <span data-preview="address">${esc(c.address)}</span></p>
+        <p>☎ <span data-preview="phone">${esc(c.phone)}</span></p>
+        <p>✉ <span data-preview="email">${esc(c.email)}</span></p>`;
     case "giving":
-      return `<h2>E-Transfer</h2><p data-preview="etransfer_note">${c.etransfer_note}</p>
-        <h2 style="margin-top:16px">Tax Receipts</h2><p data-preview="tax_note">${c.tax_note}</p>`;
+      return `<h2>E-Transfer</h2><p data-preview="etransfer_note">${esc(c.etransfer_note)}</p>
+        <h2 style="margin-top:16px">Tax Receipts</h2><p data-preview="tax_note">${esc(c.tax_note)}</p>`;
     default:
       return "<p>No preview available.</p>";
   }
@@ -394,8 +394,11 @@ document.addEventListener("sabc:session-ready", () => {
         const val = (current[f.id] || "").toString();
         formHtml += `<div class="edit-field"><label for="f_${f.id}">${f.label}</label>`;
         formHtml += f.type === "textarea"
-          ? `<textarea id="f_${f.id}" data-field-id="${f.id}" rows="4">${val}</textarea>`
-          : `<input id="f_${f.id}" data-field-id="${f.id}" type="text" value="${val.replace(/"/g, "&quot;")}">`;
+          // esc() on both: without it, saved text containing "</textarea>"
+          // (or a quote, in the input case) would break out of the field
+          // and the rest would be parsed as real HTML.
+          ? `<textarea id="f_${f.id}" data-field-id="${f.id}" rows="4">${esc(val)}</textarea>`
+          : `<input id="f_${f.id}" data-field-id="${f.id}" type="text" value="${esc(val)}">`;
         formHtml += `</div>`;
       });
 

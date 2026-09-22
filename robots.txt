@@ -1,0 +1,13 @@
+# St. Andrews Baptist Church
+
+User-agent: *
+Allow: /
+
+# Keep the admin area out of search results entirely. It's already
+# password-protected, but there's no reason for the login page to turn up
+# when someone googles the church.
+Disallow: /admin/
+Disallow: /gallery.html
+Disallow: /404.html
+
+Sitemap: https://standrewsbaptistchurch.com/sitemap.xml

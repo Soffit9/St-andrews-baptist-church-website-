@@ -49,6 +49,8 @@ document.addEventListener("sabc:session-ready", () => {
   if (document.querySelector("#prayer-requests-admin-root")) initPrayerRequestsAdmin();
   if (document.querySelector("#settings-admin-root")) initSettingsAdmin();
   if (document.querySelector("#videos-admin-root")) initVideosAdmin();
+  if (document.querySelector("#newsletter-admin-root")) initNewsletterAdmin();
+  if (document.querySelector("#newsletter-public-root")) renderNewsletterPublic();
 });
 
 /* ============================= CALENDAR ============================= */
@@ -66,7 +68,7 @@ function initCalendar() {
     if (!rolesBar) return;
     const roles = getScheduleRoles();
     rolesBar.innerHTML = roles.map(r =>
-      `<span class="roster-chip">${r} <button data-remove-role="${r}" type="button">×</button></span>`
+      `<span class="roster-chip">${esc(r)} <button data-remove-role="${esc(r)}" type="button">×</button></span>`
     ).join("") + `
       <input type="text" id="new-role-name" placeholder="Add a role (e.g. Nursery)" style="padding:6px 10px;border:1px solid #b9c5d3;border-radius:20px">
       <button class="button" id="add-role-name" type="button" style="padding:6px 14px">+ Add Role</button>`;
@@ -91,7 +93,7 @@ function initCalendar() {
   function renderRoster() {
     const names = loadJSON("sabc_roster", []);
     roster.innerHTML = names.map(n =>
-      `<span class="roster-chip">${n} <button data-remove-name="${n}" type="button">×</button></span>`
+      `<span class="roster-chip">${esc(n)} <button data-remove-name="${esc(n)}" type="button">×</button></span>`
     ).join("") + `
       <input type="text" id="new-roster-name" placeholder="Add a volunteer's name" style="padding:6px 10px;border:1px solid #b9c5d3;border-radius:20px">
       <button class="button" id="add-roster-name" type="button" style="padding:6px 14px">+ Add</button>`;
@@ -114,7 +116,7 @@ function initCalendar() {
   function renderNameOptions() {
     const dl = document.querySelector("#roster-datalist");
     if (!dl) return;
-    dl.innerHTML = loadJSON("sabc_roster", []).map(n => `<option value="${n}">`).join("");
+    dl.innerHTML = loadJSON("sabc_roster", []).map(n => `<option value="${esc(n)}">`).join("");
   }
 
   function renderGrid() {
@@ -158,22 +160,22 @@ function initCalendar() {
       html += `
         <div class="role-row">
           <div>
-            <label>${role}</label>
-            <input type="text" list="roster-datalist" data-role="${role}" data-kind="name" value="${cur.name}" placeholder="Who's doing this?">
+            <label>${esc(role)}</label>
+            <input type="text" list="roster-datalist" data-role="${esc(role)}" data-kind="name" value="${esc(cur.name)}" placeholder="Who's doing this?">
           </div>
           <select data-role="${role}" data-kind="status">
             <option value="" ${cur.status === "" ? "selected" : ""}>Unconfirmed</option>
             <option value="yes" ${cur.status === "yes" ? "selected" : ""}>Yes, confirmed</option>
             <option value="no" ${cur.status === "no" ? "selected" : ""}>No / can't make it</option>
           </select>
-          <button type="button" data-remove-day-role="${role}" title="Remove this role from this day" style="background:none;border:0;color:#a62929;font-weight:800;cursor:pointer">✕</button>
+          <button type="button" data-remove-day-role="${esc(role)}" title="Remove this role from this day" style="background:none;border:0;color:#a62929;font-weight:800;cursor:pointer">✕</button>
         </div>`;
     });
     html += `<datalist id="roster-datalist"></datalist>`;
     if (availableToAdd.length) {
       html += `
         <div class="role-row" style="grid-template-columns:1fr auto">
-          <select id="add-role-to-day"><option value="">+ Add a role to this day…</option>${availableToAdd.map(r => `<option value="${r}">${r}</option>`).join("")}</select>
+          <select id="add-role-to-day"><option value="">+ Add a role to this day…</option>${availableToAdd.map(r => `<option value="${esc(r)}">${esc(r)}</option>`).join("")}</select>
           <button type="button" id="add-role-to-day-btn" class="button button-light">Add</button>
         </div>`;
     } else {
@@ -270,13 +272,13 @@ function initEventsAdmin() {
         <div class="role-row" data-event-id="${ev.id}" style="grid-template-columns:1fr auto">
           <div>
             <label>Event Title</label>
-            <input type="text" data-ev="title" value="${ev.title || ""}" placeholder="e.g. Youth Group Night">
+            <input type="text" data-ev="title" value="${esc(ev.title)}" placeholder="e.g. Youth Group Night">
             <label style="margin-top:8px">Time</label>
-            <input type="text" data-ev="time" value="${ev.time || ""}" placeholder="e.g. 6:30 PM">
+            <input type="text" data-ev="time" value="${esc(ev.time)}" placeholder="e.g. 6:30 PM">
             <label style="margin-top:8px">Description</label>
-            <input type="text" data-ev="description" value="${ev.description || ""}" placeholder="Short description">
+            <input type="text" data-ev="description" value="${esc(ev.description)}" placeholder="Short description">
             <label style="margin-top:8px">Poster / Flyer <span style="font-weight:400;color:var(--muted)">(optional — image or PDF)</span></label>
-            ${ev.file ? `<p class="field-hint">📎 ${ev.fileName || "Attached file"} — <button type="button" class="text-btn" data-remove-file="${ev.id}">remove</button></p>` : `<input type="file" accept="image/*,application/pdf" data-event-file="${ev.id}">`}
+            ${ev.file ? `<p class="field-hint">📎 ${esc(ev.fileName) || "Attached file"} — <button type="button" class="text-btn" data-remove-file="${ev.id}">remove</button></p>` : `<input type="file" accept="image/*,application/pdf" data-event-file="${ev.id}">`}
           </div>
           <button type="button" class="text-btn" data-remove-event="${ev.id}" style="color:#a62929;align-self:start">Remove</button>
         </div>`;
@@ -384,9 +386,9 @@ function renderUpcomingEvents(targetSelector, max) {
     const badge = `${d.toLocaleDateString(undefined, { month: "short" }).toUpperCase()}<br><b>${d.getDate()}</b>`;
     const posterLink = ev.file ? `<a class="text-link" href="${ev.file}" download="${ev.fileName || "event-flyer"}">📎 View/Download Flyer</a>` : "";
     if (el.dataset.grouped === "true") {
-      html += `<article class="event-row"><span class="date-badge">${badge}</span><div><h3>${ev.title || "Untitled Event"}</h3><p>${ev.time ? `<strong>${ev.time}</strong> · ` : ""}${ev.description || ""}</p>${posterLink}</div></article>`;
+      html += `<article class="event-row"><span class="date-badge">${badge}</span><div><h3>${esc(ev.title) || "Untitled Event"}</h3><p>${ev.time ? `<strong>${esc(ev.time)}</strong> · ` : ""}${esc(ev.description)}</p>${posterLink}</div></article>`;
     } else {
-      html += `<article class="card"><span class="date-badge">${badge}</span><div><h3>${ev.title || "Untitled Event"}</h3><p>${ev.time ? ev.time + " · " : ""}${ev.description || ""}</p>${posterLink}</div></article>`;
+      html += `<article class="card"><span class="date-badge">${badge}</span><div><h3>${esc(ev.title) || "Untitled Event"}</h3><p>${ev.time ? esc(ev.time) + " · " : ""}${esc(ev.description)}</p>${posterLink}</div></article>`;
     }
   });
   el.innerHTML = html;
@@ -398,9 +400,9 @@ function initWhoswhoAdmin() {
   function personCardHtml(p) {
     return `<div class="person-card">
       <div class="person-photo">${p.photo ? `<img src="${p.photo}" style="display:block;width:100%;height:100%;object-fit:cover;object-position:${p.photo_pos_x ?? 50}% ${p.photo_pos ?? 50}%">` : "PHOTO"}</div>
-      <h3>${p.name || "(no name yet)"}</h3>
-      <p class="person-role">${p.role || ""}</p>
-      <p class="person-contact">${p.phone ? "☎ " + p.phone : ""}${p.phone && p.email ? "<br>" : ""}${p.email ? "✉ " + p.email : ""}</p>
+      <h3>${esc(p.name) || "(no name yet)"}</h3>
+      <p class="person-role">${esc(p.role)}</p>
+      <p class="person-contact">${p.phone ? "☎ " + esc(p.phone) : ""}${p.phone && p.email ? "<br>" : ""}${p.email ? "✉ " + esc(p.email) : ""}</p>
     </div>`;
   }
 
@@ -439,10 +441,10 @@ function initWhoswhoAdmin() {
               ${p.photo ? `<button type="button" class="text-btn" data-clear-photo="${p.id}" data-allow-view-only style="font-size:12px;margin-top:2px">Remove photo</button>` : ""}
             </div>
             <div class="fields-col">
-              <input type="text" data-field="name" placeholder="Name" value="${p.name || ""}">
-              <input type="text" data-field="role" placeholder="Role (e.g. Deacon, Worship Leader)" value="${p.role || ""}">
-              <input type="text" data-field="phone" placeholder="Phone" value="${p.phone || ""}">
-              <input type="text" data-field="email" placeholder="Email" value="${p.email || ""}">
+              <input type="text" data-field="name" placeholder="Name" value="${esc(p.name)}">
+              <input type="text" data-field="role" placeholder="Role (e.g. Deacon, Worship Leader)" value="${esc(p.role)}">
+              <input type="text" data-field="phone" placeholder="Phone" value="${esc(p.phone)}">
+              <input type="text" data-field="email" placeholder="Email" value="${esc(p.email)}">
             </div>
           </div>
           <button type="button" class="button button-light" data-remove="${p.id}" style="margin-top:10px">Remove This Person</button>
@@ -539,9 +541,9 @@ function initWhoswhoPublic() {
   root.innerHTML = `<div class="person-grid">` + people.map(p => `
     <div class="person-card">
       <div class="person-photo">${p.photo ? `<img src="${p.photo}" style="display:block;width:100%;height:100%;object-fit:cover;object-position:${p.photo_pos_x ?? 50}% ${p.photo_pos ?? 50}%">` : "PHOTO"}</div>
-      <h3>${p.name}</h3>
-      <p class="person-role">${p.role || ""}</p>
-      <p class="person-contact">${p.phone ? "☎ " + p.phone : ""}${p.phone && p.email ? "<br>" : ""}${p.email ? "✉ " + p.email : ""}</p>
+      <h3>${esc(p.name)}</h3>
+      <p class="person-role">${esc(p.role)}</p>
+      <p class="person-contact">${p.phone ? "☎ " + esc(p.phone) : ""}${p.phone && p.email ? "<br>" : ""}${p.email ? "✉ " + esc(p.email) : ""}</p>
     </div>`).join("") + `</div>`;
 }
 
@@ -558,8 +560,8 @@ function initAdmins() {
       const isPermanent = (u.email || "").toLowerCase() === PERMANENT_EMAIL;
       html += `
         <div class="manage-row" data-id="${u.id}" style="grid-template-columns:1fr 1fr 1fr auto">
-          <input type="text" data-field="name" placeholder="Name" value="${u.name}" ${isPermanent ? "readonly" : ""}>
-          <input type="text" data-field="email" placeholder="Email" value="${u.email}" ${isPermanent ? "readonly" : ""}>
+          <input type="text" data-field="name" placeholder="Name" value="${esc(u.name)}" ${isPermanent ? "readonly" : ""}>
+          <input type="text" data-field="email" placeholder="Email" value="${esc(u.email)}" ${isPermanent ? "readonly" : ""}>
           <select data-field="access" ${isPermanent ? "disabled" : ""}>
             <option ${u.access === "Full Admin" ? "selected" : ""}>Full Admin</option>
             <option ${u.access === "Can Edit" ? "selected" : ""}>Can Edit</option>
@@ -637,22 +639,22 @@ function renderRawSnapshot(revertKey, snapshot) {
   if (!snapshot) return "<p class='field-hint'>(empty)</p>";
   if (revertKey === "sabc_whoswho" && Array.isArray(snapshot)) {
     if (!snapshot.length) return "<p class='field-hint'>No one in the directory.</p>";
-    return "<ul>" + snapshot.map(p => `<li><b>${p.name || "(no name)"}</b> — ${p.role || ""}${p.phone ? " · " + p.phone : ""}${p.email ? " · " + p.email : ""}</li>`).join("") + "</ul>";
+    return "<ul>" + snapshot.map(p => `<li><b>${esc(p.name) || "(no name)"}</b> — ${esc(p.role)}${p.phone ? " · " + esc(p.phone) : ""}${p.email ? " · " + esc(p.email) : ""}</li>`).join("") + "</ul>";
   }
   if (revertKey === "sabc_admin_users" && Array.isArray(snapshot)) {
     if (!snapshot.length) return "<p class='field-hint'>No admins listed.</p>";
-    return "<ul>" + snapshot.map(u => `<li><b>${u.name || u.email}</b> — ${u.access}</li>`).join("") + "</ul>";
+    return "<ul>" + snapshot.map(u => `<li><b>${esc(u.name) || esc(u.email)}</b> — ${esc(u.access)}</li>`).join("") + "</ul>";
   }
   if (revertKey === "sabc_schedule" && typeof snapshot === "object") {
     const roles = Object.keys(snapshot);
     if (!roles.length) return "<p class='field-hint'>No roles set for this day.</p>";
-    return "<ul>" + roles.map(r => `<li><b>${r}</b>: ${snapshot[r].name || "(nobody yet)"} — ${snapshot[r].status === "yes" ? "✓ confirmed" : snapshot[r].status === "no" ? "✗ can't make it" : "(unconfirmed)"}</li>`).join("") + "</ul>";
+    return "<ul>" + roles.map(r => `<li><b>${esc(r)}</b>: ${esc(snapshot[r].name) || "(nobody yet)"} — ${snapshot[r].status === "yes" ? "✓ confirmed" : snapshot[r].status === "no" ? "✗ can't make it" : "(unconfirmed)"}</li>`).join("") + "</ul>";
   }
   if (revertKey === "sabc_events" && Array.isArray(snapshot)) {
     if (!snapshot.length) return "<p class='field-hint'>No events that day.</p>";
-    return "<ul>" + snapshot.map(e => `<li><b>${e.title || "Untitled"}</b>${e.time ? " — " + e.time : ""}</li>`).join("") + "</ul>";
+    return "<ul>" + snapshot.map(e => `<li><b>${esc(e.title) || "Untitled"}</b>${e.time ? " — " + esc(e.time) : ""}</li>`).join("") + "</ul>";
   }
-  return `<pre style="white-space:pre-wrap;font-size:12px">${JSON.stringify(snapshot, null, 2)}</pre>`;
+  return `<pre style="white-space:pre-wrap;font-size:12px">${esc(JSON.stringify(snapshot, null, 2))}</pre>`;
 }
 
 /* Rebuilds a full-page snapshot for the CMS-schema pages (Home, About,
@@ -682,9 +684,9 @@ function initLog() {
       return `
       <div class="log-entry">
         <time>${new Date(entry.ts).toLocaleString()}</time>
-        <span class="log-page">${entry.page}</span>
-        ${entry.by ? `<p class="field-hint" style="margin:2px 0 6px">by <b>${entry.by.name || entry.by.email}</b> (${entry.by.access})</p>` : ""}
-        ${entry.changes.map(c => isRaw ? "" : `<p class="log-change"><b>${c.field}</b>: "${c.old}" → "${c.new}"</p>`).join("")}
+        <span class="log-page">${esc(entry.page)}</span>
+        ${entry.by ? `<p class="field-hint" style="margin:2px 0 6px">by <b>${esc(entry.by.name) || esc(entry.by.email)}</b> (${esc(entry.by.access)})</p>` : ""}
+        ${entry.changes.map(c => isRaw ? "" : `<p class="log-change"><b>${esc(c.field)}</b>: "${esc(c.old)}" → "${esc(c.new)}"</p>`).join("")}
         <div class="log-actions">
           <button type="button" class="text-btn" data-toggle-preview="${idx}" data-allow-view-only>👁 Preview before/after</button>
           ${canRevert ? `<button type="button" class="text-btn" data-revert="${idx}" style="color:#a62929">↩ Revert to before</button>` : ""}
@@ -793,10 +795,10 @@ function initSermonArchiveAdmin() {
         html += `
           <div class="manage-row" data-id="${s.id}" style="grid-template-columns:150px 1fr 1fr 1fr 1fr auto">
             <input type="date" data-sf="date" value="${s.date || ""}">
-            <input type="text" data-sf="title" value="${s.title || ""}" placeholder="Title">
-            <input type="text" data-sf="speaker" value="${s.speaker || ""}" placeholder="Speaker">
-            <input type="text" data-sf="passage" value="${s.passage || ""}" placeholder="Passage">
-            <input type="text" data-sf="youtube_id" value="${s.youtube_id || ""}" placeholder="YouTube or Facebook link">
+            <input type="text" data-sf="title" value="${esc(s.title)}" placeholder="Title">
+            <input type="text" data-sf="speaker" value="${esc(s.speaker)}" placeholder="Speaker">
+            <input type="text" data-sf="passage" value="${esc(s.passage)}" placeholder="Passage">
+            <input type="text" data-sf="youtube_id" value="${esc(s.youtube_id)}" placeholder="YouTube or Facebook link">
             <button type="button" data-remove-sermon="${s.id}">Remove</button>
           </div>`;
       });
@@ -876,7 +878,7 @@ function renderSermonArchivePublic() {
       ? list.map(s => `
           <div class="event-row">
             <div>
-              <h3>${s.title}</h3>
+              <h3>${esc(s.title)}</h3>
               <p>${[s.date ? new Date(s.date + "T00:00:00").toLocaleDateString(undefined, { month: "long", day: "numeric" }) : "", s.speaker, s.passage].filter(Boolean).join(" · ")}</p>
               ${s.youtube_id ? (/facebook\.com/i.test(s.youtube_id)
                 ? `<a class="text-link" target="_blank" rel="noopener" href="${s.youtube_id}">Watch on Facebook →</a>`
@@ -991,7 +993,7 @@ function initGalleryAdmin() {
     photos.forEach(p => {
       html += `<div class="person-card" style="text-align:center;padding:10px">
         <div class="person-photo" style="height:140px;cursor:pointer" data-open-lightbox="${p.id}"><img src="${p.photo}" style="width:100%;height:100%;object-fit:cover"></div>
-        <input type="text" data-gf="label" data-id="${p.id}" value="${p.label || ""}" placeholder="Label (e.g. Christmas 2026)" style="margin:10px 0;width:100%;padding:6px;border:1px solid #b9c5d3;border-radius:6px">
+        <input type="text" data-gf="label" data-id="${p.id}" value="${esc(p.label)}" placeholder="Label (e.g. Christmas 2026)" style="margin:10px 0;width:100%;padding:6px;border:1px solid #b9c5d3;border-radius:6px">
         <button type="button" class="button button-light" data-remove-gallery="${p.id}">Remove</button>
         <a class="button button-light" download="church-photo.jpg" href="${p.photo}" style="margin-top:6px">Download</a>
       </div>`;
@@ -1076,7 +1078,7 @@ function renderGalleryPublic() {
     root.innerHTML = `<div class="person-grid">` + photos.map(p => `
       <div class="person-card" style="text-align:center;padding:14px">
         <div class="person-photo" style="height:180px;cursor:pointer" data-open-lightbox="${p.id}"><img src="${p.photo}" style="width:100%;height:100%;object-fit:cover"></div>
-        <p style="margin:10px 0 6px;font-weight:700;color:var(--navy)">${p.label || ""}</p>
+        <p style="margin:10px 0 6px;font-weight:700;color:var(--navy)">${esc(p.label)}</p>
         <div class="button-row" style="gap:8px">
           <a class="button button-light" download="church-photo.jpg" href="${p.photo}">Download</a>
           <button type="button" class="button button-light" data-delete-gallery-photo="${p.id}" style="color:#a62929">Delete</button>
@@ -1113,6 +1115,21 @@ function renderGalleryPublic() {
 }
 
 /* ============================= PRAYER REQUESTS (admin) ============================= */
+// Same list as the public prayer form, plus "Uncategorized" for anything
+// that arrived before categories existed or that the guesser couldn't
+// place. Used for the correction dropdown on each request.
+const PRAYER_CATEGORIES = [
+  "Uncategorized",
+  "Health & Healing", "Surgery & Medical Procedures", "Mental Health",
+  "Grief & Loss", "Family", "Marriage & Relationships", "Children & Youth",
+  "Pregnancy & New Babies", "Work & Employment", "Finances", "Housing",
+  "School & Studies", "Guidance & Big Decisions", "Addiction & Recovery",
+  "Faith & Spiritual Growth", "Salvation & Loved Ones", "Church & Ministry",
+  "Missions & Outreach", "Travel & Safety", "Military & First Responders",
+  "Community & Neighbours", "Country & World", "Thanksgiving & Praise",
+  "Something Else"
+];
+
 function initPrayerRequestsAdmin() {
   requireLogin();
   const root = document.querySelector("#prayer-requests-admin-root");
@@ -1133,17 +1150,58 @@ function initPrayerRequestsAdmin() {
       return;
     }
 
-    root.innerHTML = items.map(item => `
-      <div class="log-entry" data-id="${item.id}" style="${item.status === "archived" ? "opacity:.6" : ""}">
-        <time>${item.submitted}${item.status === "unread" ? " · <b style='color:var(--blue)'>UNREAD</b>" : item.status === "archived" ? " · archived" : " · read"}</time>
-        <p class="log-change"><b>${item.name || "(anonymous)"}</b>${item.email ? " · " + item.email : ""}${item.pray_aloud ? " · wants this said aloud in the prayer meeting" : ""}</p>
-        <p style="white-space:pre-wrap;margin:10px 0">${item.request}</p>
+    // Group by category so the pastor can work through one theme at a
+    // time (all the health ones together, all the family ones, etc.)
+    // rather than scrolling a single mixed list.
+    const counts = {};
+    items.forEach(i => { const cat = i.category || "Uncategorized"; counts[cat] = (counts[cat] || 0) + 1; });
+    const cats = Object.keys(counts).sort();
+
+    const filterBar = `<div class="roster-bar" style="margin-bottom:18px">
+        <button type="button" class="roster-chip" data-cat-filter="__all" style="font-weight:700">All (${items.length})</button>
+        ${cats.map(cat => `<button type="button" class="roster-chip" data-cat-filter="${esc(cat)}">${esc(cat)} (${counts[cat]})</button>`).join("")}
+      </div>`;
+
+    root.innerHTML = filterBar + items.map(item => {
+      const cat = item.category || "Uncategorized";
+      return `
+      <div class="log-entry" data-id="${item.id}" data-cat="${esc(cat)}" style="${item.status === "archived" ? "opacity:.6" : ""}">
+        <time>${esc(item.submitted)}${item.status === "unread" ? " · <b style='color:var(--blue)'>UNREAD</b>" : item.status === "archived" ? " · archived" : " · read"}</time>
+        <p style="margin:4px 0">
+          <span class="date-badge" style="display:inline-block;padding:3px 10px;font-size:12px;border-radius:20px">${esc(cat)}</span>
+          ${item.category_guessed ? `<span style="font-size:11px;color:var(--muted);margin-left:6px">auto-sorted — correct it below if wrong</span>` : ""}
+        </p>
+        <p class="log-change"><b>${esc(item.name) || "(anonymous)"}</b>${item.email ? " · " + esc(item.email) : ""}${item.pray_aloud ? " · wants this said aloud in the prayer meeting" : ""}</p>
+        <p style="white-space:pre-wrap;margin:10px 0">${esc(item.request)}</p>
         <div class="log-actions">
           ${item.status !== "read" ? `<button type="button" class="text-btn" data-mark-read="${item.id}">Mark read</button>` : ""}
           ${item.status !== "archived" ? `<button type="button" class="text-btn" data-archive="${item.id}">Archive</button>` : `<button type="button" class="text-btn" data-unarchive="${item.id}">Unarchive</button>`}
           <button type="button" class="text-btn" data-delete="${item.id}" style="color:#a62929">Delete</button>
+          <select data-set-cat="${item.id}" style="margin-left:8px;font-size:12px">
+            ${PRAYER_CATEGORIES.map(o => `<option ${o === cat ? "selected" : ""}>${esc(o)}</option>`).join("")}
+          </select>
         </div>
-      </div>`).join("");
+      </div>`;
+    }).join("");
+
+    // Filter buttons
+    root.querySelectorAll("[data-cat-filter]").forEach(btn => btn.addEventListener("click", () => {
+      const want = btn.dataset.catFilter;
+      root.querySelectorAll("[data-cat-filter]").forEach(b => b.style.fontWeight = "400");
+      btn.style.fontWeight = "700";
+      root.querySelectorAll("[data-cat]").forEach(row => {
+        row.style.display = (want === "__all" || row.dataset.cat === want) ? "" : "none";
+      });
+    }));
+
+    // Correcting a category
+    root.querySelectorAll("[data-set-cat]").forEach(sel => sel.addEventListener("change", async () => {
+      await fetch(`/api/prayer-requests/${sel.dataset.setCat}`, {
+        method: "POST", headers: { "Content-Type": "application/json" }, credentials: "same-origin",
+        body: JSON.stringify({ category: sel.value })
+      });
+      render();
+    }));
 
     async function setStatus(id, status) {
       await fetch(`/api/prayer-requests/${id}`, {
@@ -1291,8 +1349,8 @@ function initVideosAdmin() {
       html += `
         <div class="role-panel" data-video-id="${v.id}">
           <div class="role-row" style="grid-template-columns:1fr 1fr">
-            <input type="text" data-vf="label" value="${v.label || ""}" placeholder="Label">
-            <input type="text" data-vf="url" value="${v.url || ""}" placeholder="Video link">
+            <input type="text" data-vf="label" value="${esc(v.label)}" placeholder="Label">
+            <input type="text" data-vf="url" value="${esc(v.url)}" placeholder="Video link">
           </div>
           <div style="margin-top:12px;max-width:400px">${videoEmbedHtml(v.url, 220)}</div>
           <div class="edit-actions"><span></span><button type="button" class="text-btn" data-remove-video="${v.id}" style="color:#a62929">Remove</button></div>
@@ -1336,6 +1394,259 @@ function initVideosAdmin() {
       toast.textContent = "✓ Videos updated.";
       toast.classList.add("show");
     });
+  }
+  render();
+}
+
+/* ============================= NEWSLETTER ============================= */
+
+/* Splits a block of typed text into paragraphs. People write newsletters
+   in a plain textarea with blank lines between paragraphs, so honour that
+   rather than rendering one solid wall of text. esc() first — this ends up
+   as real HTML. */
+function newsParagraphs(text) {
+  return String(text || "")
+    .split(/\n\s*\n/)
+    .map(p => p.trim())
+    .filter(Boolean)
+    .map(p => `<p>${esc(p).replace(/\n/g, "<br>")}</p>`)
+    .join("");
+}
+
+function newsIssueHtml(issue) {
+  const msg = issue.message || {};
+  const hasMessage = msg.body || msg.name;
+  return `
+    <article class="news-issue">
+      <div class="news-masthead">
+        <h2>${esc(issue.title) || "Untitled Issue"}</h2>
+        <p class="news-date">${esc(issue.date_label) || ""}</p>
+      </div>
+      ${issue.cover ? `<img class="news-cover" src="${esc(issue.cover)}" alt="">` : ""}
+      ${issue.intro ? `<div style="font-size:16px;margin-bottom:22px">${newsParagraphs(issue.intro)}</div>` : ""}
+      ${hasMessage ? `
+        <div class="news-message">
+          <div class="news-message-head">
+            <p class="from">A message from</p>
+            <p class="who">${esc(msg.name) || "Our Pastor"}</p>
+            ${msg.role ? `<p class="role">${esc(msg.role)}</p>` : ""}
+          </div>
+          <div class="news-message-body">
+            ${newsParagraphs(msg.body)}
+            ${msg.signoff ? `<p class="news-signoff">${esc(msg.signoff)}</p>` : ""}
+          </div>
+        </div>` : ""}
+      ${(issue.articles || []).length ? `
+        <div class="news-columns">
+          ${(issue.articles || []).map(a => `
+            <div class="news-article">
+              ${a.photo ? `<img src="${esc(a.photo)}" alt="">` : ""}
+              ${a.heading ? `<h3>${esc(a.heading)}</h3>` : ""}
+              ${newsParagraphs(a.body)}
+            </div>`).join("")}
+        </div>` : ""}
+    </article>`;
+}
+
+function renderNewsletterPublic() {
+  const root = document.querySelector("#newsletter-public-root");
+  const issues = loadJSON("sabc_newsletters", []).filter(i => i.published);
+  if (!issues.length) {
+    root.innerHTML = `<p class="placeholder-lines center">No newsletters posted yet — check back soon.</p>`;
+    return;
+  }
+  // Newest first, by the sortable date if there is one.
+  const sorted = issues.slice().sort((a, b) => (b.date || "").localeCompare(a.date || ""));
+
+  function show(idx) {
+    const others = sorted.filter((_, i) => i !== idx);
+    root.innerHTML = newsIssueHtml(sorted[idx]) +
+      (others.length ? `<h2 style="margin:34px 0 14px">Past Issues</h2>` +
+        sorted.map((iss, i) => i === idx ? "" : `
+          <div class="news-list-item" data-open-issue="${i}">
+            ${iss.cover ? `<img src="${esc(iss.cover)}" alt="">` : ""}
+            <div>
+              <h3>${esc(iss.title) || "Untitled Issue"}</h3>
+              <p class="field-hint" style="margin:2px 0 0">${esc(iss.date_label) || ""}</p>
+            </div>
+          </div>`).join("") : "");
+    root.querySelectorAll("[data-open-issue]").forEach(el => el.addEventListener("click", () => {
+      show(Number(el.dataset.openIssue));
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }));
+  }
+  show(0);
+}
+
+function initNewsletterAdmin() {
+  requireLogin();
+  const root = document.querySelector("#newsletter-admin-root");
+
+  function save(issues) {
+    saveJSON("sabc_newsletters", issues);
+  }
+
+  function render() {
+    const issues = loadJSON("sabc_newsletters", []);
+    let html = `<div class="edit-actions" style="margin-top:0"><span></span>
+        <button class="button" id="add-issue" type="button">+ New Issue</button></div>`;
+
+    if (!issues.length) html += `<p class="field-hint">No issues yet. Click "New Issue" to start one.</p>`;
+
+    issues.forEach((iss, idx) => {
+      const msg = iss.message || {};
+      html += `
+      <div class="role-panel" data-issue="${iss.id}">
+        <div class="role-row" style="grid-template-columns:2fr 1fr 1fr">
+          <input type="text" data-nf="title" value="${esc(iss.title)}" placeholder="Issue title (e.g. September Newsletter)">
+          <input type="date" data-nf="date" value="${esc(iss.date)}">
+          <input type="text" data-nf="date_label" value="${esc(iss.date_label)}" placeholder="Shown as (e.g. September 2026)">
+        </div>
+
+        <label style="display:block;margin-top:12px">Short intro <span class="field-hint">(optional, appears above the pastor's message)</span></label>
+        <textarea data-nf="intro" rows="3" style="width:100%">${esc(iss.intro)}</textarea>
+
+        <label style="display:block;margin-top:12px">Cover photo</label>
+        ${iss.cover ? `<img src="${esc(iss.cover)}" style="max-width:260px;border-radius:8px;display:block;margin-bottom:6px">
+          <button type="button" class="text-btn" data-clear-cover="${iss.id}">Remove cover photo</button>` : ""}
+        <input type="file" accept="image/*" data-cover-for="${iss.id}">
+
+        <div class="role-panel" style="margin-top:16px">
+          <h3>Message from the Pastor</h3>
+          <div class="role-row" style="grid-template-columns:1fr 1fr">
+            <input type="text" data-mf="name" value="${esc(msg.name)}" placeholder="Name (e.g. Rev. Ladd Dunfield)">
+            <input type="text" data-mf="role" value="${esc(msg.role)}" placeholder="Title (e.g. Pastor, St. Andrews Baptist Church)">
+          </div>
+          <label style="display:block;margin-top:10px">Message <span class="field-hint">(leave a blank line between paragraphs)</span></label>
+          <textarea data-mf="body" rows="8" style="width:100%">${esc(msg.body)}</textarea>
+          <input type="text" data-mf="signoff" value="${esc(msg.signoff)}" placeholder="Sign-off (e.g. With blessings, Rev. Ladd Dunfield)" style="width:100%;margin-top:10px">
+        </div>
+
+        <h3 style="margin-top:18px">Articles</h3>
+        <div data-articles-for="${iss.id}">
+          ${(iss.articles || []).map(a => `
+            <div class="role-panel" data-article="${a.id}">
+              <input type="text" data-af="heading" value="${esc(a.heading)}" placeholder="Article heading" style="width:100%">
+              <textarea data-af="body" rows="5" style="width:100%;margin-top:8px">${esc(a.body)}</textarea>
+              ${a.photo ? `<img src="${esc(a.photo)}" style="max-width:200px;border-radius:6px;display:block;margin:8px 0 4px">
+                <button type="button" class="text-btn" data-clear-article-photo="${iss.id}|${a.id}">Remove photo</button>` : ""}
+              <input type="file" accept="image/*" data-article-photo="${iss.id}|${a.id}" style="margin-top:8px">
+              <div class="edit-actions"><span></span>
+                <button type="button" class="text-btn" data-remove-article="${iss.id}|${a.id}" style="color:#a62929">Remove article</button></div>
+            </div>`).join("")}
+        </div>
+        <button type="button" class="button button-light" data-add-article="${iss.id}">+ Add Article</button>
+
+        <div class="edit-actions" style="margin-top:16px">
+          <label style="font-weight:700"><input type="checkbox" data-nf="published" ${iss.published ? "checked" : ""}> Published (visible to the public)</label>
+          <span style="flex:1"></span>
+          <button type="button" class="text-btn" data-remove-issue="${iss.id}" style="color:#a62929">Delete issue</button>
+          <button class="button" type="button" data-save-issue="${iss.id}">Apply Changes</button>
+        </div>
+        <p class="toast" id="toast-${iss.id}"></p>
+      </div>`;
+    });
+    root.innerHTML = html;
+    cmsApplyViewOnlyLock(root);
+
+    document.querySelector("#add-issue").addEventListener("click", () => {
+      const issues = loadJSON("sabc_newsletters", []);
+      const today = new Date();
+      issues.unshift({
+        id: uid(),
+        title: today.toLocaleDateString(undefined, { month: "long", year: "numeric" }) + " Newsletter",
+        date: isoDate(today),
+        date_label: today.toLocaleDateString(undefined, { month: "long", year: "numeric" }),
+        intro: "", cover: null, published: false,
+        message: { name: "Rev. Ladd Dunfield", role: "Pastor, St. Andrews Baptist Church", body: "", signoff: "With blessings," },
+        articles: []
+      });
+      save(issues); render();
+    });
+
+    function findIssue(list, id) { return list.find(i => i.id === id); }
+
+    root.querySelectorAll("[data-save-issue]").forEach(btn => btn.addEventListener("click", async () => {
+      const id = btn.dataset.saveIssue;
+      const panel = root.querySelector(`[data-issue="${id}"]`);
+      const issues = loadJSON("sabc_newsletters", []);
+      const before = JSON.parse(JSON.stringify(issues));
+      const iss = findIssue(issues, id);
+      if (!iss) return;
+      panel.querySelectorAll("[data-nf]").forEach(el => {
+        iss[el.dataset.nf] = el.type === "checkbox" ? el.checked : el.value;
+      });
+      iss.message = iss.message || {};
+      panel.querySelectorAll("[data-mf]").forEach(el => { iss.message[el.dataset.mf] = el.value; });
+      panel.querySelectorAll("[data-article]").forEach(row => {
+        const a = (iss.articles || []).find(x => x.id === row.dataset.article);
+        if (a) {
+          a.heading = row.querySelector('[data-af="heading"]').value;
+          a.body = row.querySelector('[data-af="body"]').value;
+        }
+      });
+      await save(issues);
+      cmsLogRawChange("Newsletter — " + (iss.title || "Untitled"), "sabc_newsletters", null, before, issues);
+      const toast = document.querySelector(`#toast-${id}`);
+      if (toast) { toast.textContent = "✓ Saved."; toast.classList.add("show"); }
+    }));
+
+    root.querySelectorAll("[data-remove-issue]").forEach(btn => btn.addEventListener("click", () => {
+      if (!confirm("Delete this whole issue? This can't be undone.")) return;
+      save(loadJSON("sabc_newsletters", []).filter(i => i.id !== btn.dataset.removeIssue));
+      render();
+    }));
+
+    root.querySelectorAll("[data-add-article]").forEach(btn => btn.addEventListener("click", () => {
+      const issues = loadJSON("sabc_newsletters", []);
+      const iss = findIssue(issues, btn.dataset.addArticle);
+      if (!iss) return;
+      iss.articles = iss.articles || [];
+      iss.articles.push({ id: uid(), heading: "", body: "", photo: null });
+      save(issues); render();
+    }));
+
+    root.querySelectorAll("[data-remove-article]").forEach(btn => btn.addEventListener("click", () => {
+      const [issId, artId] = btn.dataset.removeArticle.split("|");
+      const issues = loadJSON("sabc_newsletters", []);
+      const iss = findIssue(issues, issId);
+      if (iss) iss.articles = (iss.articles || []).filter(a => a.id !== artId);
+      save(issues); render();
+    }));
+
+    root.querySelectorAll("[data-cover-for]").forEach(input => input.addEventListener("change", () => {
+      const file = input.files[0]; if (!file) return;
+      compressImage(file, 1400, 0.75).then(dataUrl => {
+        const issues = loadJSON("sabc_newsletters", []);
+        const iss = findIssue(issues, input.dataset.coverFor);
+        if (iss) { iss.cover = dataUrl; save(issues); render(); }
+      }).catch(err => alert("Couldn't process that photo: " + err.message));
+    }));
+
+    root.querySelectorAll("[data-clear-cover]").forEach(btn => btn.addEventListener("click", () => {
+      const issues = loadJSON("sabc_newsletters", []);
+      const iss = findIssue(issues, btn.dataset.clearCover);
+      if (iss) { iss.cover = null; save(issues); render(); }
+    }));
+
+    root.querySelectorAll("[data-article-photo]").forEach(input => input.addEventListener("change", () => {
+      const file = input.files[0]; if (!file) return;
+      const [issId, artId] = input.dataset.articlePhoto.split("|");
+      compressImage(file, 1000, 0.75).then(dataUrl => {
+        const issues = loadJSON("sabc_newsletters", []);
+        const iss = findIssue(issues, issId);
+        const a = iss && (iss.articles || []).find(x => x.id === artId);
+        if (a) { a.photo = dataUrl; save(issues); render(); }
+      }).catch(err => alert("Couldn't process that photo: " + err.message));
+    }));
+
+    root.querySelectorAll("[data-clear-article-photo]").forEach(btn => btn.addEventListener("click", () => {
+      const [issId, artId] = btn.dataset.clearArticlePhoto.split("|");
+      const issues = loadJSON("sabc_newsletters", []);
+      const iss = findIssue(issues, issId);
+      const a = iss && (iss.articles || []).find(x => x.id === artId);
+      if (a) { a.photo = null; save(issues); render(); }
+    }));
   }
   render();
 }

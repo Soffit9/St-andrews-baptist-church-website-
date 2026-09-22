@@ -1,4 +1,32 @@
 /* ---------------------------------------------------------------------
+   esc() — escape text before putting it inside HTML.
+
+   SECURITY: this site builds pages by dropping values into template
+   strings and assigning them with innerHTML. Anything a person typed —
+   a prayer request from the public form, a name in Who's Who, an event
+   title — is untrusted, and without escaping, typed HTML would become
+   REAL HTML that the browser runs.
+
+   The worst case was the prayer form: it takes submissions from anyone
+   on the internet with no login, and admins later open those on the
+   Prayer Requests page. Injected script would run there with that
+   admin's session, which could add new admins or read everything.
+
+   Escaping the five characters below turns any such input into harmless
+   visible text. Use esc() on every value that came from a person, both
+   in text positions and inside quoted attributes.
+--------------------------------------------------------------------- */
+function esc(value) {
+  if (value === null || value === undefined) return "";
+  return String(value)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
+/* ---------------------------------------------------------------------
    Prototype CMS "content" layer.
    Everything a user edits in /admin/edit.html is stored in the browser's
    localStorage (key: sabc_content) and re-applied on top of the default
@@ -83,7 +111,7 @@ window.__serverStore = {};
 const STORE_KEYS = [
   "sabc_content", "sabc_roster", "sabc_schedule_roles", "sabc_schedule",
   "sabc_events", "sabc_whoswho", "sabc_sermon_archive", "sabc_gallery",
-  "sabc_hero_photos", "sabc_videos", "sabc_audit_log"
+  "sabc_hero_photos", "sabc_videos", "sabc_newsletters", "sabc_audit_log"
 ];
 
 async function fetchAllStoredData() {
@@ -343,14 +371,14 @@ function videoEmbedHtml(url, heightPx) {
     const h = heightPx || 315;
     return `<div>
       <iframe src="https://www.facebook.com/plugins/video.php?href=${encoded}&show_text=false" width="100%" height="${h}" style="border:0;overflow:hidden;max-width:100%;display:block;border-radius:8px" scrolling="no" frameborder="0" allowfullscreen allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share"></iframe>
-      <a class="button button-light" target="_blank" rel="noopener" href="${str}" style="display:inline-block;margin-top:10px">▶ Watch on Facebook</a>
+      <a class="button button-light" target="_blank" rel="noopener" href="${esc(str)}" style="display:inline-block;margin-top:10px">▶ Watch on Facebook</a>
       <span style="font-size:12px;color:var(--muted);margin-left:8px">Use this if the box above says "unavailable"</span>
     </div>`;
   }
   // Otherwise assume YouTube — accepts a full link or just the bare video ID.
   const match = str.match(/(?:v=|youtu\.be\/|embed\/)?([a-zA-Z0-9_-]{11})(?:[?&]|$)/);
   const vid = match ? match[1] : str;
-  return `<iframe width="100%" height="${heightPx || "100%"}" style="${heightPx ? "" : "position:absolute;inset:0;"}border:0" src="https://www.youtube.com/embed/${vid}" title="Video" allowfullscreen></iframe>`;
+  return `<iframe width="100%" height="${heightPx || "100%"}" style="${heightPx ? "" : "position:absolute;inset:0;"}border:0" src="https://www.youtube.com/embed/${encodeURIComponent(vid)}" title="Video" allowfullscreen></iframe>`;
 }
 
 function compressImage(file, maxDimension = 1000, quality = 0.75) {
@@ -439,7 +467,7 @@ function cmsApplyToPage(pageKey) {
       el.style.width = "auto";
       el.style.border = "none";
       el.style.background = "none";
-      el.innerHTML = `<img src="${global.logo}" alt="Church logo" style="height:100%;width:auto;max-width:280px;display:block;object-fit:contain">`;
+      el.innerHTML = `<img src="${esc(global.logo)}" alt="Church logo" style="height:100%;width:auto;max-width:280px;display:block;object-fit:contain">`;
     });
   }
 
@@ -461,7 +489,7 @@ function cmsApplyToPage(pageKey) {
       const pos = content[id + "_pos"] ?? 50;
       el.style.height = h + "px";
       el.style.overflow = "hidden";
-      el.innerHTML = `<img src="${content[id]}" alt="" style="width:100%;height:100%;object-fit:cover;object-position:50% ${pos}%;border-radius:inherit">`;
+      el.innerHTML = `<img src="${esc(content[id])}" alt="" style="width:100%;height:100%;object-fit:cover;object-position:50% ${pos}%;border-radius:inherit">`;
     }
   });
 

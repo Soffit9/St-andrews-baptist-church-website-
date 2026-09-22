@@ -21,6 +21,7 @@ import secrets
 import smtplib
 import time
 import uuid
+from datetime import timedelta
 from email.mime.text import MIMEText
 from pathlib import Path
 
@@ -35,6 +36,22 @@ ADMINS_PATH = BASE_DIR / "admins.json"
 PRAYER_REQUESTS_PATH = BASE_DIR / "prayer_requests.json"
 DATA_DIR = BASE_DIR / "data"
 DATA_DIR.mkdir(exist_ok=True)
+
+
+def write_private_json(path, value):
+    """Write a JSON file that only this Pi's own user can read.
+
+    Defence in depth. The Caddyfile already refuses to serve anything under
+    /backend/, but these files (prayer requests, the admin roster with its
+    authenticator secrets, the change log) are sensitive enough that they
+    shouldn't be readable even if that rule were ever removed or mistyped.
+    Caddy runs as its own separate user, so 0600 means it physically can't
+    read them regardless of any config."""
+    path.write_text(json.dumps(value, indent=2))
+    try:
+        path.chmod(0o600)
+    except OSError:
+        pass  # non-fatal: the Caddy rule is still doing the real work
 
 # Every kind of content the site actually saves, now living here instead
 # of scattered across whichever browser last touched it. Locked to this
@@ -51,6 +68,7 @@ ALLOWED_STORE_KEYS = {
     "sabc_gallery",        # Gallery photos
     "sabc_hero_photos",    # Homepage rotating background photos
     "sabc_videos",         # Stashed video links (YouTube/Facebook), ready for whenever they're needed
+    "sabc_newsletters",    # Newsletter issues (pastor's message + articles + photos)
     "sabc_audit_log",      # Change Log
 }
 
@@ -64,6 +82,42 @@ PERMANENT_FULL_ADMIN_EMAIL = "danteeugenemclaughlin@gmail.com"
 # has to start over, which is a fine trade for not needing a database yet.
 PENDING_CODES = {}
 CODE_LIFETIME_SECONDS = 10 * 60
+
+# ---- Brute-force protection on the shared password ----
+# The first login step is one shared password, and it's deliberately a
+# simple memorable word so the whole church team can use it. That's a
+# reasonable trade-off ONLY if guessing is slow: without a limit, someone
+# could try thousands of passwords a minute until they hit it.
+# { ip: [list of recent failed attempt timestamps] }
+FAILED_ATTEMPTS = {}
+MAX_FAILURES = 8            # allowed failures within the window
+FAILURE_WINDOW_SECONDS = 15 * 60
+LOCKOUT_SECONDS = 15 * 60
+
+
+def client_ip():
+    """The visitor's real IP.
+
+    Every request arrives from the Cloudflare tunnel, so remote_addr is
+    always 127.0.0.1 — using it would rate-limit the entire church as one
+    person, letting one attacker lock everybody out. Cloudflare passes the
+    true client IP in CF-Connecting-IP, so prefer that."""
+    return request.headers.get("CF-Connecting-IP") or request.remote_addr or "unknown"
+
+
+def is_locked_out(ip):
+    now = time.time()
+    recent = [t for t in FAILED_ATTEMPTS.get(ip, []) if now - t < FAILURE_WINDOW_SECONDS]
+    FAILED_ATTEMPTS[ip] = recent
+    return len(recent) >= MAX_FAILURES
+
+
+def record_failure(ip):
+    FAILED_ATTEMPTS.setdefault(ip, []).append(time.time())
+
+
+def clear_failures(ip):
+    FAILED_ATTEMPTS.pop(ip, None)
 
 
 def load_config():
@@ -101,7 +155,7 @@ def save_admins(admins):
             "email": PERMANENT_FULL_ADMIN_EMAIL,
             "access": "Full Admin",
         })
-    ADMINS_PATH.write_text(json.dumps(admins, indent=2))
+    write_private_json(ADMINS_PATH, admins)
 
 
 def find_admin_by_email(email):
@@ -155,13 +209,42 @@ def create_app():
     cfg = load_config()
     app.secret_key = cfg["secret_key"]
 
+    # ---- Session + request hardening ----
+    # HTTPONLY: JavaScript can't read the login cookie, so even if some
+    #   injected script did run, it couldn't simply steal the session.
+    # SAMESITE Lax: another site can't silently make your browser perform
+    #   admin actions using your logged-in session (CSRF protection).
+    # SECURE: only send the cookie over HTTPS. Cloudflare terminates HTTPS
+    #   in front of us, so real visitors are always on HTTPS.
+    # LIFETIME: a forgotten logged-in tab doesn't stay valid forever.
+    # MAX_CONTENT_LENGTH: refuse absurdly large uploads outright, so nobody
+    #   can fill the Pi's SD card or exhaust its memory with one request.
+    app.config.update(
+        SESSION_COOKIE_HTTPONLY=True,
+        SESSION_COOKIE_SAMESITE="Lax",
+        # Real visitors always arrive over HTTPS via Cloudflare, so this is
+        # correct by default. If you ever need to log in by hitting the Pi
+        # directly over plain http:// on the local network, add
+        # "cookie_secure": false to backend/config.json — the browser
+        # refuses to store a Secure cookie over http, so login would
+        # otherwise appear to silently fail.
+        SESSION_COOKIE_SECURE=cfg.get("cookie_secure", True),
+        PERMANENT_SESSION_LIFETIME=timedelta(days=14),
+        MAX_CONTENT_LENGTH=25 * 1024 * 1024,  # 25MB
+    )
+
     @app.post("/api/auth/password")
     def check_password():
+        ip = client_ip()
+        if is_locked_out(ip):
+            return jsonify(ok=False, error="Too many incorrect attempts. Please wait about 15 minutes and try again."), 429
         data = request.get_json(silent=True) or {}
         password = data.get("password", "")
         cfg = load_config()
         if not check_password_hash(cfg["password_hash"], password):
+            record_failure(ip)
             return jsonify(ok=False, error="Incorrect password."), 401
+        clear_failures(ip)
 
         email = (data.get("email") or "").strip().lower()
         if not email:
@@ -206,11 +289,16 @@ def create_app():
         # password check here is the actual security gate — knowing it is
         # what proves they're allowed to do this for the email they typed,
         # same proof the rest of login relies on.
+        ip = client_ip()
+        if is_locked_out(ip):
+            return jsonify(ok=False, error="Too many incorrect attempts. Please wait about 15 minutes and try again."), 429
         data = request.get_json(silent=True) or {}
         password = data.get("password", "")
         cfg = load_config()
         if not check_password_hash(cfg["password_hash"], password):
+            record_failure(ip)
             return jsonify(ok=False, error="Incorrect password."), 401
+        clear_failures(ip)
         email = (data.get("email") or "").strip().lower()
         if not email:
             return jsonify(ok=False, error="Email is required."), 400
@@ -226,6 +314,12 @@ def create_app():
 
     @app.post("/api/auth/verify")
     def verify_code():
+        # A 6-digit code is only 1,000,000 possibilities — trivially
+        # brute-forceable if guesses are unlimited, which would defeat the
+        # whole second step. Same limiter as the password.
+        ip = client_ip()
+        if is_locked_out(ip):
+            return jsonify(ok=False, error="Too many incorrect attempts. Please wait about 15 minutes and try again."), 429
         data = request.get_json(silent=True) or {}
         email = (data.get("email") or "").strip().lower()
         code = (data.get("code") or "").strip()
@@ -244,7 +338,9 @@ def create_app():
             valid = True
 
         if not valid:
+            record_failure(ip)
             return jsonify(ok=False, error="That code doesn't match or has expired."), 401
+        clear_failures(ip)
 
         if admin:
             name, access = admin["name"], admin["access"]
@@ -349,13 +445,58 @@ def create_app():
     # a real moderation system is a bigger project than this prototype.
     BLOCKED_WORDS = ["nigger", "faggot", "retard", "kike", "spic", "chink"]
 
+    # ---- Category guessing (fallback only) ----
+    # If someone picked a category on the form, that's what we use — their
+    # own answer is always more reliable than anything we could infer.
+    # This keyword pass only runs when they left it blank, and whatever it
+    # produces is flagged as a guess so the pastor knows not to trust it.
+    #
+    # Deliberately kept simple: real language is ambiguous ("pray for my
+    # mother" could be health or family), so a fancier approach would look
+    # smarter while still being wrong. Better to guess plainly, label it a
+    # guess, and let a person correct it in one click.
+    CATEGORY_KEYWORDS = [
+        ("Surgery & Medical Procedures", ["surgery", "operation", "operating", "procedure", "transplant", "biopsy", "chemo", "radiation"]),
+        ("Health & Healing", ["health", "healing", "heal", "sick", "illness", "ill ", "hospital", "cancer", "pain", "diagnosis", "recovery", "doctor", "treatment", "disease", "injury", "injured"]),
+        ("Mental Health", ["anxiety", "anxious", "depression", "depressed", "mental health", "panic", "stress", "overwhelmed", "burnout", "lonely", "loneliness"]),
+        ("Grief & Loss", ["grief", "grieving", "passed away", "passing", "funeral", "died", "death", "loss of", "mourning", "bereave"]),
+        ("Addiction & Recovery", ["addiction", "addicted", "alcohol", "drinking", "drugs", "sober", "sobriety", "gambling", "relapse"]),
+        ("Marriage & Relationships", ["marriage", "married", "spouse", "husband", "wife", "divorce", "separation", "relationship", "engaged", "wedding"]),
+        ("Pregnancy & New Babies", ["pregnan", "expecting", "baby", "newborn", "birth", "miscarriage", "adoption"]),
+        ("Children & Youth", ["child", "children", "kids", "son", "daughter", "teenager", "teen", "youth", "grandchild"]),
+        ("Family", ["family", "mother", "father", "mom", "dad", "parent", "sister", "brother", "grandmother", "grandfather", "aunt", "uncle", "cousin"]),
+        ("Work & Employment", ["job", "work", "employment", "unemployed", "laid off", "interview", "career", "boss", "workplace", "retire"]),
+        ("Finances", ["money", "financial", "finances", "bills", "debt", "rent", "afford", "income", "poverty"]),
+        ("Housing", ["housing", "house", "home", "apartment", "moving", "evict", "homeless", "landlord"]),
+        ("School & Studies", ["school", "exam", "exams", "test", "studying", "student", "university", "college", "graduation", "grades"]),
+        ("Guidance & Big Decisions", ["decision", "guidance", "direction", "discern", "wisdom", "choice", "what to do", "next step"]),
+        ("Salvation & Loved Ones", ["salvation", "saved", "unsaved", "come to faith", "come to christ", "believe", "conversion"]),
+        ("Faith & Spiritual Growth", ["faith", "spiritual", "growth", "closer to god", "bible", "prayer life", "doubt", "devotion"]),
+        ("Church & Ministry", ["church", "ministry", "congregation", "deacon", "pastor", "worship team", "volunteer", "sunday school"]),
+        ("Missions & Outreach", ["mission", "missionary", "outreach", "evangelism"]),
+        ("Travel & Safety", ["travel", "trip", "flight", "flying", "driving", "journey", "vacation", "safe travels"]),
+        ("Military & First Responders", ["military", "army", "navy", "deployed", "deployment", "veteran", "police", "firefighter", "paramedic"]),
+        ("Community & Neighbours", ["community", "neighbour", "neighbor", "town", "village"]),
+        ("Country & World", ["country", "world", "nation", "war", "government", "election", "disaster", "famine", "refugee"]),
+        ("Thanksgiving & Praise", ["thank you", "thankful", "grateful", "gratitude", "praise", "answered prayer", "celebrate", "rejoice"]),
+    ]
+
+    def guess_category(text):
+        """Best-effort category from the wording. Returns None if nothing
+        matches, rather than forcing a wrong label."""
+        lowered = (text or "").lower()
+        for label, words in CATEGORY_KEYWORDS:
+            if any(w in lowered for w in words):
+                return label
+        return None
+
     def load_prayer_requests():
         if not PRAYER_REQUESTS_PATH.exists():
             return []
         return json.loads(PRAYER_REQUESTS_PATH.read_text())
 
     def save_prayer_requests(items):
-        PRAYER_REQUESTS_PATH.write_text(json.dumps(items, indent=2))
+        write_private_json(PRAYER_REQUESTS_PATH, items)
 
     @app.post("/api/prayer-requests")
     def submit_prayer_request():
@@ -375,9 +516,19 @@ def create_app():
         if any(w in lowered for w in BLOCKED_WORDS):
             return jsonify(ok=False, error="This may contain language flagged for review — please rephrase."), 400
 
+        # Their own choice wins; only guess when they left it blank.
+        chosen = (data.get("category") or "").strip()
+        if chosen:
+            category, was_guessed = chosen, False
+        else:
+            guessed = guess_category(text)
+            category, was_guessed = (guessed or "Uncategorized"), bool(guessed)
+
         items = load_prayer_requests()
         items.insert(0, {
             "id": str(uuid.uuid4())[:8],
+            "category": category,
+            "category_guessed": was_guessed,
             "name": (data.get("name") or "").strip(),
             "email": (data.get("email") or "").strip(),
             "request": text,
@@ -403,6 +554,11 @@ def create_app():
         for item in items:
             if item["id"] == req_id:
                 item["status"] = data.get("status", item["status"])
+                # Correcting a wrong guess also clears the "guessed" flag,
+                # since a person has now confirmed it.
+                if "category" in data:
+                    item["category"] = data["category"]
+                    item["category_guessed"] = False
         save_prayer_requests(items)
         return jsonify(ok=True)
 
@@ -444,7 +600,7 @@ def create_app():
             return jsonify(ok=False, error="View Only accounts can't save changes."), 403
         value = request.get_json(silent=True)
         path = DATA_DIR / f"{key}.json"
-        path.write_text(json.dumps(value, indent=2))
+        write_private_json(path, value)
         return jsonify(ok=True)
 
     return app
