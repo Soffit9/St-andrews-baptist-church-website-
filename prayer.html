@@ -37,9 +37,7 @@
     </label>
     <label>Prayer Request<textarea name="request" rows="7" required></textarea></label>
 
-    <!-- Invisible to real visitors, but bots that auto-fill every field on a
-         page tend to fill this too — if it's got anything in it, the
-         backend silently discards the submission as spam. -->
+    <!-- Spam trap: left blank by real visitors. -->
     <label style="position:absolute;left:-9999px" aria-hidden="true">Leave this blank<input type="text" name="website" tabindex="-1" autocomplete="off"></label>
 
     <label>Would you like this prayed aloud in the prayer meeting room with members of the church?
@@ -52,7 +50,7 @@
     <p id="filter-warning" class="filter-warning">This request may contain language that gets flagged for review before it's sent. Ordinary swearing is fine — the filter is only looking for hateful or discriminatory language.</p>
 
     <button class="button" type="submit">Submit Request</button>
-    <p class="privacy-note">Your request is kept private. It goes straight to the church admin team — only they (and, if you say yes above, those present in the prayer meeting) will see it.</p>
+    <p class="privacy-note">Your request is kept private. It goes directly to Pastor Ladd and the prayer team — only they (and, if you say yes above, those present in the prayer meeting) will see it.</p>
     <p id="form-message" class="success"></p>
   </form>
 </div></section></main>

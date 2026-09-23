@@ -49,7 +49,7 @@ Repeat visits get a `304 Not Modified` (0 bytes) for the shared files rather tha
 
 - **Caddy** — serves the website. systemd service, auto-starts on boot.
 - **`sabc-backend`** — the Flask backend (login, prayer requests, all saved content). systemd service, auto-starts on boot.
-- **`cloudflared-quick`** — the public tunnel. systemd service, auto-starts on boot.
+- **`cloudflared`** — the named tunnel connecting `standrewsbaptistchurch.com` to the Pi. systemd service, auto-starts on boot. Config lives in `/etc/cloudflared/config.yml`.
 
 All three come back automatically after a power outage. No commands needed.
 
@@ -69,19 +69,15 @@ pip install -r backend/requirements.txt
 sudo systemctl restart sabc-backend
 ```
 
-## 3. Getting the current public link
+## 3. The public address
 
-The quick tunnel makes a **new random address every restart**:
-```bash
-sudo journalctl -u cloudflared-quick --no-pager | grep -A 3 "trycloudflare.com"
-```
-If that comes back empty, restart it to force a fresh one (this changes the link):
-```bash
-sudo systemctl restart cloudflared-quick && sleep 6
-sudo journalctl -u cloudflared-quick --no-pager | grep -A 3 "trycloudflare.com"
-```
+The site is at **https://standrewsbaptistchurch.com** (and `www.`). The address is permanent — it doesn't change on reboot, power loss, or moving the Pi.
 
-This goes away once the real domain is set up — see Section 5.
+Check the tunnel is healthy:
+```bash
+sudo systemctl status cloudflared
+```
+Looking for `active (running)`. If the site is ever unreachable, that's the first thing to check, then `sudo systemctl restart cloudflared`.
 
 ## 4. Admin accounts
 
@@ -90,19 +86,17 @@ This goes away once the real domain is set up — see Section 5.
 - **danteeugenemclaughlin@gmail.com is permanently Full Admin** — can't be removed or downgraded, on purpose, as a lockout safety net.
 - **Access levels:** Full Admin sees everything. Can Edit can't see Admin Users or Prayer Requests. View Only is limited to the Church Calendar and Gallery.
 
-## 5. The domain (outstanding)
+## 5. Accounts that run the site
 
-The church owns `standrewsbaptistchurch.ca` through Rebel.ca, paid through June 2027. Cindy Kohler holds the account access and has been asked to point the nameservers at Cloudflare (`mary.ns.cloudflare.com` / `patrick.ns.cloudflare.com`).
+- **Domain + DNS + tunnel:** Cloudflare, under `office.standrewsbaptist@gmail.com`. Domain auto-renews **Sep 22 each year** — the card on file must be valid before then.
+- **Login code emails:** sent from the office Gmail via an App Password stored on the Pi.
+- **Google Search Console:** verified for `standrewsbaptistchurch.com`, sitemap submitted.
+- **Credentials:** written down and stored at the church. Pastor Ladd and one deacon should know where.
 
-Two separate steps, only the first needs her:
-1. **She updates the nameservers** → Cloudflare becomes the domain's DNS authority (takes 1–2 days to propagate)
-2. **Then we set up a named tunnel** on the Pi → this is what actually connects the domain to the Pi, and it also permanently fixes the changing-link problem
-
-Backup plan if she doesn't respond: register a cheap domain the church controls directly and do the same thing with it.
+The older `standrewsbaptistchurch.ca` belongs to a previous volunteer's Rebel.ca account and isn't used.
 
 ## 6. Known limitations
 
-- **Tunnel link changes on every restart** — fixed by the named tunnel in Section 5.
 - **Simultaneous admin saves** — if two admins save the same page in the same second, one could overwrite the other. Very unlikely with a small team; no file locking yet.
 - **Facebook video embeds are unreliable** — Facebook often blocks embedding regardless of settings. Every Facebook video shows a "Watch on Facebook" button as a fallback so there's always a working path. YouTube embeds work normally.
 - **Gallery/Homepage photos are stored as data in the database**, not as image files. Fine at current scale; would want revisiting with hundreds of photos.

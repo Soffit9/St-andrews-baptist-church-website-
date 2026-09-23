@@ -370,7 +370,7 @@ function renderUpcomingEvents(targetSelector, max) {
     if (dateKey >= today && dateKey <= windowEndIso) events[dateKey].forEach(ev => flat.push({ ...ev, date: dateKey }));
   });
   if (!flat.length) {
-    el.innerHTML = `<p class="placeholder-lines center">No upcoming events posted yet. Add some from the admin Events calendar.</p>`;
+    el.innerHTML = `<p class="placeholder-lines center">No events scheduled at the moment — please check back soon.</p>`;
     return;
   }
   const shown = max ? flat.slice(0, max) : flat;
@@ -535,7 +535,7 @@ function initWhoswhoPublic() {
   const root = document.querySelector("#whoswho-public-root");
   const people = loadJSON("sabc_whoswho", []).filter(p => p.name);
   if (!people.length) {
-    root.innerHTML = `<p class="placeholder-lines center">No one's been added yet. Once the admin team adds people on the Who's Who admin page, they'll show up here with their photo, role, and contact info.</p>`;
+    root.innerHTML = `<p class="placeholder-lines center">Our directory is being updated — please check back soon.</p>`;
     return;
   }
   root.innerHTML = `<div class="person-grid">` + people.map(p => `

@@ -255,8 +255,8 @@ const CMS_SCHEMA = {
   giving: {
     label: "Giving Page",
     fields: [
-      { id: "etransfer_note", label: "E-Transfer Instructions", type: "textarea", default: "Giving details are still being finalized. Once Pastor Ladd confirms the e-transfer address and any instructions, they'll go here." },
-      { id: "tax_note", label: "Tax Receipt Note", type: "textarea", default: "Receipts are issued for donations of $20 or more. Final tax receipt details will be confirmed by the church." }
+      { id: "etransfer_note", label: "E-Transfer Instructions", type: "textarea", default: "For e-transfer giving, please contact the church office for current details. We're grateful for your generosity and support of this ministry." },
+      { id: "tax_note", label: "Tax Receipt Note", type: "textarea", default: "Tax receipts are issued for donations of $20 or more. Please include your name and address with your gift so a receipt can be prepared." }
     ],
     images: []
   }
