@@ -1,0 +1,29 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Sunday Calendar | St. Andrews Baptist Church</title><link rel="stylesheet" href="../assets/style.css"></head>
+<body class="admin-page">
+<div class="admin-topbar"><button class="theme-toggle" id="theme-toggle" type="button" aria-label="Toggle dark mode">🌙</button></div>
+<div class="admin-main" style="max-width:900px;margin:0 auto">
+  <a class="edit-back" href="dashboard.html">← Back to Dashboard</a>
+  <h1>Church Calendar</h1>
+  <p class="notice">Click any day to fill in who's doing what — Sundays are highlighted in blue since that's the main service, but weekday events (like Tuesday Bible study) work the same way. Days with a blue dot already have something saved.</p>
+  <p id="cal-toast" class="toast"></p>
+
+  <h3>Roles</h3>
+  <p class="field-hint">Add or remove role types — these apply to whichever day you're filling in, Sunday or otherwise.</p>
+  <div class="roster-bar" id="roles-bar"></div>
+
+  <h3>Volunteer Roster</h3>
+  <div class="roster-bar" id="roster-bar"></div>
+
+  <div class="cal-topbar">
+    <button type="button" id="cal-prev">← Prev</button>
+    <strong id="cal-month-label">Month Year</strong>
+    <button type="button" id="cal-next">Next →</button>
+  </div>
+  <div class="cal-grid" id="cal-grid"></div>
+
+  <div class="role-panel" id="role-panel"></div>
+</div>
+<script src="../assets/content.js"></script>
+<script src="../assets/admin.js"></script>
+<script src="../assets/features.js"></script>
+</body></html>

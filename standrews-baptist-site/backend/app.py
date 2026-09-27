@@ -14,7 +14,6 @@ same backend, so it's finally shared across every device instead of
 locked to whichever browser typed it in.
 """
 import base64
-import hashlib
 import io
 import json
 import random
@@ -35,7 +34,6 @@ BASE_DIR = Path(__file__).parent
 CONFIG_PATH = BASE_DIR / "config.json"
 ADMINS_PATH = BASE_DIR / "admins.json"
 PRAYER_REQUESTS_PATH = BASE_DIR / "prayer_requests.json"
-VISITS_PATH = BASE_DIR / "visits.json"
 DATA_DIR = BASE_DIR / "data"
 DATA_DIR.mkdir(exist_ok=True)
 
@@ -572,79 +570,6 @@ def create_app():
         items = [i for i in load_prayer_requests() if i["id"] != req_id]
         save_prayer_requests(items)
         return jsonify(ok=True)
-
-    # ---- Visitor counting ----
-    # Deliberately privacy-respecting: no IP addresses or anything
-    # identifying is ever stored. A visitor is recognised for one day only,
-    # via a hash of their IP + browser + TODAY'S DATE + the site's secret
-    # key. Because the date is part of the hash, the same person produces a
-    # completely different value tomorrow — so this can count "how many
-    # people today" without being able to follow anyone across days, and
-    # the stored hashes are useless to anyone who got hold of the file.
-    BOT_HINTS = ("bot", "crawl", "spider", "slurp", "headless", "preview", "monitor", "curl", "wget", "python-requests")
-
-    def load_visits():
-        if not VISITS_PATH.exists():
-            return {}
-        try:
-            return json.loads(VISITS_PATH.read_text())
-        except Exception:
-            return {}
-
-    @app.post("/api/visit")
-    def record_visit():
-        ua = (request.headers.get("User-Agent") or "").lower()
-        # Search engines and uptime checks aren't people — counting them
-        # would make the numbers meaningless.
-        if any(h in ua for h in BOT_HINTS):
-            return jsonify(ok=True, counted=False)
-
-        today = time.strftime("%Y-%m-%d")
-        fingerprint = hashlib.sha256(
-            f"{client_ip()}|{ua}|{today}|{cfg['secret_key']}".encode()
-        ).hexdigest()[:16]
-
-        visits = load_visits()
-        day = visits.setdefault(today, {"views": 0, "visitors": []})
-        day["views"] += 1
-        if fingerprint not in day["visitors"]:
-            day["visitors"].append(fingerprint)
-
-        # Keep roughly three months; the file shouldn't grow forever.
-        for old_day in sorted(visits.keys())[:-90]:
-            visits.pop(old_day, None)
-
-        write_private_json(VISITS_PATH, visits)
-        return jsonify(ok=True, counted=True)
-
-    @app.get("/api/visits")
-    def get_visits():
-        if "email" not in session:
-            return jsonify(ok=False, error="Login required."), 401
-        visits = load_visits()
-        today = time.strftime("%Y-%m-%d")
-
-        def total(days):
-            cutoff = time.strftime("%Y-%m-%d", time.localtime(time.time() - days * 86400))
-            picked = {d: v for d, v in visits.items() if d >= cutoff}
-            people = set()
-            views = 0
-            for v in picked.values():
-                views += v.get("views", 0)
-                people.update(v.get("visitors", []))
-            return {"views": views, "visitors": len(people)}
-
-        day = visits.get(today, {"views": 0, "visitors": []})
-        # Last 14 days, oldest first, for a small chart.
-        recent = []
-        for i in range(13, -1, -1):
-            d = time.strftime("%Y-%m-%d", time.localtime(time.time() - i * 86400))
-            v = visits.get(d, {})
-            recent.append({"date": d, "views": v.get("views", 0), "visitors": len(v.get("visitors", []))})
-
-        return jsonify(ok=True,
-                       today={"views": day.get("views", 0), "visitors": len(day.get("visitors", []))},
-                       week=total(7), month=total(30), recent=recent)
 
     # ---- Generic shared storage: everything Who's Who / Gallery / Events /
     # Calendar / Sermon Archive / page content used to keep in each

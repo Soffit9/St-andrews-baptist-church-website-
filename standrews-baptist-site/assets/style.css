@@ -273,13 +273,3 @@ a,button{transition:box-shadow .15s ease,transform .15s ease,filter .15s ease,ba
 [data-theme="dark"] .nav{background:#141d28;border-color:#2b3646}
 [data-theme="dark"] .nav a:hover,[data-theme="dark"] .nav a.active{background:#1b2531}
 [data-theme="dark"] .menu-toggle{color:#e9edf2}
-
-/* ---------- Dashboard visitor stats ---------- */
-.visitor-stats{background:#fff;border:1px solid var(--line);border-radius:12px;padding:20px;margin-top:20px}
-.visitor-numbers{display:flex;flex-wrap:wrap;gap:28px}
-.visitor-numbers div{display:flex;flex-direction:column}
-.visitor-numbers strong{font-size:28px;color:var(--blue);line-height:1.1}
-.visitor-numbers span{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:1px}
-.visitor-chart{display:flex;align-items:flex-end;gap:4px;height:50px;margin:16px 0 4px}
-.visitor-chart span{flex:1;background:var(--blue);border-radius:3px 3px 0 0;min-height:2px;opacity:.75}
-[data-theme="dark"] .visitor-stats{background:#141d28;border-color:#2b3646}

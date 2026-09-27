@@ -1,0 +1,49 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Admin Login | St. Andrews Baptist Church</title><link rel="stylesheet" href="../assets/style.css"></head>
+<body class="admin-page"><main class="login-wrap"><div class="login-card">
+  <div class="logo-placeholder" data-image="logo">LOGO</div>
+  <h1>St. Andrews Admin</h1>
+  <p>Please login to continue.</p>
+  <button class="theme-toggle" id="theme-toggle" type="button" aria-label="Toggle dark mode" style="margin-bottom:16px">🌙</button>
+
+  <form id="login-step-1">
+    <label>Password<input id="password" type="password" required autocomplete="current-password" placeholder="Enter your password"></label>
+    <button class="button" type="submit">Continue</button>
+    <p id="password-message" class="error"></p>
+  </form>
+
+  <div id="login-step-method" class="hidden-step">
+    <p>How would you like to verify?</p>
+    <div class="button-row" style="flex-direction:column;gap:10px">
+      <button type="button" class="button" id="method-email" style="width:100%">📧 Email me a code</button>
+      <button type="button" class="button button-light" id="method-totp" style="width:100%">🔐 I have an authenticator app</button>
+    </div>
+    <p class="small" style="margin-top:14px"><button type="button" id="back-to-password" class="text-btn">← use a different password</button></p>
+  </div>
+
+  <form id="login-step-email" class="hidden-step">
+    <label>Email<input type="email" id="who-email" placeholder="you@example.com" required></label>
+    <button class="button" type="submit">Continue</button>
+    <p id="email-message" class="error"></p>
+  </form>
+
+  <div id="login-step-totp-setup" class="hidden-step">
+    <p>You haven't set up an authenticator app for this email yet.</p>
+    <button type="button" class="button" id="setup-totp-now-btn">Set Up Authenticator App Now</button>
+    <div id="login-totp-qr-area" style="margin-top:16px"></div>
+    <p class="small" style="margin-top:14px"><button type="button" id="back-from-totp-setup" class="text-btn">← use email instead</button></p>
+    <p id="totp-setup-message" class="error"></p>
+  </div>
+
+  <form id="login-step-2" class="hidden-step">
+    <div class="code-box" id="code-box"></div>
+    <label>Code<input id="code-input" type="text" inputmode="numeric" maxlength="6" required placeholder="••••••"></label>
+    <button class="button" type="submit">Login</button>
+    <p class="small" id="resend-wrap"><button type="button" id="resend-code" class="text-btn">Send a new code</button></p>
+    <p class="small"><button type="button" id="back-to-password-2" class="text-btn">← wrong password? start over</button></p>
+    <p id="login-message" class="error"></p>
+  </form>
+
+</div></main>
+<script src="../assets/content.js"></script>
+<script src="../assets/admin.js"></script>
+</body></html>

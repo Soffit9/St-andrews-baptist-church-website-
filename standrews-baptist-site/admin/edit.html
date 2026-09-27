@@ -1,0 +1,24 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Edit Page | St. Andrews Baptist Church</title><link rel="stylesheet" href="../assets/style.css"></head>
+<body class="admin-page">
+<div class="admin-topbar"><button class="theme-toggle" id="theme-toggle" type="button" aria-label="Toggle dark mode">🌙</button></div>
+<div class="admin-main" style="max-width:1200px;margin:0 auto">
+  <a class="edit-back" id="back-link" href="dashboard.html">← Back to Dashboard</a>
+  <h1 id="edit-title">Edit Page</h1>
+  <p class="notice">Only the fields below can be changed here, so the layout always stays intact. Watch the preview on the right update as you type.</p>
+  <div id="edit-root"></div>
+</div>
+
+<div class="modal-overlay" id="confirm-modal">
+  <div class="modal-box">
+    <h3>Apply these changes?</h3>
+    <p>This will update the live pages right away. You can always come back and edit again.</p>
+    <div class="modal-actions">
+      <button class="button button-light" id="confirm-no" type="button">Cancel</button>
+      <button class="button" id="confirm-yes" type="button">Yes, Apply Changes</button>
+    </div>
+  </div>
+</div>
+
+<script src="../assets/content.js"></script>
+<script src="../assets/admin.js"></script>
+</body></html>
