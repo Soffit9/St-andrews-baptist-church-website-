@@ -541,29 +541,3 @@ document.addEventListener("sabc:session-ready", () => {
     }
   }
 });
-
-/* Visitor numbers on the dashboard. Counts are gathered without storing
-   anything identifying — see the note in backend/app.py. */
-document.addEventListener("sabc:session-ready", async () => {
-  const box = document.querySelector("#visitor-stats");
-  if (!box) return;
-  try {
-    const res = await fetch("/api/visits", { credentials: "same-origin" });
-    if (!res.ok) return;
-    const d = await res.json();
-    if (!d.ok) return;
-    const peak = Math.max(1, ...d.recent.map(r => r.visitors));
-    box.innerHTML = `
-      <div class="visitor-numbers">
-        <div><strong>${d.today.visitors}</strong><span>visitors today</span></div>
-        <div><strong>${d.today.views}</strong><span>page views today</span></div>
-        <div><strong>${d.week.visitors}</strong><span>visitors this week</span></div>
-        <div><strong>${d.month.visitors}</strong><span>visitors this month</span></div>
-      </div>
-      <div class="visitor-chart" title="Visitors per day, last 14 days">
-        ${d.recent.map(r => `<span style="height:${Math.round((r.visitors / peak) * 100)}%" title="${r.date}: ${r.visitors} visitors, ${r.views} views"></span>`).join("")}
-      </div>
-      <p class="field-hint">Last 14 days. Search engines and bots aren't counted, and no personal information is stored.</p>`;
-    box.hidden = false;
-  } catch {}
-});

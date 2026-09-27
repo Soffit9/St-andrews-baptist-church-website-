@@ -1,0 +1,22 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Events | St. Andrews Baptist Church</title><link rel="stylesheet" href="../assets/style.css"></head>
+<body class="admin-page">
+<div class="admin-topbar"><button class="theme-toggle" id="theme-toggle" type="button" aria-label="Toggle dark mode">🌙</button></div>
+<div class="admin-main" style="max-width:900px;margin:0 auto">
+  <a class="edit-back" href="dashboard.html">← Back to Dashboard</a>
+  <h1>Events</h1>
+  <p class="notice">Click any day to add one or more events. They'll show up on the public Events page and the homepage automatically, soonest first.</p>
+  <p id="events-toast" class="toast"></p>
+
+  <div class="cal-topbar">
+    <button type="button" id="events-cal-prev">← Prev</button>
+    <strong id="events-cal-month-label">Month Year</strong>
+    <button type="button" id="events-cal-next">Next →</button>
+  </div>
+  <div class="cal-grid" id="events-cal-grid"></div>
+
+  <div class="role-panel" id="events-panel"></div>
+</div>
+<script src="../assets/content.js"></script>
+<script src="../assets/admin.js"></script>
+<script src="../assets/features.js"></script>
+</body></html>

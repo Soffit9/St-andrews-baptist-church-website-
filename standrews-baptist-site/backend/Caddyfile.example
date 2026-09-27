@@ -1,0 +1,82 @@
+# This replaces /etc/caddy/Caddyfile on the Pi.
+#   sudo cp backend/Caddyfile.example /etc/caddy/Caddyfile
+#   sudo systemctl restart caddy
+
+:80 {
+    # The website's files live here. Declared at the top so every block
+    # below (including the error handler) knows where to look.
+    root * /home/church/st-andrews-baptist-church-website-
+
+    # ---- SECURITY: never serve the backend folder as files ----
+    # The web root is the whole project folder, which means backend/ sits
+    # inside it. Without this block, anyone could simply browse to
+    # /backend/config.json and read the password hash and Gmail app
+    # password, or /backend/prayer_requests.json and read private prayer
+    # requests, or /backend/data/*.json for everything else. These files
+    # must only ever be reachable through the /api/ endpoints, which check
+    # who's logged in first.
+    handle /backend/* {
+        respond "Not found" 404
+    }
+    # Same reasoning for git metadata and project docs — nothing here is
+    # meant for visitors, and .git in particular can leak the whole history.
+    handle /.git/* {
+        respond "Not found" 404
+    }
+    handle /.gitignore {
+        respond "Not found" 404
+    }
+    handle /README.md {
+        respond "Not found" 404
+    }
+
+    # ---- API requests go to the Flask backend ----
+    handle /api/* {
+        reverse_proxy 127.0.0.1:5000
+    }
+
+    # ---- Shared CSS/JS: let browsers keep a copy ----
+    # These are now single shared files instead of being copied into every
+    # page, so one download covers the whole site. A short max-age plus
+    # Caddy's automatic ETags means a returning visitor usually sends a
+    # tiny "has it changed?" request and gets a 304 back instead of
+    # re-downloading. Kept deliberately short (10 min) so a `git pull`
+    # reaches people quickly rather than serving stale code for hours.
+    @assets path /assets/*
+    handle @assets {
+        header Cache-Control "public, max-age=600, must-revalidate"
+        file_server
+    }
+
+    # ---- Everything else is the actual website ----
+    # Pages themselves aren't cached: content changes whenever an admin
+    # edits something, and it should show up immediately.
+    handle {
+        header Cache-Control "no-cache"
+        file_server
+    }
+
+    # Compress responses before sending them. The pages are large because
+    # CSS/JS are built into each one, so this makes a real difference over
+    # a home internet connection — typically cutting transfer size a lot.
+    encode zstd gzip
+
+    # Sensible security headers.
+    header {
+        # Don't let the site be embedded in a frame on someone else's site.
+        X-Frame-Options "SAMEORIGIN"
+        # Don't let browsers guess (and mis-guess) file types.
+        X-Content-Type-Options "nosniff"
+        # Don't leak the full URL to third-party sites in the referrer.
+        Referrer-Policy "strict-origin-when-cross-origin"
+        # Don't advertise what server software this is.
+        -Server
+    }
+
+    # Show the site's own 404 page instead of Caddy's plain text one.
+    handle_errors {
+        @notfound expression {err.status_code} == 404
+        rewrite @notfound /404.html
+        file_server
+    }
+}

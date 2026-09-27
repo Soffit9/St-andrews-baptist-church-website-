@@ -1,10 +1,3 @@
-// Count this page view. Public pages only — admins browsing their own
-// site shouldn't inflate the numbers. Fire-and-forget: if it fails, the
-// visitor never notices and nothing breaks.
-if (!document.body.classList.contains("admin-page")) {
-  fetch("/api/visit", { method: "POST", credentials: "same-origin" }).catch(() => {});
-}
-
 document.addEventListener("DOMContentLoaded", () => {
   const menu = document.querySelector(".menu-toggle");
   const nav = document.querySelector(".nav");
