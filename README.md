@@ -6,7 +6,7 @@ This file is the handover document. If you're picking this up cold — a new vol
 
 ---
 
-## ⚠️ Upgrading to build 2026-10-22d — read this first
+## ⚠️ Upgrading to build 2026-10-22e — read this first
 
 This build changes how logins work and **moves everyone's password and
 authenticator secret out of `backend/admins.json`**. That file is tracked in
@@ -39,7 +39,7 @@ sudo systemctl restart caddy
 # 6. Confirm it worked
 ls -l backend/credentials.json          # should exist, -rw-------
 grep -c totp_secret backend/admins.json # should print 0
-curl -s localhost/api/version           # should say 2026-10-22d
+curl -s localhost/api/version           # should say 2026-10-22e
 ```
 
 If step 6 looks right, everyone's authenticator apps still work and nothing
@@ -67,6 +67,36 @@ was lost. Keep `~/admins-backup.json` for a week, then delete it.
 - **A bad password no longer locks out the whole church.** Failures are
   counted per person now, not per internet connection.
 - Minimum password length is 8 characters.
+
+### Fixed in 2026-10-22e: dashboard tiles stopped working
+
+The Content Security Policy added in `d` blocked fourteen dashboard tiles.
+They navigated using inline `onclick="window.location.href=..."` attributes,
+and `script-src 'self'` blocks inline script — which is the whole point of
+the policy, since the browser cannot tell our inline script from an
+attacker's. The tiles that kept working used event listeners already.
+
+All fourteen now use a `data-goto` attribute wired up in `admin.js`. The
+policy stays strict.
+
+**The testing lesson, because it matters more than the bug.** Two mistakes
+let this through:
+
+1. The browser tests loaded admin pages **logged out**, so every one of them
+   bounced to the login screen. Fifteen "passing" admin pages were really the
+   login page fifteen times. `tests/admin_check.py` now logs in through the
+   real API first and fails loudly if a page redirects.
+2. The tests served pages **without the CSP header**, so the policy under
+   test was not the policy in production. `tests/perf_server.py` now reads
+   the header straight out of `Caddyfile.example`.
+
+And the deeper one: the dashboard *rendered* perfectly while broken — only
+clicking did nothing. Checking that a page loads is not checking that it
+works. `tests/nav_check.py` clicks every tile and asserts it navigates.
+
+**When adding anything to the admin area: no inline `onclick`, no inline
+`<script>`.** Put it in `assets/*.js` and attach it with `addEventListener`.
+Run `tests/nav_check.py` afterwards.
 
 ### Speed — why pages used to pause, and what changed
 

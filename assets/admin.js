@@ -361,6 +361,16 @@ document.addEventListener("sabc:session-ready", () => {
       });
     });
 
+    // Tiles that open their own admin page. These used inline onclick
+    // attributes, which the Content Security Policy blocks — inline script
+    // is exactly what the policy exists to stop, and the browser can't tell
+    // ours apart from an attacker's. Wired up here instead.
+    document.querySelectorAll("[data-goto]").forEach(btn => {
+      btn.addEventListener("click", () => {
+        window.location.href = btn.getAttribute("data-goto");
+      });
+    });
+
     // Hide dashboard tiles the current admin shouldn't have access to.
     // Full Admin sees everything. Can Edit sees everything except Admin
     // Users and Prayer Requests (so an editor can't grant themselves

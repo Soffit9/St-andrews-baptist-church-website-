@@ -5,8 +5,18 @@ import socketserver
 import urllib.request
 import urllib.error
 
+import re as _re
+from pathlib import Path as _Path
+
 ROOT = "/home/claude/site"
 API = "http://127.0.0.1:5000"
+
+# Send the SAME Content-Security-Policy the live Caddy config sends, so
+# pages are tested under the real policy rather than a permissive one.
+# Missing this is what let broken admin pages through last time.
+_CADDY = _Path(ROOT + "/backend/Caddyfile.example").read_text()
+_m = _re.search(r'Content-Security-Policy "([^"]+)"', _CADDY)
+CSP = _m.group(1) if _m else None
 
 
 class Handler(http.server.SimpleHTTPRequestHandler):
@@ -51,6 +61,11 @@ class Handler(http.server.SimpleHTTPRequestHandler):
 
     def do_POST(self):
         return self._proxy("POST")
+
+    def end_headers(self):
+        if CSP and not self.path.startswith("/api/"):
+            self.send_header("Content-Security-Policy", CSP)
+        super().end_headers()
 
     def log_message(self, *a):
         pass
