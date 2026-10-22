@@ -34,6 +34,8 @@ from werkzeug.security import check_password_hash, generate_password_hash
 BASE_DIR = Path(__file__).parent
 CONFIG_PATH = BASE_DIR / "config.json"
 ADMINS_PATH = BASE_DIR / "admins.json"
+# Passwords and authenticator secrets — gitignored, never in admins.json.
+CREDENTIALS_PATH = BASE_DIR / "credentials.json"
 PRAYER_REQUESTS_PATH = BASE_DIR / "prayer_requests.json"
 VISITS_PATH = BASE_DIR / "visits.json"
 DATA_DIR = BASE_DIR / "data"
@@ -80,6 +82,13 @@ ALLOWED_STORE_KEYS = {
 # an honest mistake) can ever lock this account out or downgrade it.
 PERMANENT_FULL_ADMIN_EMAIL = "danteeugenemclaughlin@gmail.com"
 
+# Read once at startup from the VERSION file at the top of the repo, so the
+# admin dashboard can show which build is actually live on the Pi.
+try:
+    SITE_VERSION = (Path(__file__).resolve().parent.parent / "VERSION").read_text().strip()
+except Exception:
+    SITE_VERSION = "unknown"
+
 # Pending 2FA codes: { email: {"code": "123456", "expires": <unix time>} }
 # In-memory on purpose — restarting the server just means anyone mid-login
 # has to start over, which is a fine trade for not needing a database yet.
@@ -108,19 +117,40 @@ def client_ip():
     return request.headers.get("CF-Connecting-IP") or request.remote_addr or "unknown"
 
 
-def is_locked_out(ip):
+# The whole church sits behind one internet connection, so counting
+# failures per-IP alone meant one person fat-fingering their password
+# could lock out everybody else at the building. Now each person's own
+# login is counted separately, with a looser per-IP ceiling still in
+# place to catch someone spraying many different addresses at once.
+MAX_FAILURES_PER_IP = 30
+
+
+def _recent(key, limit):
     now = time.time()
-    recent = [t for t in FAILED_ATTEMPTS.get(ip, []) if now - t < FAILURE_WINDOW_SECONDS]
-    FAILED_ATTEMPTS[ip] = recent
-    return len(recent) >= MAX_FAILURES
+    recent = [t for t in FAILED_ATTEMPTS.get(key, []) if now - t < FAILURE_WINDOW_SECONDS]
+    FAILED_ATTEMPTS[key] = recent
+    return len(recent) >= limit
 
 
-def record_failure(ip):
-    FAILED_ATTEMPTS.setdefault(ip, []).append(time.time())
+def is_locked_out(ip, email=""):
+    person = _recent("person:%s|%s" % (ip, (email or "").lower()), MAX_FAILURES)
+    whole_ip = _recent("ip:%s" % ip, MAX_FAILURES_PER_IP)
+    return person or whole_ip
 
 
-def clear_failures(ip):
-    FAILED_ATTEMPTS.pop(ip, None)
+def record_failure(ip, email=""):
+    now = time.time()
+    FAILED_ATTEMPTS.setdefault("person:%s|%s" % (ip, (email or "").lower()), []).append(now)
+    FAILED_ATTEMPTS.setdefault("ip:%s" % ip, []).append(now)
+
+
+def clear_failures(ip, email=""):
+    FAILED_ATTEMPTS.pop("person:%s|%s" % (ip, (email or "").lower()), None)
+
+
+# Short-lived note of whether someone got in with the shared password,
+# so step two can pass that along to the dashboard.
+PENDING_SHARED = {}
 
 
 def load_config():
@@ -169,26 +199,84 @@ def find_admin_by_email(email):
     return None
 
 
-def set_admin_totp_secret(email, secret):
-    """Give one specific admin their own authenticator secret — nobody
-    else's login is affected, unlike the old single-shared-secret design."""
+# ---------------------------------------------------------------------
+# Secrets live in their OWN file, never in admins.json.
+#
+# admins.json is tracked in git, so anything written into it collides with
+# the next `git pull` on the Pi — which would mean a routine update could
+# wipe out everyone's password and authenticator app. credentials.json is
+# gitignored and never leaves the Pi, so updates can't touch it.
+# ---------------------------------------------------------------------
+def load_credentials():
+    if not CREDENTIALS_PATH.exists():
+        return {}
+    try:
+        return json.loads(CREDENTIALS_PATH.read_text())
+    except Exception:
+        return {}
+
+
+def save_credentials(creds):
+    write_private_json(CREDENTIALS_PATH, creds)
+
+
+def get_credential(email, field):
+    return load_credentials().get((email or "").strip().lower(), {}).get(field)
+
+
+def set_credential(email, field, value):
     email_l = (email or "").strip().lower()
-    admins = load_admins()
-    admin = next((a for a in admins if a.get("email", "").lower() == email_l), None)
-    if admin:
-        if secret is None:
-            admin.pop("totp_secret", None)
-        else:
-            admin["totp_secret"] = secret
+    creds = load_credentials()
+    entry = creds.setdefault(email_l, {})
+    if value is None:
+        entry.pop(field, None)
+        if not entry:
+            creds.pop(email_l, None)
     else:
-        # Not on the roster yet — create a minimal entry so their own
-        # authenticator setup has somewhere to live.
-        guess = email_l.split("@")[0]
-        new_admin = {"id": str(uuid.uuid4())[:8], "name": guess, "email": email_l, "access": "Can Edit"}
-        if secret is not None:
-            new_admin["totp_secret"] = secret
-        admins.append(new_admin)
-    save_admins(admins)
+        entry[field] = value
+    save_credentials(creds)
+
+
+def migrate_secrets_out_of_admins():
+    """One-time move for anyone upgrading: lift any secrets already sitting
+    in admins.json into credentials.json, then strip them out."""
+    if not ADMINS_PATH.exists():
+        return
+    try:
+        admins = json.loads(ADMINS_PATH.read_text())
+    except Exception:
+        return
+    creds = load_credentials()
+    moved = False
+    for a in admins:
+        email_l = (a.get("email") or "").strip().lower()
+        for field in ("password_hash", "totp_secret"):
+            if field in a:
+                if a[field]:
+                    creds.setdefault(email_l, {})[field] = a[field]
+                a.pop(field, None)
+                moved = True
+    if moved:
+        save_credentials(creds)
+        write_private_json(ADMINS_PATH, admins)
+
+
+def set_admin_password_hash(email, password_hash):
+    """Give one specific person their own password. Everyone who hasn't
+    set one keeps using the shared church password, so the changeover can
+    happen gradually without locking anybody out partway through."""
+    if not find_admin_by_email(email):
+        return False
+    set_credential(email, "password_hash", password_hash)
+    return True
+
+
+def set_admin_totp_secret(email, secret):
+    """Give one specific person their own authenticator secret. Nobody
+    else's login is affected, and it lives outside admins.json so updates
+    can't clobber it."""
+    set_credential(email, "totp_secret", secret)
+    return True
 
 
 def send_code_email(to_email, code, cfg):
@@ -210,6 +298,9 @@ def send_code_email(to_email, code, cfg):
 def create_app():
     app = Flask(__name__)
     cfg = load_config()
+    # Lift any secrets left in admins.json by an older build into the
+    # gitignored credentials file, so a future `git pull` can't wipe them.
+    migrate_secrets_out_of_admins()
     app.secret_key = cfg["secret_key"]
 
     # ---- Session + request hardening ----
@@ -238,24 +329,44 @@ def create_app():
 
     @app.post("/api/auth/password")
     def check_password():
-        ip = client_ip()
-        if is_locked_out(ip):
-            return jsonify(ok=False, error="Too many incorrect attempts. Please wait about 15 minutes and try again."), 429
         data = request.get_json(silent=True) or {}
         password = data.get("password", "")
-        cfg = load_config()
-        if not check_password_hash(cfg["password_hash"], password):
-            record_failure(ip)
-            return jsonify(ok=False, error="Incorrect password."), 401
-        clear_failures(ip)
-
         email = (data.get("email") or "").strip().lower()
         if not email:
             return jsonify(ok=False, error="Email is required."), 400
 
-        method = (data.get("method") or "email").strip().lower()
+        ip = client_ip()
+        if is_locked_out(ip, email):
+            return jsonify(ok=False, error="Too many incorrect attempts. Please wait about 15 minutes and try again."), 429
+
+        cfg = load_config()
         admin = find_admin_by_email(email)
-        has_own_totp = bool(admin and admin.get("totp_secret"))
+        own_hash = get_credential(email, "password_hash")
+
+        # Each person can set a password of their own. Anyone who hasn't
+        # yet still gets in with the shared church password, so the switch
+        # happens person by person instead of locking out everyone at once.
+        if own_hash:
+            password_ok = check_password_hash(own_hash, password)
+            used_shared = False
+        else:
+            password_ok = check_password_hash(cfg["password_hash"], password)
+            used_shared = True
+
+        if not password_ok:
+            record_failure(ip, email)
+            return jsonify(ok=False, error="Incorrect password."), 401
+        clear_failures(ip, email)
+
+        # Remembered until step two finishes, so the dashboard knows to
+        # nudge this person to pick a password of their own.
+        PENDING_SHARED[email] = {
+            "used_shared": used_shared,
+            "expires": time.time() + CODE_LIFETIME_SECONDS,
+        }
+
+        method = (data.get("method") or "email").strip().lower()
+        has_own_totp = bool(get_credential(email, "totp_secret"))
 
         if method == "totp":
             if has_own_totp:
@@ -273,16 +384,30 @@ def create_app():
         PENDING_CODES[email] = {"code": code, "expires": time.time() + CODE_LIFETIME_SECONDS}
 
         emailed = False
+        send_error = None
         try:
             emailed = send_code_email(email, code, cfg)
-        except Exception:
+        except Exception as exc:
             emailed = False
+            send_error = str(exc)
 
         resp = {"ok": True, "emailed": emailed}
         if not emailed:
-            # Email isn't set up yet — same graceful fallback as the old
-            # prototype: show the code directly so testing still works.
-            resp["demo_code"] = code
+            # SECURITY — this used to print the code straight onto the login
+            # screen when email failed, which quietly turned the second step
+            # into no step at all: anyone past step one could just read their
+            # own code. The code now goes to the Pi's own log instead, which
+            # only someone who can already get into the Pi can read.
+            #   sudo journalctl -u sabc-backend | grep "Login code"
+            app.logger.warning(
+                "Login code for %s could not be emailed (%s). Code: %s",
+                email, send_error or "email not configured", code,
+            )
+            resp["error"] = (
+                "We couldn't send your code by email. Use your authenticator app "
+                "if you've set one up, or ask an admin to check the church email "
+                "settings."
+            )
         return jsonify(resp)
 
     @app.post("/api/auth/setup-totp-for-login")
@@ -292,19 +417,44 @@ def create_app():
         # password check here is the actual security gate — knowing it is
         # what proves they're allowed to do this for the email they typed,
         # same proof the rest of login relies on.
-        ip = client_ip()
-        if is_locked_out(ip):
-            return jsonify(ok=False, error="Too many incorrect attempts. Please wait about 15 minutes and try again."), 429
         data = request.get_json(silent=True) or {}
         password = data.get("password", "")
-        cfg = load_config()
-        if not check_password_hash(cfg["password_hash"], password):
-            record_failure(ip)
-            return jsonify(ok=False, error="Incorrect password."), 401
-        clear_failures(ip)
         email = (data.get("email") or "").strip().lower()
         if not email:
             return jsonify(ok=False, error="Email is required."), 400
+
+        ip = client_ip()
+        if is_locked_out(ip, email):
+            return jsonify(ok=False, error="Too many incorrect attempts. Please wait about 15 minutes and try again."), 429
+        cfg = load_config()
+        admin = find_admin_by_email(email)
+        own_hash = get_credential(email, "password_hash")
+        reference = own_hash or cfg["password_hash"]
+        if not check_password_hash(reference, password):
+            record_failure(ip, email)
+            return jsonify(ok=False, error="Incorrect password."), 401
+        clear_failures(ip, email)
+
+        # Must actually be on the admin list. Otherwise this would quietly
+        # write credentials for invented addresses.
+        if not admin:
+            return jsonify(
+                ok=False,
+                error="That email isn't on the admin list. Ask a Full Admin to add you.",
+            ), 403
+
+        # Refuse to REPLACE an authenticator that already exists. Without
+        # this, anyone who knew the password that works for an account could
+        # overwrite that person's 2FA with their own phone — locking the
+        # real owner out and taking the account over. Replacing one is done
+        # from Settings, while already logged in as that person.
+        if get_credential(email, "totp_secret"):
+            return jsonify(
+                ok=False,
+                error=("This account already has an authenticator app set up. Log in "
+                       "with that code, then use Settings to change it. If you've lost "
+                       "it, ask a Full Admin."),
+            ), 409
 
         secret = pyotp.random_base32()
         set_admin_totp_secret(email, secret)
@@ -320,15 +470,16 @@ def create_app():
         # A 6-digit code is only 1,000,000 possibilities — trivially
         # brute-forceable if guesses are unlimited, which would defeat the
         # whole second step. Same limiter as the password.
-        ip = client_ip()
-        if is_locked_out(ip):
-            return jsonify(ok=False, error="Too many incorrect attempts. Please wait about 15 minutes and try again."), 429
         data = request.get_json(silent=True) or {}
         email = (data.get("email") or "").strip().lower()
         code = (data.get("code") or "").strip()
 
+        ip = client_ip()
+        if is_locked_out(ip, email):
+            return jsonify(ok=False, error="Too many incorrect attempts. Please wait about 15 minutes and try again."), 429
+
         admin = find_admin_by_email(email)
-        own_secret = admin.get("totp_secret") if admin else None
+        own_secret = get_credential(email, "totp_secret")
 
         # Accept EITHER a valid emailed/on-screen code OR a valid code from
         # THIS PERSON'S OWN authenticator app — whichever they actually used.
@@ -341,17 +492,28 @@ def create_app():
             valid = True
 
         if not valid:
-            record_failure(ip)
+            record_failure(ip, email)
             return jsonify(ok=False, error="That code doesn't match or has expired."), 401
-        clear_failures(ip)
+        clear_failures(ip, email)
 
-        if admin:
-            name, access = admin["name"], admin["access"]
-        else:
-            # Not on the roster yet — let them in (matches the old prototype's
-            # forgiving behaviour), best-effort name from the email itself.
-            guess = email.split("@")[0]
-            name, access = guess[:1].upper() + guess[1:], "Full Admin"
+        # Carry forward whether they used the shared password, so the
+        # dashboard can invite them to set one of their own.
+        meta = PENDING_SHARED.pop(email, None)
+        session["used_shared_password"] = bool(meta and meta.get("used_shared"))
+
+        if not admin:
+            # Back when there was no real roster, an unrecognised email was
+            # let in as Full Admin so testing wasn't blocked. With a real
+            # admin list that is a hole: anyone who learned the shared
+            # password could invent an address and arrive with full rights.
+            # Now you must actually be on the list. (Dante's permanent
+            # account is always injected into that list, so this can never
+            # lock the church out of its own site.)
+            return jsonify(
+                ok=False,
+                error="That email isn't on the admin list. Ask a Full Admin to add you.",
+            ), 403
+        name, access = admin["name"], admin["access"]
 
         if email == PERMANENT_FULL_ADMIN_EMAIL:
             access = "Full Admin"
@@ -366,7 +528,64 @@ def create_app():
     def get_session():
         if "email" not in session:
             return jsonify(loggedIn=False)
-        return jsonify(loggedIn=True, name=session["name"], email=session["email"], access=session["access"])
+        admin = find_admin_by_email(session["email"])
+        return jsonify(
+            loggedIn=True,
+            name=session["name"],
+            email=session["email"],
+            access=session["access"],
+            hasOwnPassword=bool(get_credential(session["email"], "password_hash")),
+            usedSharedPassword=bool(session.get("used_shared_password")),
+        )
+
+    @app.post("/api/auth/set-my-password")
+    def set_my_password():
+        """Anyone logged in sets a password of their own. This replaces the
+        shared one for that person only — everyone else is untouched."""
+        if "email" not in session:
+            return jsonify(ok=False, error="Login required."), 401
+        data = request.get_json(silent=True) or {}
+        current = data.get("current") or ""
+        new_password = (data.get("password") or "").strip()
+        if len(new_password) < 8:
+            return jsonify(ok=False, error="Use at least 8 characters."), 400
+
+        email = session["email"]
+        admin = find_admin_by_email(email)
+        cfg = load_config()
+        # Whichever password actually got them in is the one they confirm
+        # with — their own if they have one, otherwise the shared one.
+        reference = (admin or {}).get("password_hash") or cfg["password_hash"]
+        if not check_password_hash(reference, current):
+            return jsonify(ok=False, error="That current password isn't right."), 401
+        if check_password_hash(cfg["password_hash"], new_password):
+            return jsonify(ok=False, error="Pick something different from the shared church password."), 400
+
+        if not set_admin_password_hash(email, generate_password_hash(new_password)):
+            return jsonify(ok=False, error="Couldn't find your account on the admin list."), 404
+        session["used_shared_password"] = False
+        return jsonify(ok=True)
+
+    @app.post("/api/admins/clear-password")
+    def clear_admin_password():
+        """For when someone forgets theirs: a Full Admin wipes that person's
+        personal password, dropping them back to the shared one so they can
+        get in and set a new one. No one can read anyone's password."""
+        if session.get("access") != "Full Admin":
+            return jsonify(ok=False, error="Full Admin access required."), 403
+        data = request.get_json(silent=True) or {}
+        email = (data.get("email") or "").strip().lower()
+        if not email:
+            return jsonify(ok=False, error="Which person? An email is required."), 400
+        if not set_admin_password_hash(email, None):
+            return jsonify(ok=False, error="No admin with that email."), 404
+        return jsonify(ok=True)
+
+    @app.get("/api/version")
+    def get_version():
+        """So you can tell at a glance which build the Pi is actually
+        running, instead of guessing whether a git pull landed."""
+        return jsonify(version=SITE_VERSION)
 
     @app.post("/api/auth/logout")
     def logout():
@@ -401,7 +620,7 @@ def create_app():
             return jsonify(ok=False, error="Login required."), 401
         cfg = load_config()
         admin = find_admin_by_email(session["email"])
-        return jsonify(ok=True, hasTotp=bool(admin and admin.get("totp_secret")), hasEmail=bool(cfg.get("gmail_user")))
+        return jsonify(ok=True, hasTotp=bool(get_credential(session["email"], "totp_secret")), hasEmail=bool(cfg.get("gmail_user")))
 
     @app.post("/api/auth/change-password")
     def change_password():
@@ -409,8 +628,8 @@ def create_app():
             return jsonify(ok=False, error="Full Admin access required."), 403
         data = request.get_json(silent=True) or {}
         new_password = (data.get("password") or "").strip()
-        if len(new_password) < 6:
-            return jsonify(ok=False, error="Use at least 6 characters."), 400
+        if len(new_password) < 8:
+            return jsonify(ok=False, error="Use at least 8 characters."), 400
         cfg = load_config()
         cfg["password_hash"] = generate_password_hash(new_password)
         CONFIG_PATH.write_text(json.dumps(cfg, indent=2))
@@ -422,7 +641,17 @@ def create_app():
     def get_admins():
         if session.get("access") != "Full Admin":
             return jsonify(error="Full Admin access required."), 403
-        return jsonify(load_admins())
+        # Password hashes and authenticator secrets never leave the Pi.
+        # The page only needs to know WHETHER someone has set each one up,
+        # so send a plain yes/no instead of the secret itself. (They're
+        # still merged back in on save — see set_admins below.)
+        safe = []
+        for a in load_admins():
+            row = {k: v for k, v in a.items() if k not in ("password_hash", "totp_secret")}
+            row["hasOwnPassword"] = bool(get_credential(a.get("email"), "password_hash"))
+            row["hasTotp"] = bool(get_credential(a.get("email"), "totp_secret"))
+            safe.append(row)
+        return jsonify(safe)
 
     @app.post("/api/admins")
     def set_admins():
@@ -437,9 +666,14 @@ def create_app():
         merged = []
         for a in submitted:
             prior = existing_by_id.get(a.get("id"), {})
-            merged.append({**prior, **a})
+            # Drop the display-only flags the page sends back, and never let
+            # the browser set a hash or secret directly — those come only
+            # from the prior server-side record.
+            incoming = {k: v for k, v in a.items()
+                        if k not in ("hasOwnPassword", "hasTotp", "password_hash", "totp_secret")}
+            merged.append({**prior, **incoming})
         save_admins(merged)
-        return jsonify(ok=True, admins=load_admins())
+        return jsonify(ok=True)
 
     # ---- Prayer requests: real, shared, server-side storage ----
     # A short list of words the filter blocks outright — ordinary swearing is
@@ -515,6 +749,12 @@ def create_app():
         text = (data.get("request") or "").strip()
         if not text:
             return jsonify(ok=False, error="A prayer request is required."), 400
+
+        # Consent is checked here, not just in the browser — a tick box in
+        # HTML can be bypassed, and for something this personal the record
+        # of consent should be as trustworthy as the request itself.
+        if not data.get("consent"):
+            return jsonify(ok=False, error="Please confirm you understand who will read this request."), 400
         lowered = text.lower()
         if any(w in lowered for w in BLOCKED_WORDS):
             return jsonify(ok=False, error="This may contain language flagged for review — please rephrase."), 400
@@ -530,6 +770,7 @@ def create_app():
         items = load_prayer_requests()
         items.insert(0, {
             "id": str(uuid.uuid4())[:8],
+            "consent_given": time.strftime("%Y-%m-%d %H:%M:%S"),
             "category": category,
             "category_guessed": was_guessed,
             "name": (data.get("name") or "").strip(),
@@ -664,7 +905,27 @@ def create_app():
         path = DATA_DIR / f"{key}.json"
         if not path.exists():
             return jsonify(None)
-        return jsonify(json.loads(path.read_text()))
+
+        # Photos are stored inline as base64, so these files get large. An
+        # ETag lets a returning visitor's browser ask "has this changed?"
+        # and get a tiny 304 back instead of downloading it all again. The
+        # tag is built from the file's size and modification time, so it
+        # changes the moment an admin saves — edits still show up at once.
+        stat = path.stat()
+        etag = '"%s-%s-%s"' % (key, int(stat.st_mtime), stat.st_size)
+        if request.headers.get("If-None-Match") == etag:
+            resp = app.response_class(status=304)
+            resp.headers["ETag"] = etag
+            resp.headers["Cache-Control"] = "private, no-cache"
+            return resp
+
+        resp = app.response_class(path.read_text(), mimetype="application/json")
+        resp.headers["ETag"] = etag
+        # "no-cache" here means "always check with the server first", not
+        # "never store" — which is exactly what we want: instant when
+        # nothing changed, correct the moment something does.
+        resp.headers["Cache-Control"] = "private, no-cache"
+        return resp
 
     @app.post("/api/store/<key>")
     def set_store(key):

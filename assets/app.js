@@ -45,6 +45,7 @@ document.addEventListener("DOMContentLoaded", () => {
         request: formData.get("request") || "",
         category: formData.get("category") || "",
         pray_aloud: formData.get("pray_aloud") === "yes",
+        consent: formData.get("consent") === "on",
         website: formData.get("website") || "" // honeypot — real people never touch this field
       };
       const msgEl = document.querySelector("#form-message");

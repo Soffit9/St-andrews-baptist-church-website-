@@ -9,5 +9,6 @@ Allow: /
 Disallow: /admin/
 Disallow: /gallery.html
 Disallow: /404.html
+Disallow: /privacy.html
 
 Sitemap: https://standrewsbaptistchurch.com/sitemap.xml

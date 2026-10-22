@@ -35,13 +35,13 @@ document.addEventListener("sabc:session-ready", showWhoAmI);
    so it's fast and can't drift out of sync with the real header/nav. */
 function previewTemplate(pageKey, c) {
   const imgBox = (id, label) => c[id]
-    ? `<div data-preview-image="${id}" style="height:${c[id+'_h']||300}px;border-radius:10px;overflow:hidden"><img src="${c[id]}" style="width:100%;height:100%;object-fit:cover;object-position:50% ${c[id+'_pos']??50}%"></div>`
-    : `<div class="image-placeholder" data-preview-image="${id}" style="height:${c[id+'_h']||300}px;border-radius:10px">${label}</div>`;
+    ? `<div data-preview-image="${id}" style="height:${num(c[id+'_h'], 300, 20, 2000)}px;border-radius:10px;overflow:hidden"><img src="${safeUrl(c[id])}" style="width:100%;height:100%;object-fit:cover;object-position:50% ${num(c[id+'_pos'], 50, 0, 100)}%"></div>`
+    : `<div class="image-placeholder" data-preview-image="${id}" style="height:${num(c[id+'_h'], 300, 20, 2000)}px;border-radius:10px">${label}</div>`;
 
   switch (pageKey) {
     case "global":
       return `<div style="display:flex;align-items:center;gap:10px">
-        <div class="logo-placeholder" data-preview-image="logo" style="${c.logo ? `height:${c.logo_h||44}px;width:auto` : ""}">${c.logo ? `<img src="${c.logo}" style="height:100%;width:auto;max-width:280px;display:block;object-fit:contain">` : "LOGO"}</div>
+        <div class="logo-placeholder" data-preview-image="logo" style="${c.logo ? `height:${num(c.logo_h, 44, 10, 400)}px;width:auto` : ""}">${c.logo ? `<img src="${safeUrl(c.logo)}" style="height:100%;width:auto;max-width:280px;display:block;object-fit:contain">` : "LOGO"}</div>
         <strong>St. Andrews Baptist Church</strong></div>
         <p class="field-hint" style="margin-top:14px">The logo appears at this height in the header — width follows the photo's real shape, so nothing gets squished.</p>`;
     case "home":
@@ -194,10 +194,13 @@ document.addEventListener("sabc:session-ready", () => {
           codeBox.innerHTML = "Enter the current code from your authenticator app.";
           resendWrap.style.display = "none";
         } else if (data.emailed) {
-          codeBox.innerHTML = `A code was just emailed to <b>${email}</b>. (Requesting a new one invalidates this one — only the newest code works.)`;
+          codeBox.innerHTML = `A code was just emailed to <b>${esc(email)}</b>. (Requesting a new one invalidates this one — only the newest code works.)`;
           resendWrap.style.display = "";
         } else {
-          codeBox.innerHTML = `Email isn't set up yet, so here's the code directly: <strong>${data.demo_code}</strong>`;
+          // The server no longer hands the code back to the browser — that
+          // would have made the second step meaningless. If email can't
+          // send, say so plainly instead of pretending it worked.
+          codeBox.innerHTML = esc(data.error || "We couldn't send your code by email. Use your authenticator app if you've set one up, or ask an admin to check the church email settings.");
           resendWrap.style.display = "";
         }
         // Remember where we are — if the phone's browser reloads this tab
@@ -246,7 +249,7 @@ document.addEventListener("sabc:session-ready", () => {
         if (!data.ok) { msg.className = "error"; msg.textContent = data.error || "Couldn't set this up."; return; }
         qrArea.innerHTML = `
           <p>Scan this with your authenticator app, then come back and log in with the code it shows:</p>
-          <img src="${data.qrCodePng}" alt="QR code" style="max-width:220px;border-radius:8px">
+          <img src="${safeUrl(data.qrCodePng)}" alt="QR code" style="max-width:220px;border-radius:8px">
           <p class="field-hint">Can't scan? Add manually with this key: <code>${data.secret}</code></p>
           <button type="button" class="button" id="totp-setup-done-btn" style="margin-top:14px">I've scanned it — enter my code</button>`;
         document.querySelector("#totp-setup-done-btn").addEventListener("click", () => {
@@ -317,6 +320,41 @@ document.addEventListener("sabc:session-ready", () => {
         return `${greeting}, ${firstName}`;
       })();
     }
+    // If this person is still on the shared church password, invite them
+    // to set one of their own — once, where they'll actually see it.
+    (async () => {
+      try {
+        const res = await fetch("/api/auth/session", { credentials: "same-origin" });
+        if (!res.ok) return;
+        const sess = await res.json();
+        if (!sess.loggedIn || sess.hasOwnPassword) return;
+        const notice = document.querySelector(".notice");
+        if (!notice) return;
+        const banner = document.createElement("div");
+        banner.className = "notice notice-action";
+        banner.innerHTML = `<b>Set your own password.</b> You're signed in with the shared church password. Giving yourself your own means only you know it — and it keeps working if the shared one is ever changed. <a class="text-link" href="settings.html">Set it up in Settings &rarr;</a>`;
+        notice.parentNode.insertBefore(banner, notice);
+      } catch {}
+    })();
+
+    // Show which build the Pi is actually running, so "did my update land?"
+    // is something you can check instead of guess.
+    (async () => {
+      try {
+        const res = await fetch("/api/version", { credentials: "same-origin" });
+        if (!res.ok) return;
+        const { version } = await res.json();
+        const strip = document.querySelector(".visitor-inline");
+        if (strip && version) {
+          const tag = document.createElement("span");
+          tag.className = "visitor-inline-num build-tag";
+          tag.title = "Which version of the site this Pi is running";
+          tag.textContent = "build " + version;
+          strip.appendChild(tag);
+        }
+      } catch {}
+    })();
+
     pageButtons.forEach(btn => {
       btn.addEventListener("click", () => {
         window.location.href = "edit.html?page=" + btn.getAttribute("data-goto-page");
@@ -361,7 +399,7 @@ document.addEventListener("sabc:session-ready", () => {
 
       schema.images.forEach(img => {
         const preview = current[img.id]
-          ? `<img src="${current[img.id]}" alt="">`
+          ? `<img src="${safeUrl(current[img.id])}" alt="">`
           : `<span>Click to add photo</span>`;
         formHtml += `
           <div class="edit-field">
@@ -424,10 +462,10 @@ document.addEventListener("sabc:session-ready", () => {
           if (id === "logo") {
             el.style.height = height + "px";
             el.style.width = "auto";
-            el.innerHTML = `<img src="${dataUrl}" alt="" style="height:100%;width:auto;max-width:280px;display:block;object-fit:contain">`;
+            el.innerHTML = `<img src="${safeUrl(dataUrl)}" alt="" style="height:100%;width:auto;max-width:280px;display:block;object-fit:contain">`;
           } else {
             el.style.height = (height || 300) + "px";
-            el.innerHTML = `<img src="${dataUrl}" alt="" style="width:100%;height:100%;object-fit:cover;object-position:50% ${pos ?? 50}%">`;
+            el.innerHTML = `<img src="${safeUrl(dataUrl)}" alt="" style="width:100%;height:100%;object-fit:cover;object-position:50% ${num(pos, 50, 0, 100)}%">`;
           }
         });
       }
@@ -476,7 +514,7 @@ document.addEventListener("sabc:session-ready", () => {
           if (!file) return;
           compressImage(file, 1000, 0.75).then(dataUrl => {
             const slot = input.previousElementSibling;
-            slot.innerHTML = `<img src="${dataUrl}" alt="">`;
+            slot.innerHTML = `<img src="${safeUrl(dataUrl)}" alt="">`;
             input.dataset.value = dataUrl;
             delete input.dataset.cleared;
             refreshPreviewImage(input.dataset.imageId, dataUrl, currentSize(input.dataset.imageId), currentPos(input.dataset.imageId));
@@ -554,7 +592,10 @@ document.addEventListener("sabc:session-ready", async () => {
     if (!d.ok) return;
     const peak = Math.max(1, ...d.recent.map(r => r.visitors));
     box.innerHTML = `
-      <div class="visitor-numbers">
+      <span class="visitor-inline-num"><strong>${d.today.visitors}</strong> visitors today</span>
+      <span class="visitor-inline-num"><strong>${d.today.views}</strong> views</span>
+      <span class="visitor-inline-num"><strong>${d.week.visitors}</strong> this week</span>
+      <div class="visitor-numbers" hidden>
         <div><strong>${d.today.visitors}</strong><span>visitors today</span></div>
         <div><strong>${d.today.views}</strong><span>page views today</span></div>
         <div><strong>${d.week.visitors}</strong><span>visitors this week</span></div>

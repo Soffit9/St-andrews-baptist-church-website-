@@ -283,3 +283,99 @@ a,button{transition:box-shadow .15s ease,transform .15s ease,filter .15s ease,ba
 .visitor-chart{display:flex;align-items:flex-end;gap:4px;height:50px;margin:16px 0 4px}
 .visitor-chart span{flex:1;background:var(--blue);border-radius:3px 3px 0 0;min-height:2px;opacity:.75}
 [data-theme="dark"] .visitor-stats{background:#141d28;border-color:#2b3646}
+
+/* ---------- Church history page ---------- */
+.history-body{max-width:780px;margin:0 auto}
+.history-body h2{font-family:Georgia,serif;color:var(--navy);margin:38px 0 14px;font-size:26px;border-bottom:2px solid var(--line);padding-bottom:8px}
+.history-body p{font-size:16px;line-height:1.75;margin:0 0 16px}
+.history-dedication{border-left:4px solid var(--blue);padding:18px 24px;background:#f4f8fd;border-radius:0 10px 10px 0;margin-bottom:10px}
+.history-dedication p{font-family:Georgia,serif;font-style:italic;font-size:17px;margin:0}
+.history-attrib{text-align:right;font-style:normal !important;font-size:13px !important;color:var(--muted);margin-top:10px !important}
+.history-order{background:#f7f9fb;border:1px solid var(--line);border-radius:10px;padding:22px 26px;margin:22px 0}
+.history-order h3{font-family:Georgia,serif;color:var(--navy);margin:0 0 12px}
+.history-order ol{margin:0 0 16px;padding-left:22px}
+.history-order li{margin-bottom:6px;line-height:1.5}
+.history-list{padding-left:20px}
+.history-list li{margin-bottom:12px;line-height:1.7}
+.history-ministers{display:grid;gap:2px;margin:18px 0 8px}
+.history-ministers div{display:grid;grid-template-columns:120px 1fr;gap:14px;padding:9px 12px;border-radius:6px;align-items:baseline}
+.history-ministers div:nth-child(odd){background:#f7f9fb}
+.history-ministers span{color:var(--blue);font-weight:700;font-size:14px}
+.history-ministers em{color:var(--muted);font-size:13px;font-style:italic}
+.history-source{margin-top:40px;padding:24px;border:1px solid var(--line);border-radius:10px;background:#f7f9fb}
+.history-source h3{font-family:Georgia,serif;color:var(--navy);margin:0 0 12px}
+@media(max-width:640px){.history-ministers div{grid-template-columns:1fr;gap:2px}.history-body h2{font-size:22px}}
+[data-theme="dark"] .history-dedication{background:#141d28}
+[data-theme="dark"] .history-order,[data-theme="dark"] .history-source,[data-theme="dark"] .history-ministers div:nth-child(odd){background:#141d28;border-color:#2b3646}
+[data-theme="dark"] .history-body h2,[data-theme="dark"] .history-order h3,[data-theme="dark"] .history-source h3{color:#e9edf2;border-color:#2b3646}
+
+
+/* ---------- Prevent the flash of placeholder content ----------
+   Saved content arrives from the server a moment after the page paints,
+   so without this you briefly see "LOGO" or the old built-in default text
+   before the real content replaces it. Elements that get replaced start
+   invisible and fade in once content.js has applied everything. */
+[data-image="logo"],[data-field]{opacity:0}
+html.sabc-content-ready [data-image="logo"],
+html.sabc-content-ready [data-field]{opacity:1;transition:opacity .12s ease}
+/* Safety net: if the server never answers, show everything anyway after
+   1.5s rather than leaving the page looking broken. */
+@keyframes sabcRevealFallback{to{opacity:1}}
+[data-image="logo"],[data-field]{animation:sabcRevealFallback 0s linear 1.5s forwards}
+
+/* Compact visitor counter in the admin top bar */
+.visitor-inline{display:flex;gap:18px;align-items:center;margin-left:auto;margin-right:16px;flex-wrap:wrap}
+.visitor-inline-num{font-size:13px;color:var(--muted);white-space:nowrap}
+.visitor-inline-num strong{font-size:18px;color:var(--blue);margin-right:4px}
+.visitor-inline .visitor-chart,.visitor-inline .field-hint{display:none}
+@media(max-width:700px){.visitor-inline{width:100%;margin:8px 0 0}}
+
+/* ---------- Prayer request consent ---------- */
+.consent-box{border:1px solid var(--line);border-radius:10px;padding:18px 20px;background:#f7f9fb;margin:18px 0}
+.consent-box h3{margin:0 0 10px;font-size:16px;color:var(--navy)}
+.consent-box ul{margin:0 0 14px;padding-left:20px}
+.consent-box li{font-size:14px;line-height:1.6;margin-bottom:6px}
+.consent-check{display:flex;gap:10px;align-items:flex-start;font-size:14px;cursor:pointer;padding-top:10px;border-top:1px solid var(--line)}
+.consent-check input{margin-top:3px;flex-shrink:0;width:18px;height:18px;cursor:pointer}
+[data-theme="dark"] .consent-box{background:#141d28;border-color:#2b3646}
+[data-theme="dark"] .consent-box h3{color:#e9edf2}
+[data-theme="dark"] .consent-check{border-color:#2b3646}
+
+/* Password status line under each admin row */
+.admin-pw-row{display:flex;justify-content:space-between;align-items:center;gap:12px;
+  padding:4px 12px 12px;margin-top:-8px;flex-wrap:wrap}
+.admin-pw-row .field-hint{margin:0;font-size:13px}
+[data-theme="dark"] .admin-pw-row .field-hint{color:#9aa7b6}
+
+/* Dashboard call-to-action banner + build tag */
+.notice-action{background:#eaf4ff;border-color:#9cc3e8;margin-bottom:12px}
+.build-tag{opacity:.65;font-size:12px}
+.build-tag strong{font-size:12px}
+[data-theme="dark"] .notice-action{background:#15263a;border-color:#2f4a68;color:#dce7f3}
+
+/* One-step sermon posting panel */
+.sermon-post-panel{border-color:#9cc3e8;background:#f4f9ff}
+[data-theme="dark"] .sermon-post-panel{background:#15263a;border-color:#2f4a68}
+
+/* ---------- Admin help page ---------- */
+.help-search{width:100%;padding:13px 16px;margin:18px 0 20px;border:1px solid #b9c5d3;
+  border-radius:9px;font:inherit;font-size:16px}
+.help-item{border:1px solid var(--line);border-radius:10px;margin-bottom:10px;background:#fff;overflow:hidden}
+.help-item summary{padding:15px 18px;font-weight:800;color:var(--navy);cursor:pointer;
+  list-style:none;display:flex;justify-content:space-between;align-items:center;gap:12px}
+.help-item summary::-webkit-details-marker{display:none}
+.help-item summary::after{content:"+";font-size:21px;font-weight:400;color:var(--blue);flex-shrink:0}
+.help-item[open] summary::after{content:"−"}
+.help-item summary:hover{background:#f4f8fd}
+.help-body{padding:0 18px 18px;border-top:1px solid var(--line)}
+.help-body p,.help-body li{font-size:15px;line-height:1.65}
+.help-body ol,.help-body ul{padding-left:22px}
+.help-body li{margin-bottom:7px}
+.help-tip{background:#f4f8fd;border-left:3px solid var(--blue);padding:11px 15px;
+  border-radius:0 7px 7px 0;margin-top:14px;font-size:14px}
+[data-theme="dark"] .help-item{background:#141d28;border-color:#2b3646}
+[data-theme="dark"] .help-item summary{color:#e9edf2}
+[data-theme="dark"] .help-item summary:hover{background:#1a2634}
+[data-theme="dark"] .help-body{border-color:#2b3646}
+[data-theme="dark"] .help-tip{background:#1a2634}
+[data-theme="dark"] .help-search{background:#141d28;border-color:#2b3646;color:#e9edf2}

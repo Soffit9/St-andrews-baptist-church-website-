@@ -14,7 +14,8 @@
     # password, or /backend/prayer_requests.json and read private prayer
     # requests, or /backend/data/*.json for everything else. These files
     # must only ever be reachable through the /api/ endpoints, which check
-    # who's logged in first.
+    # who's logged in first. This also covers backend/credentials.json,
+    # which holds every admin's password hash and authenticator secret.
     handle /backend/* {
         respond "Not found" 404
     }
@@ -71,6 +72,27 @@
         Referrer-Policy "strict-origin-when-cross-origin"
         # Don't advertise what server software this is.
         -Server
+
+        # ---- Content Security Policy ----
+        # The strongest protection available here. Every script on this site
+        # lives in /assets/*.js — there is no inline JavaScript anywhere. So
+        # the browser is told to run scripts ONLY from this site's own files.
+        # If someone ever did manage to slip markup into a page (a poisoned
+        # sermon link, a name field full of HTML), the injected script simply
+        # would not run: the browser refuses it before it starts.
+        #
+        # Each piece, and why it's there:
+        #   default-src 'self'      everything comes from this site unless named below
+        #   script-src 'self'       no inline script, no script from other sites
+        #   style-src  'unsafe-inline'  the pages use style="..." attributes throughout
+        #   img-src data:           uploaded photos are stored inline as base64
+        #   img-src https:          thumbnails from YouTube/Facebook/Google Maps
+        #   frame-src               only the three embed providers actually used
+        #   connect-src bible-api   the daily verse lookup
+        #   object-src 'none'       no Flash/Java-era plugins, ever
+        #   base-uri 'self'         stops an injected <base> redirecting every link
+        #   form-action 'self'      a planted form can't post the data elsewhere
+        Content-Security-Policy "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self'; connect-src 'self' https://bible-api.com; frame-src https://www.youtube-nocookie.com https://www.youtube.com https://www.facebook.com https://www.google.com; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'self'"
     }
 
     # Show the site's own 404 page instead of Caddy's plain text one.

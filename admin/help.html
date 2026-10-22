@@ -1,0 +1,224 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>How Do I…? | St. Andrews Baptist Church</title><link rel="stylesheet" href="../assets/style.css"></head>
+<body class="admin-page">
+<div class="admin-topbar"><button class="theme-toggle" id="theme-toggle" type="button" aria-label="Toggle dark mode">🌙</button></div>
+<div class="admin-main" style="max-width:820px;margin:0 auto">
+  <a class="edit-back" href="dashboard.html">← Back to Dashboard</a>
+  <h1>How Do I…?</h1>
+  <p class="field-hint">Everything you can do on this site, in plain language. Nothing here can break anything — every change is recorded in the Change Log and can be undone.</p>
+
+  <input type="search" id="help-search" class="help-search" placeholder="Type what you're trying to do — sermon, photo, password, event…" autocomplete="off">
+  <p id="help-no-results" class="field-hint" hidden>Nothing matches that. Try a shorter word, or ask Dante.</p>
+
+  <div id="help-list">
+
+    <details class="help-item" open>
+      <summary>Post this week's sermon</summary>
+      <div class="help-body">
+        <p>Dashboard → <b>Sermon Archive</b>. The blue box at the top is the quick way.</p>
+        <ol>
+          <li>Pick the date of the service.</li>
+          <li>Type the title, the speaker, and the Bible passage.</li>
+          <li>Paste the video link — a YouTube link or a Facebook video link both work. Copy it straight from the address bar.</li>
+          <li>Leave <b>"Show this as the latest sermon"</b> ticked.</li>
+          <li>Click <b>Post Sermon</b>.</li>
+        </ol>
+        <p>That one step files it in the archive <em>and</em> puts it on the homepage as the newest sermon. You don't need to go anywhere else.</p>
+        <p class="help-tip"><b>Untick the box</b> when you're catching up on older sermons you missed — they'll go into the archive without replacing the current one on the homepage.</p>
+      </div>
+    </details>
+
+    <details class="help-item">
+      <summary>Add or change an event</summary>
+      <div class="help-body">
+        <p>Dashboard → <b>Events</b>. You'll see a calendar.</p>
+        <ol>
+          <li>Click the day the event happens.</li>
+          <li>Fill in the title, the time, and a short description.</li>
+          <li>Click <b>Apply Changes</b>.</li>
+        </ol>
+        <p>More than one thing happening that day? Click <b>+ Add Another Event This Day</b> before saving.</p>
+        <p>Events show on the Events page and the homepage automatically. Once the date passes they drop off on their own — you don't have to tidy up after them.</p>
+        <p class="help-tip">The <b>Church Calendar</b> tile is a different thing: that's for who's doing what on a Sunday (prayer, sound, greeting), and it's not shown to the public.</p>
+      </div>
+    </details>
+
+    <details class="help-item">
+      <summary>Update someone's contact info, or add a new person</summary>
+      <div class="help-body">
+        <p>Dashboard → <b>Who's Who</b>.</p>
+        <ol>
+          <li>Find the person. The search box at the top matches names, roles, and groups.</li>
+          <li>Change their phone or email in the boxes.</li>
+          <li>Click <b>Apply Changes</b> at the bottom.</li>
+        </ol>
+        <p>For somebody new, click <b>+ Add Person</b>, fill in their name, role, group, phone and email, then Apply Changes.</p>
+        <p>Whatever group you put someone in is what the filter buttons on the public Who's Who page use — and the "Need to reach someone?" buttons on the homepage jump straight to those groups.</p>
+        <p class="help-tip"><b>Only put contact details on the site that the person is happy being public.</b> If in doubt, ask them first. Leaving a field blank just hides it.</p>
+      </div>
+    </details>
+
+    <details class="help-item">
+      <summary>Add a photo — and fix it when the head is cut off</summary>
+      <div class="help-body">
+        <p>Anywhere you see a photo box, click it and choose a picture from your phone or computer. Photos are shrunk automatically, so a big phone photo is fine.</p>
+        <p><b>If the top of someone's head is cut off:</b> that's what the sliders under the photo are for. Photos get trimmed to fit a fixed shape, and the sliders choose <em>which part</em> you keep — left/right and up/down. Drag until the face is where you want it, then Apply Changes.</p>
+        <p class="help-tip">A photo taken portrait (tall) usually needs the up/down slider. One taken landscape (wide) usually needs left/right.</p>
+      </div>
+    </details>
+
+    <details class="help-item">
+      <summary>Change the welcome message on the homepage</summary>
+      <div class="help-body">
+        <p>Dashboard → <b>Homepage</b>. Edit the welcome heading and the message underneath, then Apply Changes.</p>
+        <p>The panel on the right shows how it'll look as you type. Nothing goes live until you click Apply Changes and confirm.</p>
+      </div>
+    </details>
+
+    <details class="help-item">
+      <summary>Change the church address, phone, or email</summary>
+      <div class="help-body">
+        <p>Dashboard → <b>Contact Info</b>. Change what you need, then Apply Changes.</p>
+        <p>This updates the Contact page and the footer at the bottom of every page at once.</p>
+      </div>
+    </details>
+
+    <details class="help-item">
+      <summary>Read prayer requests</summary>
+      <div class="help-body">
+        <p>Dashboard → <b>Prayer Requests</b>. Only Pastor Ladd and Full Admin accounts can open this — "Can Edit" and "View Only" accounts can't see it at all.</p>
+        <p>Each request shows whether the person agreed to have it <b>read aloud</b> in the prayer meeting. If it says no, it stays between you and the prayer team. Please take that seriously — people trust us with hard things.</p>
+        <p>If someone asks to have their request deleted, click <b>Delete</b> on it. We promise that on the privacy page, so it matters that we actually do it.</p>
+      </div>
+    </details>
+
+    <details class="help-item">
+      <summary>Set my own password</summary>
+      <div class="help-body">
+        <p>Dashboard → <b>Settings</b> → <b>Your Own Password</b>.</p>
+        <ol>
+          <li>Type the password you log in with now.</li>
+          <li>Pick a new one — at least 8 characters.</li>
+          <li>Type it again to confirm, then click Set My Password.</li>
+        </ol>
+        <p>From then on it's yours alone. Nobody can see it, not even Dante — the site stores a scrambled version it can check against but can't read back.</p>
+        <p class="help-tip">Worth doing. Until you set your own, you're sharing one password with everyone, which means it can't be changed without telling the whole team.</p>
+      </div>
+    </details>
+
+    <details class="help-item">
+      <summary>Set up the authenticator app (no more waiting for emails)</summary>
+      <div class="help-body">
+        <p>Install <b>Google Authenticator</b> or <b>Microsoft Authenticator</b> on your phone — both free.</p>
+        <ol>
+          <li>Dashboard → <b>Settings</b> → <b>Your Authenticator App</b> → Set Up Authenticator App.</li>
+          <li>Open the app on your phone, tap +, and scan the square code on screen.</li>
+          <li>Next time you log in, pick "authenticator app" and type the 6-digit number it shows.</li>
+        </ol>
+        <p>The number changes every 30 seconds. It works with no signal and no email, and it's quicker than waiting for a code to arrive.</p>
+        <p class="help-tip">If you get a new phone, set this up again <em>before</em> wiping the old one. If it's already gone, ask a Full Admin.</p>
+      </div>
+    </details>
+
+    <details class="help-item">
+      <summary>I forgot my password / I'm locked out</summary>
+      <div class="help-body">
+        <p>Ask a Full Admin. On <b>Admin Users</b> they click <b>Reset their password</b> next to your name. That puts you back on the shared church password so you can get in, then set a new one of your own in Settings.</p>
+        <p>If it says <b>too many incorrect attempts</b>, that's the site protecting your account. Wait about 15 minutes and try again — it clears by itself, and it only affects you, not anyone else at the church.</p>
+      </div>
+    </details>
+
+    <details class="help-item">
+      <summary>Add someone to the admin team (or remove them)</summary>
+      <div class="help-body">
+        <p>Dashboard → <b>Admin Users</b>. Full Admin only.</p>
+        <p>Click <b>+ Add Admin</b>, put in their name and the email they'll log in with, and choose what they can do:</p>
+        <ul>
+          <li><b>Full Admin</b> — everything, including prayer requests and this list.</li>
+          <li><b>Can Edit</b> — all the normal editing, but no prayer requests and no changing who's an admin.</li>
+          <li><b>View Only</b> — can look at the Calendar and Gallery, can't change anything.</li>
+        </ul>
+        <p>Use their <b>personal</b> email, not a shared church one — login codes should reach one person, not an inbox several people read.</p>
+        <p>Give people the least they need. It's not distrust; it just means a mistake or a stolen phone does less damage.</p>
+        <p class="help-tip">Anyone <em>not</em> on this list can't log in at all, even with the right password.</p>
+      </div>
+    </details>
+
+    <details class="help-item">
+      <summary>I changed something by mistake — can I undo it?</summary>
+      <div class="help-body">
+        <p>Yes. Dashboard → <b>Change Log</b>. Every change ever made is listed with who made it and when.</p>
+        <ol>
+          <li>Find the change.</li>
+          <li>Click <b>Preview before/after</b> to see exactly what changed.</li>
+          <li>Click <b>Revert to before</b> to put it back.</li>
+        </ol>
+        <p>Text and lists come back exactly. <b>Photos don't</b> — if the change included a new photo you'll need to upload the old one again.</p>
+      </div>
+    </details>
+
+    <details class="help-item">
+      <summary>Put photos in the Gallery</summary>
+      <div class="help-body">
+        <p>Dashboard → <b>Gallery</b>. Add photos and Apply Changes.</p>
+        <p>The public Gallery page asks people to log in first, so these aren't visible to the whole internet — it's for sharing photos back with the congregation.</p>
+        <p class="help-tip">Before posting photos with people in them, especially children, make sure you have permission. Once something's online it's hard to take back.</p>
+      </div>
+    </details>
+
+    <details class="help-item">
+      <summary>Put out a newsletter</summary>
+      <div class="help-body">
+        <p>Dashboard → <b>Newsletter</b>. Start a new issue, add the pastor's message and as many articles as you like, each with a photo if you want one.</p>
+        <p>It stays a <b>draft</b> — invisible to everyone else — until you publish it. So you can work on it over several days without anyone seeing a half-finished page.</p>
+      </div>
+    </details>
+
+    <details class="help-item">
+      <summary>Make a page for a ministry or group</summary>
+      <div class="help-body">
+        <p>Dashboard → <b>Ministries</b>. Create one, give it a name, a description, and photos.</p>
+        <p>Each ministry gets its own page and appears on the Ministries list. Like the newsletter, it stays hidden until you publish it.</p>
+      </div>
+    </details>
+
+    <details class="help-item">
+      <summary>Change the photos behind the homepage welcome</summary>
+      <div class="help-body">
+        <p>Dashboard → <b>Homepage Photos</b>. Add a few and they'll slowly fade between each other behind the welcome text. Leave it empty for a plain background.</p>
+        <p>Wide (landscape) photos work best. Use the slider under each to choose which part shows.</p>
+      </div>
+    </details>
+
+    <details class="help-item">
+      <summary>Why hasn't my change appeared on the website?</summary>
+      <div class="help-body">
+        <p>Work through these in order:</p>
+        <ol>
+          <li><b>Did you click Apply Changes?</b> Nothing goes live until you do. This is the usual answer.</li>
+          <li><b>Did you confirm?</b> Some screens ask twice on purpose.</li>
+          <li><b>Refresh the page</b> you're looking at — hold Shift and click reload.</li>
+          <li><b>Check the Change Log.</b> If your change isn't listed, it didn't save. If it is listed, it saved and you're looking at an old copy.</li>
+          <li><b>Check the top of your screen</b> for "Logged in as … (View Only)". View Only accounts can't save — a Full Admin can change that on Admin Users.</li>
+        </ol>
+      </div>
+    </details>
+
+    <details class="help-item">
+      <summary>Something's broken / who do I ask?</summary>
+      <div class="help-body">
+        <p>Ask <b>Dante McLaughlin</b>. When you do, three things make it much quicker to fix:</p>
+        <ul>
+          <li>A <b>screenshot</b> of what you're seeing.</li>
+          <li>What you <b>clicked just before</b> it happened.</li>
+          <li>Whether it happens <b>every time</b> or just once.</li>
+        </ul>
+        <p>You can't break this by clicking around. Everything is recorded and reversible, and there's nothing on these screens that deletes anything without asking first. Explore.</p>
+      </div>
+    </details>
+
+  </div>
+</div>
+<script src="../assets/content.js"></script>
+<script src="../assets/admin.js"></script>
+<script src="../assets/features.js"></script>
+</body></html>

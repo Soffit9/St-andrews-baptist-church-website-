@@ -48,6 +48,7 @@ document.addEventListener("sabc:session-ready", () => {
   if (document.querySelector("#gallery-public-root")) renderGalleryPublic();
   if (document.querySelector("#prayer-requests-admin-root")) initPrayerRequestsAdmin();
   if (document.querySelector("#settings-admin-root")) initSettingsAdmin();
+  if (document.querySelector("#help-search")) initHelpSearch();
   if (document.querySelector("#videos-admin-root")) initVideosAdmin();
   if (document.querySelector("#newsletter-admin-root")) initNewsletterAdmin();
   if (document.querySelector("#newsletter-public-root")) renderNewsletterPublic();
@@ -386,7 +387,7 @@ function renderUpcomingEvents(targetSelector, max) {
       lastMonth = month;
     }
     const badge = `${d.toLocaleDateString(undefined, { month: "short" }).toUpperCase()}<br><b>${d.getDate()}</b>`;
-    const posterLink = ev.file ? `<a class="text-link" href="${ev.file}" download="${ev.fileName || "event-flyer"}">📎 View/Download Flyer</a>` : "";
+    const posterLink = ev.file ? `<a class="text-link" href="${safeUrl(ev.file)}" download="${esc(ev.fileName || "event-flyer")}">📎 View/Download Flyer</a>` : "";
     if (el.dataset.grouped === "true") {
       html += `<article class="event-row"><span class="date-badge">${badge}</span><div><h3>${esc(ev.title) || "Untitled Event"}</h3><p>${ev.time ? `<strong>${esc(ev.time)}</strong> · ` : ""}${esc(ev.description)}</p>${posterLink}</div></article>`;
     } else {
@@ -413,7 +414,7 @@ function initWhoswhoAdmin() {
           <span class="person-row-chevron">›</span>
         </div>
         <div class="person-row-body">
-          ${p.photo ? `<div class="person-row-photo"><img src="${esc(p.photo)}" alt="" style="object-position:${p.photo_pos_x ?? 50}% ${p.photo_pos ?? 50}%"></div>` : ""}
+          ${p.photo ? `<div class="person-row-photo"><img loading="lazy" decoding="async" src="${safeUrl(p.photo)}" alt="" style="object-position:${num(p.photo_pos_x, 50, 0, 100)}% ${num(p.photo_pos, 50, 0, 100)}%"></div>` : ""}
           <div class="person-row-details">
             <p class="person-role">${esc(p.role)}</p>
             <p class="field-hint" style="margin:2px 0 8px">${esc(group)}</p>
@@ -451,7 +452,7 @@ function initWhoswhoAdmin() {
         <div class="person-edit-card" data-id="${p.id}">
           <div class="person-edit-top">
             <div class="photo-col">
-              <label class="image-upload-slot" style="height:90px" for="photo_${p.id}">${p.photo ? `<img src="${p.photo}" style="width:100%;height:100%;object-fit:cover;object-position:${p.photo_pos_x ?? 50}% ${p.photo_pos ?? 50}%">` : "Photo"}</label>
+              <label class="image-upload-slot" style="height:90px" for="photo_${p.id}">${p.photo ? `<img loading="lazy" decoding="async" src="${safeUrl(p.photo)}" style="width:100%;height:100%;object-fit:cover;object-position:${num(p.photo_pos_x, 50, 0, 100)}% ${num(p.photo_pos, 50, 0, 100)}%">` : "Photo"}</label>
               <input type="file" accept="image/*" id="photo_${p.id}" data-photo-for="${p.id}" style="display:none">
               <label style="display:block;font-size:12px;color:var(--muted);margin-top:8px">Horizontal focus <span id="pos-x-readout-${p.id}" style="font-weight:700;color:var(--navy)">${(p.photo_pos_x ?? 50) < 34 ? "left" : (p.photo_pos_x ?? 50) > 66 ? "right" : "center"}</span> — use this if the crop is cutting the sides instead of top/bottom</label>
               <input type="range" min="0" max="100" data-pos-x-for="${p.id}" value="${p.photo_pos_x ?? 50}" style="width:100%">
@@ -504,7 +505,7 @@ function initWhoswhoAdmin() {
       compressImage(file, 500, 0.75).then(dataUrl => {
         const posRange = root.querySelector(`[data-pos-for="${input.dataset.photoFor}"]`);
         const posXRange = root.querySelector(`[data-pos-x-for="${input.dataset.photoFor}"]`);
-        input.previousElementSibling.innerHTML = `<img src="${dataUrl}" style="width:100%;height:100%;object-fit:cover;object-position:${posXRange ? posXRange.value : 50}% ${posRange ? posRange.value : 50}%">`;
+        input.previousElementSibling.innerHTML = `<img loading="lazy" decoding="async" src="${safeUrl(dataUrl)}" style="width:100%;height:100%;object-fit:cover;object-position:${posXRange ? posXRange.value : 50}% ${posRange ? posRange.value : 50}%">`;
         input.dataset.value = dataUrl;
         refreshPreview();
       }).catch(err => alert("Couldn't process that photo: " + err.message));
@@ -594,7 +595,7 @@ function initWhoswhoPublic() {
             <span class="person-row-chevron">›</span>
           </button>
           <div class="person-row-body" id="person-body-${i}" hidden>
-            ${p.photo ? `<div class="person-row-photo"><img src="${esc(p.photo)}" alt="" style="object-position:${p.photo_pos_x ?? 50}% ${p.photo_pos ?? 50}%"></div>` : ""}
+            ${p.photo ? `<div class="person-row-photo"><img loading="lazy" decoding="async" src="${safeUrl(p.photo)}" alt="" style="object-position:${num(p.photo_pos_x, 50, 0, 100)}% ${num(p.photo_pos, 50, 0, 100)}%"></div>` : ""}
             <div class="person-row-details">
               <p class="person-role">${esc(p.role)}</p>
               <p class="field-hint" style="margin:2px 0 8px">${esc(group)}</p>
@@ -617,7 +618,10 @@ function initWhoswhoPublic() {
 
   // Search + group filter work together: a row shows only if it passes both.
   const search = document.querySelector("#whoswho-search");
-  let activeGroup = "__all";
+  // Homepage "Who to Contact" buttons link here with ?g=Deacons etc, so
+  // people land already filtered instead of having to hunt.
+  const requested = new URLSearchParams(window.location.search).get("g");
+  let activeGroup = requested && used.includes(requested) ? requested : "__all";
 
   function applyFilters() {
     const q = (search.value || "").trim().toLowerCase();
@@ -630,6 +634,14 @@ function initWhoswhoPublic() {
       if (show) shown++;
     });
     document.querySelector("#whoswho-empty").hidden = shown > 0;
+  }
+
+  // Reflect a ?g= preselection in the buttons, and apply it immediately.
+  if (activeGroup !== "__all") {
+    root.querySelectorAll("#whoswho-filters .roster-chip").forEach(b => {
+      b.classList.toggle("active", b.dataset.group === activeGroup);
+    });
+    applyFilters();
   }
 
   search.addEventListener("input", applyFilters);
@@ -665,15 +677,39 @@ function initAdmins() {
             <option ${u.access === "View Only" ? "selected" : ""}>View Only</option>
           </select>
           <button type="button" data-remove="${u.id}" ${isPermanent ? "disabled title=\"This account always stays Full Admin\"" : ""}>Remove</button>
+        </div>
+        <div class="admin-pw-row">
+          <span class="field-hint">${u.hasOwnPassword
+            ? "🔒 Has their own password" + (u.hasTotp ? " · 📱 authenticator app set up" : "")
+            : "Still using the shared church password" + (u.hasTotp ? " · 📱 authenticator app set up" : "")}</span>
+          ${u.hasOwnPassword ? `<button type="button" class="text-btn" data-reset-pw="${esc(u.email)}">Reset their password</button>` : ""}
         </div>`;
     });
     html += `</div>
       <button class="button button-light" id="add-admin" type="button">+ Add Admin</button>
       <div class="edit-actions"><span></span><button class="button" id="save-admins" type="button">Apply Changes</button></div>
+      <p class="field-hint" style="margin-top:16px">Everyone logs in with their own password once they set one (Settings &rarr; Your Own Password). Until then the shared church password works for them. If someone forgets theirs, use <b>Reset their password</b> &mdash; that drops them back to the shared one so they can get in and pick a new one. Nobody, including you, can read anyone's password.</p>
       <p class="field-hint" style="margin-top:16px">This list is now real — it's stored on the server and actually controls login access and permissions, not just a plan for later. One account (danteeugenemclaughlin@gmail.com) always stays Full Admin no matter what, as a safety net.</p>
       <p id="admins-toast" class="toast"></p>`;
     root.innerHTML = html;
     cmsApplyViewOnlyLock(root);
+
+    root.querySelectorAll("[data-reset-pw]").forEach(btn => btn.addEventListener("click", async () => {
+      const who = btn.dataset.resetPw;
+      if (!confirm("Reset the password for " + who + "?\n\nThey'll go back to using the shared church password until they set a new one of their own. Their authenticator app is not affected.")) return;
+      try {
+        const res = await fetch("/api/admins/clear-password", {
+          method: "POST", headers: { "Content-Type": "application/json" }, credentials: "same-origin",
+          body: JSON.stringify({ email: who })
+        });
+        const data = await res.json();
+        if (!data.ok) { alert(data.error || "Couldn't reset that password."); return; }
+        const toast = document.querySelector("#admins-toast");
+        toast.textContent = "✓ Password reset — " + who + " can log in with the shared church password now.";
+        toast.classList.add("show");
+        render();
+      } catch { alert("Couldn't reach the server."); }
+    }));
 
     root.querySelectorAll("[data-remove]:not([disabled])").forEach(btn => btn.addEventListener("click", async () => {
       const current = await cmsGetAdminUsers();
@@ -868,8 +904,9 @@ function initSermonArchiveAdmin() {
     const years = Object.keys(byYear).sort((a, b) => b - a);
 
     let html = `
-      <div class="role-panel" style="margin-top:0">
-        <h3>Add a Sermon</h3>
+      <div class="role-panel sermon-post-panel" style="margin-top:0">
+        <h3>Post This Week's Sermon</h3>
+        <p class="field-hint">Fill this in once. It files the sermon in the archive below and — unless you untick the box — puts it on the homepage and the Sermons page as the latest one. No second trip to another screen.</p>
         <div class="role-row" style="grid-template-columns:160px 1fr 1fr">
           <input type="date" id="new-sermon-date" value="${new Date().toISOString().slice(0, 10)}">
           <input type="text" id="new-sermon-title" placeholder="Sermon title">
@@ -877,9 +914,14 @@ function initSermonArchiveAdmin() {
         </div>
         <div class="role-row" style="grid-template-columns:1fr 1fr;margin-top:10px">
           <input type="text" id="new-sermon-passage" placeholder="Bible passage">
-          <input type="text" id="new-sermon-youtube" placeholder="YouTube or Facebook video link (optional)">
+          <input type="text" id="new-sermon-youtube" placeholder="Paste the YouTube or Facebook video link">
         </div>
-        <div class="edit-actions"><span></span><button class="button" id="add-sermon-btn" type="button">+ Add Sermon</button></div>
+        <label class="consent-check" style="margin-top:14px;border-top:0;padding-top:0">
+          <input type="checkbox" id="new-sermon-make-latest" checked>
+          <span>Show this as the latest sermon on the homepage and Sermons page</span>
+        </label>
+        <div class="edit-actions"><span></span><button class="button" id="add-sermon-btn" type="button">Post Sermon</button></div>
+        <p id="sermon-post-message" class="success"></p>
       </div>
       <div id="sermon-list" style="margin-top:20px">`;
 
@@ -907,21 +949,54 @@ function initSermonArchiveAdmin() {
     root.innerHTML = html;
     cmsApplyViewOnlyLock(root);
 
-    document.querySelector("#add-sermon-btn").addEventListener("click", () => {
+    document.querySelector("#add-sermon-btn").addEventListener("click", async () => {
+      const btn = document.querySelector("#add-sermon-btn");
+      const msg = document.querySelector("#sermon-post-message");
       const date = document.querySelector("#new-sermon-date").value;
       const title = document.querySelector("#new-sermon-title").value.trim();
-      if (!date || !title) { alert("At least a date and title are needed."); return; }
-      const sermons = loadJSON("sabc_sermon_archive", []);
-      sermons.push({
-        id: uid(), date,
-        title,
-        speaker: document.querySelector("#new-sermon-speaker").value.trim(),
-        passage: document.querySelector("#new-sermon-passage").value.trim(),
-        youtube_id: extractYoutubeId(document.querySelector("#new-sermon-youtube").value.trim())
-      });
-      saveJSON("sabc_sermon_archive", sermons);
-      cmsLogRawChange("Sermon Archive", "sabc_sermon_archive", null, loadJSON("sabc_sermon_archive", []).slice(0, -1), sermons);
-      render();
+      msg.className = "error";
+      if (!date || !title) { msg.textContent = "A date and a title are needed at minimum."; return; }
+
+      const speaker = document.querySelector("#new-sermon-speaker").value.trim();
+      const passage = document.querySelector("#new-sermon-passage").value.trim();
+      const link = extractYoutubeId(document.querySelector("#new-sermon-youtube").value.trim());
+      const makeLatest = document.querySelector("#new-sermon-make-latest").checked;
+
+      btn.disabled = true;
+      msg.className = "success";
+      msg.textContent = "Saving…";
+      try {
+        const before = loadJSON("sabc_sermon_archive", []);
+        const sermons = [...before, { id: uid(), date, title, speaker, passage, youtube_id: link }];
+        // Must await: navigating or re-rendering before the save lands
+        // cancels the request mid-flight, which is what used to make
+        // changes quietly vanish.
+        await saveJSON("sabc_sermon_archive", sermons);
+        cmsLogRawChange("Sermon Archive", "sabc_sermon_archive", null, before, sermons);
+
+        if (makeLatest) {
+          const page = cmsGetPage("sermons");
+          await cmsSavePage("sermons", {
+            ...page,
+            latest_title: title,
+            latest_speaker: speaker,
+            latest_passage: passage,
+            youtube_id: link
+          });
+        }
+        msg.className = "success";
+        msg.textContent = makeLatest
+          ? "✓ Posted. It's in the archive and showing as the latest sermon on the homepage."
+          : "✓ Added to the archive.";
+        ["#new-sermon-title", "#new-sermon-speaker", "#new-sermon-passage", "#new-sermon-youtube"]
+          .forEach(sel => { const el = document.querySelector(sel); if (el) el.value = ""; });
+        render();
+      } catch (err) {
+        msg.className = "error";
+        msg.textContent = "Couldn't save that — " + (err && err.message ? err.message : "please try again.");
+      } finally {
+        btn.disabled = false;
+      }
     });
 
     root.querySelectorAll("[data-remove-sermon]").forEach(btn => btn.addEventListener("click", () => {
@@ -978,7 +1053,7 @@ function renderSermonArchivePublic() {
               <h3>${esc(s.title)}</h3>
               <p>${[s.date ? new Date(s.date + "T00:00:00").toLocaleDateString(undefined, { month: "long", day: "numeric" }) : "", s.speaker, s.passage].filter(Boolean).join(" · ")}</p>
               ${s.youtube_id ? (/facebook\.com/i.test(s.youtube_id)
-                ? `<a class="text-link" target="_blank" rel="noopener" href="${s.youtube_id}">Watch on Facebook →</a>`
+                ? `<a class="text-link" target="_blank" rel="noopener" href="${safeUrl(s.youtube_id)}">Watch on Facebook →</a>`
                 : `<a class="text-link" target="_blank" rel="noopener" href="https://www.youtube.com/watch?v=${s.youtube_id}">Watch on YouTube →</a>`) : ""}
             </div>
           </div>`).join("")
@@ -1001,7 +1076,10 @@ function initHeroRotation() {
   function setBg(el, p) {
     const photo = typeof p === "string" ? p : p.photo;
     const pos = typeof p === "string" ? 50 : (p.pos ?? 50);
-    el.style.backgroundImage = `url(${photo})`;
+    // Quoted and scheme-checked: an unquoted, unvalidated value here could
+    // close the url() and append CSS of someone else's choosing.
+    const okPhoto = safeUrl(photo);
+    el.style.backgroundImage = okPhoto ? `url("${okPhoto.replace(/"/g, "%22")}")` : "none";
     el.style.backgroundPosition = `50% ${pos}%`;
   }
 
@@ -1030,7 +1108,7 @@ function initHeroPhotosAdmin() {
       <div class="person-grid" style="margin-bottom:20px">`;
     photos.forEach((p, i) => {
       html += `<div class="person-card" style="text-align:center;padding:10px">
-        <div class="person-photo" style="height:120px"><img src="${p.photo}" style="width:100%;height:100%;object-fit:cover;object-position:50% ${p.pos}%"></div>
+        <div class="person-photo" style="height:120px"><img loading="lazy" decoding="async" src="${safeUrl(p.photo)}" style="width:100%;height:100%;object-fit:cover;object-position:50% ${num(p.pos, 50, 0, 100)}%"></div>
         <label style="display:block;font-size:12px;color:var(--muted);margin-top:8px">Focus point <span id="hero-pos-readout-${i}" style="font-weight:700;color:var(--navy)">${p.pos < 34 ? "top" : p.pos > 66 ? "bottom" : "center"}</span></label>
         <input type="range" min="0" max="100" data-hero-pos="${i}" value="${p.pos}" style="width:100%">
         <button type="button" class="button button-light" data-remove-hero-photo="${i}" style="margin:10px auto;display:block">Remove</button>
@@ -1089,10 +1167,10 @@ function initGalleryAdmin() {
     let html = `<div class="person-grid" style="margin-bottom:20px">`;
     photos.forEach(p => {
       html += `<div class="person-card" style="text-align:center;padding:10px">
-        <div class="person-photo" style="height:140px;cursor:pointer" data-open-lightbox="${p.id}"><img src="${p.photo}" style="width:100%;height:100%;object-fit:cover"></div>
+        <div class="person-photo" style="height:140px;cursor:pointer" data-open-lightbox="${p.id}"><img loading="lazy" decoding="async" src="${safeUrl(p.photo)}" style="width:100%;height:100%;object-fit:cover"></div>
         <input type="text" data-gf="label" data-id="${p.id}" value="${esc(p.label)}" placeholder="Label (e.g. Christmas 2026)" style="margin:10px 0;width:100%;padding:6px;border:1px solid #b9c5d3;border-radius:6px">
         <button type="button" class="button button-light" data-remove-gallery="${p.id}">Remove</button>
-        <a class="button button-light" download="church-photo.jpg" href="${p.photo}" style="margin-top:6px">Download</a>
+        <a class="button button-light" download="church-photo.jpg" href="${safeUrl(p.photo)}" style="margin-top:6px">Download</a>
       </div>`;
     });
     html += `</div>
@@ -1103,7 +1181,7 @@ function initGalleryAdmin() {
       <div id="gallery-lightbox" class="modal-overlay">
         <div style="max-width:90vw;max-height:85vh;position:relative">
           <button type="button" id="gallery-lightbox-close" class="button button-light" data-allow-view-only style="position:absolute;top:-44px;right:0">✕ Close</button>
-          <img id="gallery-lightbox-img" src="" style="max-width:90vw;max-height:85vh;border-radius:10px;display:block">
+          <img loading="lazy" decoding="async" id="gallery-lightbox-img" src="" style="max-width:90vw;max-height:85vh;border-radius:10px;display:block">
         </div>
       </div>`;
     root.innerHTML = html;
@@ -1174,17 +1252,17 @@ function renderGalleryPublic() {
     }
     root.innerHTML = `<div class="person-grid">` + photos.map(p => `
       <div class="person-card" style="text-align:center;padding:14px">
-        <div class="person-photo" style="height:180px;cursor:pointer" data-open-lightbox="${p.id}"><img src="${p.photo}" style="width:100%;height:100%;object-fit:cover"></div>
+        <div class="person-photo" style="height:180px;cursor:pointer" data-open-lightbox="${p.id}"><img loading="lazy" decoding="async" src="${safeUrl(p.photo)}" style="width:100%;height:100%;object-fit:cover"></div>
         <p style="margin:10px 0 6px;font-weight:700;color:var(--navy)">${esc(p.label)}</p>
         <div class="button-row" style="gap:8px">
-          <a class="button button-light" download="church-photo.jpg" href="${p.photo}">Download</a>
+          <a class="button button-light" download="church-photo.jpg" href="${safeUrl(p.photo)}">Download</a>
           <button type="button" class="button button-light" data-delete-gallery-photo="${p.id}" style="color:#a62929">Delete</button>
         </div>
       </div>`).join("") + `</div>
       <div id="gallery-lightbox" class="modal-overlay">
         <div style="max-width:90vw;max-height:85vh;position:relative">
           <button type="button" id="gallery-lightbox-close" class="button button-light" data-allow-view-only style="position:absolute;top:-44px;right:0">✕ Close</button>
-          <img id="gallery-lightbox-img" src="" style="max-width:90vw;max-height:85vh;border-radius:10px;display:block">
+          <img loading="lazy" decoding="async" id="gallery-lightbox-img" src="" style="max-width:90vw;max-height:85vh;border-radius:10px;display:block">
         </div>
       </div>`;
     cmsApplyViewOnlyLock(root);
@@ -1333,8 +1411,32 @@ function initSettingsAdmin() {
       if (res.ok) status = await res.json();
     } catch {}
 
+    // Does this person have a password of their own yet, or are they
+    // still getting in with the shared church one?
+    let sess = {};
+    try {
+      const sres = await fetch("/api/auth/session", { credentials: "same-origin" });
+      if (sres.ok) sess = await sres.json();
+    } catch {}
+
     let html = `<div class="role-panel"><h3>Your Account</h3>
-      <p class="field-hint">Logged in as <b>${me ? (me.name || me.email) : "—"}</b> (${me ? me.access : "—"})</p>
+      <p class="field-hint">Logged in as <b>${me ? esc(me.name || me.email) : "—"}</b> (${me ? esc(me.access) : "—"})</p>
+      </div>
+
+      <div class="role-panel"${sess.hasOwnPassword ? "" : ' style="border-color:#c8a43a;background:#fffbf0"'}>
+        <h3>Your Own Password</h3>
+        ${sess.hasOwnPassword
+          ? `<p class="field-hint">You have your own password. Only you know it — nobody else can see it, and changing it affects nobody else.</p>`
+          : `<p class="field-hint"><b>You're still using the shared church password.</b> Set your own here. From then on it's yours alone, and the shared one stops working for your login.</p>`}
+        <div class="role-row" style="grid-template-columns:1fr">
+          <input type="password" id="my-current-password" placeholder="${sess.hasOwnPassword ? "Your current password" : "The shared church password"}" autocomplete="current-password">
+        </div>
+        <div class="role-row" style="grid-template-columns:1fr 1fr;margin-top:10px">
+          <input type="password" id="my-new-password" placeholder="New password (8+ characters)" autocomplete="new-password">
+          <input type="password" id="my-new-password-confirm" placeholder="Confirm new password" autocomplete="new-password">
+        </div>
+        <div class="edit-actions"><span></span><button class="button" id="save-my-password" type="button">${sess.hasOwnPassword ? "Change My Password" : "Set My Password"}</button></div>
+        <p id="my-password-message" class="error"></p>
       </div>
 
       <div class="role-panel">
@@ -1365,13 +1467,36 @@ function initSettingsAdmin() {
 
     root.innerHTML = html;
 
+    document.querySelector("#save-my-password").addEventListener("click", async () => {
+      const current = document.querySelector("#my-current-password").value;
+      const pw1 = document.querySelector("#my-new-password").value;
+      const pw2 = document.querySelector("#my-new-password-confirm").value;
+      const msg = document.querySelector("#my-password-message");
+      if (!current) { msg.className = "error"; msg.textContent = "Enter the password you log in with now."; return; }
+      if (pw1 !== pw2) { msg.className = "error"; msg.textContent = "The two new passwords don't match."; return; }
+      if (pw1.length < 8) { msg.className = "error"; msg.textContent = "Use at least 8 characters."; return; }
+      try {
+        const res = await fetch("/api/auth/set-my-password", {
+          method: "POST", headers: { "Content-Type": "application/json" }, credentials: "same-origin",
+          body: JSON.stringify({ current, password: pw1 })
+        });
+        const data = await res.json();
+        msg.className = data.ok ? "success" : "error";
+        msg.textContent = data.ok ? "✓ Saved. This is your password now — use it next time you log in." : (data.error || "Something went wrong.");
+        if (data.ok) setTimeout(render, 1200);
+      } catch {
+        msg.className = "error";
+        msg.textContent = "Couldn't reach the server.";
+      }
+    });
+
     if (isFullAdmin) {
       document.querySelector("#save-password").addEventListener("click", async () => {
         const pw1 = document.querySelector("#new-password").value;
         const pw2 = document.querySelector("#new-password-confirm").value;
         const msg = document.querySelector("#password-settings-message");
         if (pw1 !== pw2) { msg.className = "error"; msg.textContent = "Those don't match."; return; }
-        if (pw1.length < 6) { msg.className = "error"; msg.textContent = "Use at least 6 characters."; return; }
+        if (pw1.length < 8) { msg.className = "error"; msg.textContent = "Use at least 8 characters."; return; }
         try {
           const res = await fetch("/api/auth/change-password", {
             method: "POST", headers: { "Content-Type": "application/json" }, credentials: "same-origin",
@@ -1398,7 +1523,7 @@ function initSettingsAdmin() {
         if (!data.ok) { msg.className = "error"; msg.textContent = data.error || "Couldn't set this up."; return; }
         qrArea.innerHTML = `
           <p>Scan this with your authenticator app:</p>
-          <img src="${data.qrCodePng}" alt="QR code" style="max-width:220px;border-radius:8px">
+          <img loading="lazy" decoding="async" src="${safeUrl(data.qrCodePng)}" alt="QR code" style="max-width:220px;border-radius:8px">
           <p class="field-hint">Can't scan? Add manually with this key: <code>${data.secret}</code></p>
           <p class="field-hint">This replaces your previous QR code, if you had one — the old one stops working the moment you generate a new one. Doesn't affect anyone else.</p>`;
       } catch {
@@ -1519,7 +1644,7 @@ function newsIssueHtml(issue) {
         <h2>${esc(issue.title) || "Untitled Issue"}</h2>
         <p class="news-date">${esc(issue.date_label) || ""}</p>
       </div>
-      ${issue.cover ? `<img class="news-cover" src="${esc(issue.cover)}" alt="">` : ""}
+      ${issue.cover ? `<img loading="lazy" decoding="async" class="news-cover" src="${safeUrl(issue.cover)}" alt="">` : ""}
       ${issue.intro ? `<div style="font-size:16px;margin-bottom:22px">${newsParagraphs(issue.intro)}</div>` : ""}
       ${hasMessage ? `
         <div class="news-message">
@@ -1537,7 +1662,7 @@ function newsIssueHtml(issue) {
         <div class="news-columns">
           ${(issue.articles || []).map(a => `
             <div class="news-article">
-              ${a.photo ? `<img src="${esc(a.photo)}" alt="">` : ""}
+              ${a.photo ? `<img loading="lazy" decoding="async" src="${safeUrl(a.photo)}" alt="">` : ""}
               ${a.heading ? `<h3>${esc(a.heading)}</h3>` : ""}
               ${newsParagraphs(a.body)}
             </div>`).join("")}
@@ -1561,7 +1686,7 @@ function renderNewsletterPublic() {
       (others.length ? `<h2 style="margin:34px 0 14px">Past Issues</h2>` +
         sorted.map((iss, i) => i === idx ? "" : `
           <div class="news-list-item" data-open-issue="${i}">
-            ${iss.cover ? `<img src="${esc(iss.cover)}" alt="">` : ""}
+            ${iss.cover ? `<img loading="lazy" decoding="async" src="${safeUrl(iss.cover)}" alt="">` : ""}
             <div>
               <h3>${esc(iss.title) || "Untitled Issue"}</h3>
               <p class="field-hint" style="margin:2px 0 0">${esc(iss.date_label) || ""}</p>
@@ -1604,7 +1729,7 @@ function initNewsletterAdmin() {
         <textarea data-nf="intro" rows="3" style="width:100%">${esc(iss.intro)}</textarea>
 
         <label style="display:block;margin-top:12px">Cover photo</label>
-        ${iss.cover ? `<img src="${esc(iss.cover)}" style="max-width:260px;border-radius:8px;display:block;margin-bottom:6px">
+        ${iss.cover ? `<img loading="lazy" decoding="async" src="${safeUrl(iss.cover)}" style="max-width:260px;border-radius:8px;display:block;margin-bottom:6px">
           <button type="button" class="text-btn" data-clear-cover="${iss.id}">Remove cover photo</button>` : ""}
         <input type="file" accept="image/*" data-cover-for="${iss.id}">
 
@@ -1625,7 +1750,7 @@ function initNewsletterAdmin() {
             <div class="role-panel" data-article="${a.id}">
               <input type="text" data-af="heading" value="${esc(a.heading)}" placeholder="Article heading" style="width:100%">
               <textarea data-af="body" rows="5" style="width:100%;margin-top:8px">${esc(a.body)}</textarea>
-              ${a.photo ? `<img src="${esc(a.photo)}" style="max-width:200px;border-radius:6px;display:block;margin:8px 0 4px">
+              ${a.photo ? `<img loading="lazy" decoding="async" src="${safeUrl(a.photo)}" style="max-width:200px;border-radius:6px;display:block;margin:8px 0 4px">
                 <button type="button" class="text-btn" data-clear-article-photo="${iss.id}|${a.id}">Remove photo</button>` : ""}
               <input type="file" accept="image/*" data-article-photo="${iss.id}|${a.id}" style="margin-top:8px">
               <div class="edit-actions"><span></span>
@@ -1777,7 +1902,7 @@ function renderMinistriesPublic() {
     document.title = one.name + " | St. Andrews Baptist Church";
     root.innerHTML = `
       <p><a class="text-link" href="ministries.html">← All ministries</a></p>
-      ${one.cover ? `<img src="${esc(one.cover)}" alt="" style="width:100%;max-height:360px;object-fit:cover;border-radius:12px;margin:14px 0 22px;display:block">` : ""}
+      ${one.cover ? `<img loading="lazy" decoding="async" src="${safeUrl(one.cover)}" alt="" style="width:100%;max-height:360px;object-fit:cover;border-radius:12px;margin:14px 0 22px;display:block">` : ""}
       <div class="split">
         <div>
           ${newsParagraphs(one.description)}
@@ -1794,13 +1919,13 @@ function renderMinistriesPublic() {
         <div class="person-grid">
           ${(one.photos || []).map((ph, i) => `
             <div class="person-card" style="padding:0;cursor:pointer" data-ministry-photo="${i}">
-              <div class="person-photo" style="aspect-ratio:4/3"><img src="${esc(ph)}" alt="" style="width:100%;height:100%;object-fit:cover"></div>
+              <div class="person-photo" style="aspect-ratio:4/3"><img loading="lazy" decoding="async" src="${safeUrl(ph)}" alt="" style="width:100%;height:100%;object-fit:cover"></div>
             </div>`).join("")}
         </div>
         <div id="ministry-lightbox" class="modal-overlay">
           <div style="max-width:90vw;max-height:85vh;position:relative">
             <button type="button" id="ministry-lightbox-close" class="button button-light" style="position:absolute;top:-44px;right:0">✕ Close</button>
-            <img id="ministry-lightbox-img" src="" style="max-width:90vw;max-height:85vh;border-radius:10px;display:block">
+            <img loading="lazy" decoding="async" id="ministry-lightbox-img" src="" style="max-width:90vw;max-height:85vh;border-radius:10px;display:block">
           </div>
         </div>` : ""}`;
 
@@ -1819,7 +1944,7 @@ function renderMinistriesPublic() {
   root.innerHTML = `<div class="card-grid three">
     ${all.map(m => `
       <a class="card" href="ministries.html?p=${encodeURIComponent(ministrySlug(m.name))}" style="display:block">
-        ${m.cover ? `<img src="${esc(m.cover)}" alt="" style="width:100%;height:150px;object-fit:cover;border-radius:8px;margin-bottom:12px;display:block">` : ""}
+        ${m.cover ? `<img loading="lazy" decoding="async" src="${safeUrl(m.cover)}" alt="" style="width:100%;height:150px;object-fit:cover;border-radius:8px;margin-bottom:12px;display:block">` : ""}
         <h3>${esc(m.name)}</h3>
         <p>${esc(m.meets)}</p>
         <p class="text-link">Learn more →</p>
@@ -1854,7 +1979,7 @@ function initMinistriesAdmin() {
         <textarea data-mnf="description" rows="6" style="width:100%">${esc(m.description)}</textarea>
 
         <label style="display:block;margin-top:12px">Cover photo</label>
-        ${m.cover ? `<img src="${esc(m.cover)}" style="max-width:240px;border-radius:8px;display:block;margin-bottom:6px">
+        ${m.cover ? `<img loading="lazy" decoding="async" src="${safeUrl(m.cover)}" style="max-width:240px;border-radius:8px;display:block;margin-bottom:6px">
           <button type="button" class="text-btn" data-clear-mcover="${m.id}">Remove cover</button>` : ""}
         <input type="file" accept="image/*" data-mcover-for="${m.id}">
 
@@ -1862,7 +1987,7 @@ function initMinistriesAdmin() {
         <div class="person-grid" style="margin-bottom:10px">
           ${(m.photos || []).map((ph, i) => `
             <div class="person-card" style="padding:8px;text-align:center">
-              <div class="person-photo" style="aspect-ratio:4/3"><img src="${esc(ph)}" style="width:100%;height:100%;object-fit:cover"></div>
+              <div class="person-photo" style="aspect-ratio:4/3"><img loading="lazy" decoding="async" src="${safeUrl(ph)}" style="width:100%;height:100%;object-fit:cover"></div>
               <button type="button" class="text-btn" data-remove-mphoto="${m.id}|${i}" style="color:#a62929;margin-top:6px">Remove</button>
             </div>`).join("")}
         </div>
@@ -1945,4 +2070,36 @@ function initMinistriesAdmin() {
     }));
   }
   render();
+}
+
+
+/* ============================= HELP PAGE ============================= */
+/* The help content is plain HTML in admin/help.html — no JavaScript needed
+   to read it, so it still works if anything here fails. This only adds
+   filtering on top: type what you're trying to do, see the matching
+   sections. Matching a section opens it, so the answer is right there. */
+function initHelpSearch() {
+  requireLogin();
+  const box = document.querySelector("#help-search");
+  const items = [...document.querySelectorAll(".help-item")];
+  const empty = document.querySelector("#help-no-results");
+
+  function apply() {
+    const q = box.value.trim().toLowerCase();
+    let shown = 0;
+    items.forEach(item => {
+      const match = !q || item.textContent.toLowerCase().includes(q);
+      item.hidden = !match;
+      if (match) {
+        shown++;
+        // Open matches while searching so the answer is visible straight
+        // away; collapse back to titles-only when the box is cleared.
+        item.open = !!q;
+      }
+    });
+    if (empty) empty.hidden = shown > 0;
+  }
+
+  box.addEventListener("input", apply);
+  box.addEventListener("search", apply);
 }

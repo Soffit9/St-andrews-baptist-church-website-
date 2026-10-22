@@ -26,6 +26,42 @@ function esc(value) {
     .replace(/'/g, "&#39;");
 }
 
+/* Escaping alone is NOT enough for a link or an image source.
+   `javascript:alert(document.cookie)` contains no HTML special characters,
+   so esc() passes it through untouched and clicking the link runs it. With
+   several people able to edit content, that is a way for someone with only
+   "Can Edit" to plant a link that steals a Full Admin's session the moment
+   they click it. So every URL that ends up in an href or src goes through
+   here, which allows only schemes that cannot execute. */
+function safeUrl(value) {
+  // Browsers ignore control characters inside URLs, so "java\nscript:..."
+  // would still run. Strip them before working out what scheme this is.
+  const s = String(value === null || value === undefined ? "" : value)
+    .replace(/[\u0000-\u001F\u007F]/g, "")
+    .trim();
+  if (!s) return "";
+  if (/^https?:\/\//i.test(s)) return esc(s);
+  // Uploaded photos are stored inline as base64. SVG is deliberately left
+  // out — it can carry script when opened directly.
+  if (/^data:image\/(png|jpe?g|gif|webp);base64,/i.test(s)) return esc(s);
+  // Anything else carrying a scheme (javascript:, vbscript:, file: ...) is
+  // refused outright, becoming a dead link instead of a live one.
+  if (/^[a-z][a-z0-9+.\-]*:/i.test(s)) return "";
+  return esc(s); // a plain relative path such as "index.html"
+}
+
+/* Stored numbers (photo focus points, heights) get written straight into a
+   style="..." attribute. Anything containing a quote would break out of
+   that attribute and become markup, so these never go in as free text —
+   they are forced to a plain number first, falling back to a sane default. */
+function num(value, fallback, min, max) {
+  const n = Number(value);
+  if (!isFinite(n)) return fallback;
+  if (min !== undefined && n < min) return min;
+  if (max !== undefined && n > max) return max;
+  return n;
+}
+
 /* ---------------------------------------------------------------------
    Prototype CMS "content" layer.
    Everything a user edits in /admin/edit.html is stored in the browser's
@@ -114,8 +150,49 @@ const STORE_KEYS = [
   "sabc_hero_photos", "sabc_videos", "sabc_ministries", "sabc_newsletters", "sabc_audit_log"
 ];
 
+/* Which data each public page actually needs.
+
+   Every page used to download all thirteen of these before showing
+   anything — so opening the homepage also pulled down the whole photo
+   gallery, every newsletter and every ministry page, none of which the
+   homepage displays. Photos are stored inline as base64, so that was
+   megabytes of transfer standing between a visitor and the first thing
+   they see. That is the pause before the hero photos appear.
+
+   Admin pages still load everything: the editing screens are interlinked
+   and a few people using them matters far less than every visitor. */
+const PAGE_KEYS = {
+  home:       ["sabc_content", "sabc_events", "sabc_hero_photos"],
+  about:      ["sabc_content"],
+  history:    ["sabc_content"],
+  sermons:    ["sabc_content", "sabc_sermon_archive"],
+  events:     ["sabc_content", "sabc_events"],
+  whoswho:    ["sabc_content", "sabc_whoswho"],
+  ministries: ["sabc_content", "sabc_ministries"],
+  newsletter: ["sabc_content", "sabc_newsletters"],
+  gallery:    ["sabc_content", "sabc_gallery"],
+  prayer:     ["sabc_content"],
+  contact:    ["sabc_content"],
+  giving:     ["sabc_content"],
+  privacy:    ["sabc_content"],
+  "404":      ["sabc_content"]
+};
+
+function keysForThisPage() {
+  const body = document.body;
+  if (!body || body.classList.contains("admin-page")) return STORE_KEYS;
+  const named = PAGE_KEYS[body.dataset.page];
+  // An unknown page falls back to loading everything — slower, but it can
+  // never show up blank because a key was missed.
+  return named || STORE_KEYS;
+}
+
 async function fetchAllStoredData() {
-  await Promise.all(STORE_KEYS.map(async key => {
+  const wanted = keysForThisPage();
+  // Anything not fetched stays null, which every reader already treats as
+  // "nothing saved yet" and falls back to defaults for.
+  STORE_KEYS.forEach(k => { if (!wanted.includes(k)) window.__serverStore[k] = null; });
+  await Promise.all(wanted.map(async key => {
     try {
       const res = await fetch(`/api/store/${key}`, { credentials: "same-origin" });
       window.__serverStore[key] = await res.json();
@@ -375,14 +452,14 @@ function videoEmbedHtml(url, heightPx) {
     const h = heightPx || 315;
     return `<div>
       <iframe src="https://www.facebook.com/plugins/video.php?href=${encoded}&show_text=false" width="100%" height="${h}" style="border:0;overflow:hidden;max-width:100%;display:block;border-radius:8px" scrolling="no" frameborder="0" allowfullscreen allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share"></iframe>
-      <a class="button button-light" target="_blank" rel="noopener" href="${esc(str)}" style="display:inline-block;margin-top:10px">▶ Watch on Facebook</a>
+      <a class="button button-light" target="_blank" rel="noopener" href="${safeUrl(str)}" style="display:inline-block;margin-top:10px">▶ Watch on Facebook</a>
       <span style="font-size:12px;color:var(--muted);margin-left:8px">Use this if the box above says "unavailable"</span>
     </div>`;
   }
   // Otherwise assume YouTube — accepts a full link or just the bare video ID.
   const match = str.match(/(?:v=|youtu\.be\/|embed\/)?([a-zA-Z0-9_-]{11})(?:[?&]|$)/);
   const vid = match ? match[1] : str;
-  return `<iframe width="100%" height="${heightPx || "100%"}" style="${heightPx ? "" : "position:absolute;inset:0;"}border:0" src="https://www.youtube.com/embed/${encodeURIComponent(vid)}" title="Video" allowfullscreen></iframe>`;
+  return `<iframe width="100%" height="${heightPx || "100%"}" style="${heightPx ? "" : "position:absolute;inset:0;"}border:0" src="https://www.youtube-nocookie.com/embed/${encodeURIComponent(vid)}" title="Video" allowfullscreen></iframe>`;
 }
 
 function compressImage(file, maxDimension = 1000, quality = 0.75) {
@@ -471,7 +548,7 @@ function cmsApplyToPage(pageKey) {
       el.style.width = "auto";
       el.style.border = "none";
       el.style.background = "none";
-      el.innerHTML = `<img src="${esc(global.logo)}" alt="Church logo" style="height:100%;width:auto;max-width:280px;display:block;object-fit:contain">`;
+      el.innerHTML = `<img src="${safeUrl(global.logo)}" alt="Church logo" style="height:100%;width:auto;max-width:280px;display:block;object-fit:contain">`;
     });
   }
 
@@ -493,9 +570,13 @@ function cmsApplyToPage(pageKey) {
       const pos = content[id + "_pos"] ?? 50;
       el.style.height = h + "px";
       el.style.overflow = "hidden";
-      el.innerHTML = `<img src="${esc(content[id])}" alt="" style="width:100%;height:100%;object-fit:cover;object-position:50% ${pos}%;border-radius:inherit">`;
+      el.innerHTML = `<img src="${safeUrl(content[id])}" alt="" style="width:100%;height:100%;object-fit:cover;object-position:50% ${num(pos, 50, 0, 100)}%;border-radius:inherit">`;
     }
   });
+
+  // Content is now applied — reveal the elements that were hidden to
+  // avoid the flash of placeholder text (see style.css).
+  document.documentElement.classList.add("sabc-content-ready");
 
   // Homepage welcome message: the body is a textarea, so blank lines need
   // turning into real paragraphs rather than showing as one block.
