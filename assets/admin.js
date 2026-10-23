@@ -332,7 +332,7 @@ document.addEventListener("sabc:session-ready", () => {
         if (!notice) return;
         const banner = document.createElement("div");
         banner.className = "notice notice-action";
-        banner.innerHTML = `<b>Set your own password.</b> You're signed in with the shared church password. Giving yourself your own means only you know it — and it keeps working if the shared one is ever changed. <a class="text-link" href="settings.html">Set it up in Settings &rarr;</a>`;
+        banner.innerHTML = `<b>You're using the shared church password.</b> <a class="text-link" href="settings.html">Set your own &rarr;</a>`;
         notice.parentNode.insertBefore(banner, notice);
       } catch {}
     })();
@@ -602,15 +602,10 @@ document.addEventListener("sabc:session-ready", async () => {
     if (!d.ok) return;
     const peak = Math.max(1, ...d.recent.map(r => r.visitors));
     box.innerHTML = `
-      <span class="visitor-inline-num"><strong>${d.today.visitors}</strong> visitors today</span>
+      <span class="visitor-inline-num"><strong>${d.today.visitors}</strong> today</span>
       <span class="visitor-inline-num"><strong>${d.today.views}</strong> views</span>
       <span class="visitor-inline-num"><strong>${d.week.visitors}</strong> this week</span>
-      <div class="visitor-numbers" hidden>
-        <div><strong>${d.today.visitors}</strong><span>visitors today</span></div>
-        <div><strong>${d.today.views}</strong><span>page views today</span></div>
-        <div><strong>${d.week.visitors}</strong><span>visitors this week</span></div>
-        <div><strong>${d.month.visitors}</strong><span>visitors this month</span></div>
-      </div>
+      <span class="visitor-inline-num"><strong>${d.month.visitors}</strong> this month</span>
       <div class="visitor-chart" title="Visitors per day, last 14 days">
         ${d.recent.map(r => `<span style="height:${Math.round((r.visitors / peak) * 100)}%" title="${r.date}: ${r.visitors} visitors, ${r.views} views"></span>`).join("")}
       </div>

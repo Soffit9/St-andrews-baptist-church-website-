@@ -347,8 +347,15 @@ html.sabc-content-ready [data-field]{opacity:1;transition:opacity .12s ease}
 .admin-pw-row .field-hint{margin:0;font-size:13px}
 [data-theme="dark"] .admin-pw-row .field-hint{color:#9aa7b6}
 
-/* Dashboard call-to-action banner + build tag */
-.notice-action{background:#eaf4ff;border-color:#9cc3e8;margin-bottom:12px}
+/* Dashboard call-to-action banner + build tag.
+   Uses .notice.notice-action (two classes) so it reliably beats the plain
+   .notice yellow, whatever order the rules end up in. Two yellow bars
+   stacked read as two warnings; this one is information, so it's blue. */
+.notice.notice-action{background:#eaf4ff;border-color:#9cc3e8;margin-bottom:12px;
+  padding:10px 15px;font-size:14px}
+/* The compact visitor row is the only one shown; the old stacked block is
+   gone rather than merely hidden, since a hidden attribute loses to any
+   class rule that sets display. */
 .build-tag{opacity:.65;font-size:12px}
 .build-tag strong{font-size:12px}
 [data-theme="dark"] .notice-action{background:#15263a;border-color:#2f4a68;color:#dce7f3}
@@ -379,3 +386,27 @@ html.sabc-content-ready [data-field]{opacity:1;transition:opacity .12s ease}
 [data-theme="dark"] .help-body{border-color:#2b3646}
 [data-theme="dark"] .help-tip{background:#1a2634}
 [data-theme="dark"] .help-search{background:#141d28;border-color:#2b3646;color:#e9edf2}
+
+/* ---------- Dark mode fixes ----------
+   Everything here was staying bright when the rest of the page went dark.
+   Each had the same root cause in different clothing: a light background
+   set somewhere the dark-mode rules didn't reach. */
+
+/* The "you haven't set your own password yet" panel. This used an inline
+   style attribute, which beats every stylesheet rule including dark mode —
+   hence a white box glaring on a dark page. Now a class, so dark mode can
+   actually override it. */
+.role-panel.needs-doing{border-color:#c8a43a;background:#fffbf0}
+[data-theme="dark"] .role-panel.needs-doing{background:#2a2414;border-color:#6b5a28}
+
+/* Bare <button> elements — the verse "Previous day" and the calendar
+   month arrows. These were never given a background, so they fell back to
+   the browser's default white. */
+[data-theme="dark"] .verse-nav button,
+[data-theme="dark"] .cal-nav button,
+[data-theme="dark"] .month-nav button,
+[data-theme="dark"] button:not(.button):not(.button-light):not(.theme-toggle):not(.menu-toggle):not(.quick-grid button){
+  background:#141d29;color:#e9edf2;border-color:#2b3646}
+
+/* Event date badges: pale blue tile, fine on white, a beacon on dark. */
+[data-theme="dark"] .date-badge{background:#15263a;border-color:#2f4a68;color:#8fc0ef}

@@ -1423,7 +1423,7 @@ function initSettingsAdmin() {
       <p class="field-hint">Logged in as <b>${me ? esc(me.name || me.email) : "—"}</b> (${me ? esc(me.access) : "—"})</p>
       </div>
 
-      <div class="role-panel"${sess.hasOwnPassword ? "" : ' style="border-color:#c8a43a;background:#fffbf0"'}>
+      <div class="role-panel${sess.hasOwnPassword ? "" : " needs-doing"}">
         <h3>Your Own Password</h3>
         ${sess.hasOwnPassword
           ? `<p class="field-hint">You have your own password. Only you know it — nobody else can see it, and changing it affects nobody else.</p>`

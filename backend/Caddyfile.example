@@ -45,7 +45,16 @@
     # reaches people quickly rather than serving stale code for hours.
     @assets path /assets/*
     handle @assets {
-        header Cache-Control "public, max-age=600, must-revalidate"
+        # "no-cache" does NOT mean don't store it — it means ask the server
+        # first every time. Caddy answers with a 304 and no body when
+        # nothing changed, so it stays fast, but a browser can never serve
+        # a stale copy of the admin JavaScript.
+        #
+        # This replaced a 10-minute cache. That saved almost nothing on a
+        # site this size, and cost real confusion: after every update there
+        # was a window where the site looked broken when it was only the
+        # browser holding an old file. Correct beats marginally cheaper.
+        header Cache-Control "no-cache"
         file_server
     }
 

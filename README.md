@@ -6,7 +6,7 @@ This file is the handover document. If you're picking this up cold — a new vol
 
 ---
 
-## ⚠️ Upgrading to build 2026-10-22e — read this first
+## Build 2026-10-22g
 
 This build changes how logins work and **moves everyone's password and
 authenticator secret out of `backend/admins.json`**. That file is tracked in
@@ -39,7 +39,7 @@ sudo systemctl restart caddy
 # 6. Confirm it worked
 ls -l backend/credentials.json          # should exist, -rw-------
 grep -c totp_secret backend/admins.json # should print 0
-curl -s localhost/api/version           # should say 2026-10-22e
+curl -s localhost/api/version           # should say 2026-10-22g
 ```
 
 If step 6 looks right, everyone's authenticator apps still work and nothing
@@ -67,6 +67,50 @@ was lost. Keep `~/admins-backup.json` for a week, then delete it.
 - **A bad password no longer locks out the whole church.** Failures are
   counted per person now, not per internet connection.
 - Minimum password length is 8 characters.
+
+### Dark mode fixes in 2026-10-22g
+
+Six elements stayed bright when the rest of the page went dark. Same root
+cause in different clothing — a light background set somewhere the dark-mode
+rules couldn't reach:
+
+- **The "set your own password" panel on Settings** used an inline `style`
+  attribute. Inline styles beat every stylesheet rule, including dark mode,
+  so it stayed white on a dark page. Now a class (`.role-panel.needs-doing`)
+  that dark mode can override.
+- **Bare `<button>` elements** — the verse "Previous day" arrows and the
+  calendar month arrows — had no background set, so they fell back to the
+  browser's default white.
+- **Event date badges** were a pale blue tile: fine on white, a beacon on
+  dark.
+
+`tests/dark_check.py` now switches every page to dark mode and reports any
+element with a light background against a dark page, naming the selector to
+fix. Run it after any styling change.
+
+**Rule of thumb: never set a colour in an inline `style` attribute.** It
+cannot be overridden by dark mode. Put it in `style.css` with a
+`[data-theme="dark"]` counterpart.
+
+### Small fixes in 2026-10-22f
+
+- Visitor stats showed twice on the dashboard — a compact row and a large
+  stacked block. The large one was marked `hidden`, but a class rule setting
+  `display` beats the `hidden` attribute, so it showed anyway. Removed
+  outright rather than hidden, and "this month" moved into the compact row.
+- Two yellow bars stacked on the dashboard read as two warnings. The
+  "set your own password" one is information, not a warning, so it is now
+  blue and much shorter. The selector uses `.notice.notice-action` so it
+  can't lose to the plain `.notice` rule.
+- Removed the "About this history" box from the history page.
+- **Assets no longer cache for 10 minutes.** `Cache-Control` for
+  `/assets/*` is now `no-cache`, which means "check with the server first",
+  not "don't store". Caddy still answers with a 304 and no body when
+  nothing changed, so it stays fast — but a browser can no longer serve a
+  stale copy of the admin JavaScript after an update. The old 10-minute
+  cache saved almost nothing on a site this size and cost real confusion:
+  after every update there was a window where things looked broken when it
+  was only an old file being held.
 
 ### Fixed in 2026-10-22e: dashboard tiles stopped working
 
